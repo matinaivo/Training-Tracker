@@ -1,6 +1,7 @@
-V48:
-- Tagesansicht bei Alle Hunde nach Hund gruppiert.
-- Hundebloecke sind ein- und ausklappbar.
-- Kompakte Karten: Kategorie/Trainingsart oben, Übungen als Textzeile, Notiz mit 📝.
-- Aktionen als Icons: ✏️, ⧉, 🗑️.
-- Cache-Busting: app.js/styles.css ?v=48.
+V49 Korrektur:
+- Basis: V48, alle V48-Neuerungen bleiben erhalten.
+- Fehler behoben: renderToday wurde versehentlich überschrieben und wiederhergestellt.
+- Tagesansicht bei Alle Hunde bleibt nach Hund gruppiert.
+- Hundebloecke bleiben ein- und ausklappbar.
+- Kompakte Karten und Icons bleiben erhalten.
+- Cache-Busting: app.js/styles.css ?v=49.

@@ -459,6 +459,33 @@ function renderEntry(e){
 
 
 
+function renderToday(){
+ let d=todayDog.value||getUiState().currentDog||data.dogs[0]; 
+ if(todayDog && d && todayDog.value!==d && data.dogs.includes(d)) todayDog.value=d; 
+ if(!d){todayContent.innerHTML='<div class="card"><h2>Noch kein Hund</h2><p>Bitte lege zuerst einen Hund an.</p></div>';return}
+ const due={}, notDue={}, paused={};
+ allSubs().filter(x=>active(d,x.cat,x.sub)&&!clubSubs.has(x.sub)).forEach(x=>{
+   const freq=getFrequency(d,x.cat,x.sub);
+   if(freq==='paused'){
+     (paused[x.cat]||(paused[x.cat]=[])).push({...x,freq});
+     return;
+   }
+   let l=last(d,x.sub), days=l?daysBetween(l.date):999, target=freqDays(freq);
+   let item={...x,days,target,freq,overdue:days===999?999:days-target,dueIn:days===999?0:Math.max(0,target-days)};
+   if(days===999 || days>=target){
+     (due[x.cat]||(due[x.cat]=[])).push(item);
+   }else{
+     (notDue[x.cat]||(notDue[x.cat]=[])).push(item);
+   }
+ });
+ const catOrder=Object.keys(data.categories);
+ Object.values(due).forEach(list=>list.sort((a,b)=>b.overdue-a.overdue || b.days-a.days));
+ Object.values(notDue).forEach(list=>list.sort((a,b)=>a.dueIn-b.dueIn || b.days-a.days));
+ Object.values(paused).forEach(list=>list.sort((a,b)=>a.sub.localeCompare(b.sub)));
+ const dueCount=countGrouped(due), notDueCount=countGrouped(notDue), pausedCount=countGrouped(paused);
+ todayContent.innerHTML=`<div class="card today-card"><h2>Heute sinnvoll <span class="pill green">${dueCount}</span></h2><p class="small">Fällige aktive Übungen von ${esc(d)}, sortiert nach Dringlichkeit.</p>${renderTodayGroups(due,catOrder,'due','Aktuell ist nichts fällig.')}</div><div class="card today-card"><h2>Aktuell nicht fällig <span class="pill blue">${notDueCount}</span></h2><p class="small">Diese Übungen werden trainiert, sind nach deiner gewünschten Häufigkeit aber noch nicht dran.</p>${renderTodayGroups(notDue,catOrder,'notdue','Keine aktiven Übungen in automatischer Pause.')}</div><div class="card today-card"><h2>Aktiv pausiert <span class="pill muted-pill">${pausedCount}</span></h2><p class="small">Diese Übungen sind im Profil bewusst auf „pausiert“ gestellt.</p>${renderPausedGroups(paused,catOrder,'Keine aktiv pausierten Übungen.')}</div>`;
+}
+
 function countGrouped(groups){
  return Object.values(groups).reduce((sum,list)=>sum+list.length,0);
 }
