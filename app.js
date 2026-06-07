@@ -38,15 +38,27 @@ function load(){
 }
 function normalize(x){
  let d={dogs:[],categories:structuredClone(defaultCategories),profiles:{},entries:[],...x};
- if(!d.categories)d.categories=structuredClone(defaultCategories);
- // Struktur-Migration: neue Standardstruktur ergänzen und alte Bezeichnungen in Einträgen aktualisieren.
- d.categories={...structuredClone(defaultCategories), ...d.categories};
- migrateCategoriesAndEntries(d);
  if(!Array.isArray(d.dogs))d.dogs=[];
- if(!d.profiles)d.profiles={};
+ if(!d.profiles || typeof d.profiles!=='object')d.profiles={};
  if(!Array.isArray(d.entries))d.entries=[];
- d.dogs.forEach(ensureProfile);
- return d
+ if(!d.categories || typeof d.categories!=='object')d.categories=structuredClone(defaultCategories);
+
+ // Kategorien/Einträge migrieren, aber Hunde/Profile nicht verlieren.
+ migrateCategoriesAndEntries(d);
+
+ // WICHTIG: Beim ersten Laden darf nicht ensureProfile() genutzt werden,
+ // weil die globale Variable data zu diesem Zeitpunkt noch nicht initialisiert ist.
+ d.dogs.forEach(dog=>ensureProfileInDataObject(d,dog));
+ return d;
+}
+function ensureProfileInDataObject(target,dog){
+ if(!dog)return;
+ if(!target.profiles[dog])target.profiles[dog]={active:{}};
+ if(!target.profiles[dog].active)target.profiles[dog].active={};
+ Object.entries(target.categories).flatMap(([cat,subs])=>subs.map(sub=>({cat,sub}))).forEach(({cat,sub})=>{
+   const kk=cat+'||'+sub;
+   if(typeof target.profiles[dog].active[kk]!=='boolean')target.profiles[dog].active[kk]=true;
+ });
 }
 function migrateCategoriesAndEntries(d){
  const renameSub={
@@ -65,6 +77,7 @@ function migrateCategoriesAndEntries(d){
   'Rückruf':'Basics','Futtertreiben':'Basics','Liegen':'Basics','Boxentraining':'Basics','Deckentraining':'Basics','Ruhetraining':'Basics','Impulskontrolle im Alltag':'Basics','Clicker-Konditionierung':'Basics',
   'Apport':'IGP','Voraus':'IGP','Revieren':'IGP','Hürde':'IGP','Schrägwand':'IGP','Verbellen':'IGP','Schutzdienst Technik':'IGP','Schutzdienst aktiv':'IGP'
  };
+
  d.entries=(d.entries||[]).map(e=>{
    e.exercises=(e.exercises||[]).map(ex=>{
      let sub=renameSub.hasOwnProperty(ex.subcategory)?renameSub[ex.subcategory]:ex.subcategory;
@@ -77,7 +90,21 @@ function migrateCategoriesAndEntries(d){
    if(e.exercises.length){e.category=e.exercises[0].category}
    return e;
  }).filter(e=>e.exercises&&e.exercises.length);
- d.categories=structuredClone(defaultCategories);
+
+ // Standardkategorien aktualisieren, aber eigene Kategorien/Unterkategorien erhalten.
+ const merged=structuredClone(defaultCategories);
+ Object.entries(d.categories||{}).forEach(([cat,subs])=>{
+   if(cat==='IGP Sonstiges'||cat==='Schutzdienst')return;
+   if(!merged[cat])merged[cat]=[];
+   (subs||[]).forEach(sub=>{
+     const renamed=renameSub.hasOwnProperty(sub)?renameSub[sub]:sub;
+     if(!renamed)return;
+     const targetCat=moveCat[renamed]||cat;
+     if(!merged[targetCat])merged[targetCat]=[];
+     if(!merged[targetCat].includes(renamed))merged[targetCat].push(renamed);
+   });
+ });
+ d.categories=merged;
 }
 function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}
 function toast(msg,type='ok'){
@@ -143,10 +170,12 @@ window.toggleProfile=(d,cat,sub,val)=>{
  setActive(d,cat,sub,val);
  updateCategoryMasterStates();
  renderExercises();renderToday();renderBalance();
+ toast('Profil automatisch gespeichert.');
 }
 window.toggleCategoryForDog=(d,cat,val)=>{
  (data.categories[cat]||[]).forEach(sub=>setActive(d,cat,sub,val));
  renderDogList();renderExercises();renderToday();renderBalance();
+ toast('Profil automatisch gespeichert.');
 }
 function updateCategoryMasterStates(){
  document.querySelectorAll('.category-master').forEach(cb=>{
