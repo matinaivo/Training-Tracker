@@ -30,6 +30,8 @@ function freqDays(value){return (frequencyOptions.find(f=>f.value===value)||freq
 function freqLabel(value){return (frequencyOptions.find(f=>f.value===value)||frequencyOptions[0]).label}
 
 let data=load(), currentMonth=new Date(), selectedDay=null, editingId=null;
+let returnViewAfterEdit='today';
+let pendingDeleteId=null;
 const UI_STATE_KEY='trainingTrackerV27UiState';
 function getUiState(){try{return JSON.parse(localStorage.getItem(UI_STATE_KEY)||'{}')}catch{return {}}}
 function setUiState(patch){const s={...getUiState(),...patch};localStorage.setItem(UI_STATE_KEY,JSON.stringify(s));}
@@ -359,7 +361,13 @@ function clearEntryDetailsKeepDogDate(keepDog, keepDate){
  toggleTreadmill();
 }
 
+
+function currentActivePanel(){
+ const p=document.querySelector('.panel.active');
+ return p?p.id:(returnViewAfterEdit||'today');
+}
 function loadEntry(e,dup=false){
+ returnViewAfterEdit=currentActivePanel();
  editingId=dup?null:e.id;
  show('add');
  formTitle.textContent=dup?'Eintrag duplizieren':'Eintrag bearbeiten';
@@ -568,8 +576,7 @@ document.addEventListener('change',e=>{
 
 document.addEventListener('click',function(e){
  if(e.target && e.target.id==='cancelEntryBtn'){
-   if(typeof resetForm==='function') resetForm();
-   if(typeof show==='function') show('today');
+   cancelEntry();
  }
 });
 
@@ -578,4 +585,37 @@ window.editEntry=id=>{let e=data.entries.find(x=>x.id===id);if(e)loadEntry(e,fal
 
 window.dupEntry=id=>{let e=data.entries.find(x=>x.id===id);if(e)loadEntry(e,true)}
 
-window.delEntry=id=>{if(confirm('Eintrag löschen?')){data.entries=data.entries.filter(e=>e.id!==id);save();renderCalendar();renderToday();renderBalance();if(selectedDay)renderDayDetails();if(selectedDay)renderDayDetails()}}
+window.delEntry=id=>{openDeleteDialog(id)}
+
+function cancelEntry(){
+ resetForm();
+ show(returnViewAfterEdit||'today');
+ if(returnViewAfterEdit==='calendar' && selectedDay)renderDayDetails();
+}
+
+function openDeleteDialog(id){
+ pendingDeleteId=id;
+ const dlg=document.getElementById('deleteDialog');
+ if(dlg)dlg.classList.remove('hidden');
+}
+function closeDeleteDialog(){
+ pendingDeleteId=null;
+ const dlg=document.getElementById('deleteDialog');
+ if(dlg)dlg.classList.add('hidden');
+}
+function confirmDeleteDialog(){
+ if(!pendingDeleteId)return;
+ data.entries=data.entries.filter(e=>e.id!==pendingDeleteId);
+ pendingDeleteId=null;
+ save();
+ renderCalendar();
+ renderToday();
+ renderBalance();
+ if(selectedDay)renderDayDetails();
+ closeDeleteDialog();
+}
+document.addEventListener('click',function(e){
+ if(e.target && e.target.id==='cancelDeleteBtn')closeDeleteDialog();
+ if(e.target && e.target.id==='confirmDeleteBtn')confirmDeleteDialog();
+ if(e.target && e.target.id==='deleteDialog')closeDeleteDialog();
+});

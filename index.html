@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Training Tracker</title>
-  <link rel="stylesheet" href="styles.css?v=54">
+  <link rel="stylesheet" href="styles.css?v=55">
 </head>
 <body>
 <header class="app-header">
@@ -146,7 +146,19 @@
   </section>
 </main>
 
-<script src="app.js?v=54"></script>
-<footer class="version-footer">Training Tracker • V54</footer>
+<script src="app.js?v=55"></script>
+<footer class="version-footer">Training Tracker • V55</footer>
+
+<div id="deleteDialog" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="deleteDialogTitle">
+  <div class="modal-card delete-dialog-card">
+    <h2 id="deleteDialogTitle">🗑️ Eintrag löschen</h2>
+    <p>Möchtest du diesen Trainingseintrag wirklich löschen?</p>
+    <div class="modal-actions">
+      <button id="cancelDeleteBtn" type="button" class="secondary">Abbrechen</button>
+      <button id="confirmDeleteBtn" type="button" class="danger">Löschen</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

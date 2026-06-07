@@ -1,5 +1,6 @@
-V54:
-- Fix: Icon-Buttons haben wieder direkte onclick-Aktionen.
-- Bearbeiten, Duplizieren, Löschen funktionieren wieder.
-- Header-Unterzeile entfernt.
-- Cache-Busting: app.js/styles.css ?v=54.
+V55:
+- Eigener App-Löschdialog statt Browser-confirm.
+- Abbrechen beim Bearbeiten/Duplizieren führt zurück zur ursprünglichen Ansicht.
+- Header-Unterzeile bleibt entfernt.
+- Basis: V54.
+- Cache-Busting: app.js/styles.css ?v=55.
