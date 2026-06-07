@@ -1,0 +1,1 @@
+V41: Abbrechen-Button + Trainingsart-Fix auf Basis V39
