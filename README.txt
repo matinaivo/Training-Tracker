@@ -1,6 +1,8 @@
-V61:
-- Interne Anzeige wirklich V61.
-- Cache-Busting wirklich ?v=61.
-- Echter Migrationsfix: Migrationsfehler leeren die Hundeliste nicht mehr.
-- Hunde/Profile/Eintraege bleiben erhalten.
-- Kein Durchsuchen alter Speicherschluessel.
+V58:
+- Neue Kategoriestruktur mit Oberbloecken.
+- Oberbloecke: Hundesport, Training & Aufbau, Alltag & Management.
+- Oberbloecke in Hundeseite und Trainingseingabe einklappbar.
+- Mobile Touchflaechen vergroessert.
+- Kategorien und bestehende Eintraege werden migriert.
+- Basis: stabile V57.
+- Cache-Busting: app.js/styles.css ?v=58.
