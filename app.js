@@ -279,18 +279,32 @@ window.toggleCategoryForDog=(d,cat,val)=>{
 }
 function setAll(val){/* Profile-Reiter entfernt */}
 
-function renderExercises(){let d=entryDog.value||data.dogs[0],cat=entryCategory.value||Object.keys(data.categories)[0]; if(!d){exerciseList.innerHTML='<p>Bitte zuerst Hund anlegen.</p>';return} let subs=(data.categories[cat]||[]).filter(s=>active(d,cat,s)); exerciseList.innerHTML=subs.length?subs.map(s=>`<label class="exercise-row"><input type="checkbox" class="ex" data-cat="${attr(cat)}" data-sub="${attr(s)}" onchange="toggleTreadmill()"> ${esc(s)}</label>`).join(''):'<p>Keine aktive Übung in dieser Kategorie.</p>'; toggleTreadmill()}
+function renderExercises(){
+ let d=entryDog.value||data.dogs[0];
+ if(!d){exerciseList.innerHTML='<p>Bitte zuerst Hund anlegen.</p>';return}
+ const parts=[];
+ Object.keys(data.categories).forEach(cat=>{
+   const subs=(data.categories[cat]||[]).filter(s=>active(d,cat,s));
+   if(!subs.length)return;
+   parts.push(`<details class="entry-category"><summary>${esc(cat)}</summary>${subs.map(s=>`<label class="exercise-row"><input type="checkbox" class="ex" data-cat="${attr(cat)}" data-sub="${attr(s)}" onchange="toggleTreadmill()"> ${esc(s)}</label>`).join('')}</details>`);
+ });
+ exerciseList.innerHTML=parts.length?parts.join(''):'<p>Für diesen Hund sind keine Übungen aktiv.</p>';
+ toggleTreadmill();
+}
 window.toggleTreadmill=()=>{let on=[...document.querySelectorAll('.ex:checked')].some(x=>x.dataset.sub==='Laufband'); treadmillBox.classList.toggle('hidden',!on); if(on&&!document.querySelector('.tm-block'))addTmBlock()}
 function addTmBlock(min='',speed=''){let div=document.createElement('div');div.className='row tm-block';div.innerHTML=`<label>Minuten<input class="tm-min" type="number" min="0" step="1" value="${attr(min)}"></label><label>km/h<input class="tm-speed" type="number" min="0" step="0.1" value="${attr(speed)}"></label><button type="button" class="secondary" onclick="this.parentElement.remove()">Entfernen</button>`;treadmillBlocks.appendChild(div)}
 function saveEntry(ev){
  ev.preventDefault();
- let ex=[...document.querySelectorAll('.ex:checked')].map(x=>({category:x.dataset.cat,subcategory:x.dataset.sub}));
- if(!ex.length){toast('Bitte Übung auswählen.','warn');return}
- let keepDog=entryDog.value, keepDate=entryDate.value;
- let payload={dog:entryDog.value,date:entryDate.value,category:entryCategory.value,duration:entryDuration.value,club:false,exercises:ex,treadmill:[...document.querySelectorAll('.tm-block')].map(b=>({minutes:b.querySelector('.tm-min').value,speed:b.querySelector('.tm-speed').value})).filter(x=>x.minutes||x.speed),note:entryNote.value.trim()};
+ const groups=selectedExercisesByCategory();
+ const cats=Object.keys(groups);
+ if(!cats.length){toast('Bitte Übung auswählen.','warn');return}
+ let keepDate=entryDate.value;
+ const treadmillData=[...document.querySelectorAll('.tm-block')].map(b=>({minutes:b.querySelector('.tm-min').value,speed:b.querySelector('.tm-speed').value})).filter(x=>x.minutes||x.speed);
  if(editingId){
    let i=data.entries.findIndex(e=>e.id===editingId);
    if(i>=0){
+     const cat=cats[0];
+     let payload={dog:entryDog.value,date:entryDate.value,category:cat,duration:entryDuration.value,club:false,exercises:groups[cat],treadmill:treadmillData,note:entryNote.value.trim()};
      data.entries[i]={...data.entries[i],...payload,updatedAt:new Date().toISOString()};
      if(!save())return;
      toast('Eintrag aktualisiert.');
@@ -300,9 +314,11 @@ function saveEntry(ev){
      return;
    }
  }
- data.entries.push({id:crypto.randomUUID(),...payload,createdAt:new Date().toISOString()});
+ cats.forEach(cat=>{
+   data.entries.push({id:crypto.randomUUID(),dog:entryDog.value,date:entryDate.value,category:cat,duration:entryDuration.value,club:false,exercises:groups[cat],treadmill:groups[cat].some(x=>x.subcategory==='Laufband')?treadmillData:[],note:entryNote.value.trim(),createdAt:new Date().toISOString()});
+ });
  if(!save())return;
- toast('Einheit gespeichert.');
+ toast(cats.length===1?'Einheit gespeichert.':`${cats.length} Kategorien gespeichert.`);
  resetForm();
  selectedDay=keepDate;
  show('calendar');
@@ -339,6 +355,8 @@ function loadEntry(e,dup=false){
  entryNote.value=e.note||'';
  document.querySelectorAll('.ex').forEach(cb=>{
    cb.checked=(e.exercises||[]).some(x=>x.category===cb.dataset.cat&&x.subcategory===cb.dataset.sub);
+   const details=cb.closest('details');
+   if(cb.checked && details) details.open=true;
  });
  treadmillBlocks.innerHTML='';
  (e.treadmill||[]).forEach(b=>addTmBlock(b.minutes,b.speed));
@@ -360,6 +378,21 @@ function startNewEntryForDate(dateIso){
  treadmillBlocks.innerHTML='';
  treadmillBox.classList.add('hidden');
  renderExercises();
+}
+
+function startNewEntryForExercise(dateIso,dogName,cat,sub){
+ startNewEntryForDate(dateIso);
+ if(dogName && data.dogs.includes(dogName)){
+   entryDog.value=dogName;
+   setUiState({currentDog:dogName,entryDog:dogName,todayDog:dogName,balanceDog:dogName,calendarDog:dogName});
+   renderExercises();
+ }
+ document.querySelectorAll('.ex').forEach(cb=>{
+   cb.checked=(cb.dataset.cat===cat && cb.dataset.sub===sub);
+   const details=cb.closest('details');
+   if(cb.checked && details) details.open=true;
+ });
+ toggleTreadmill();
 }
 
 function renderCalendar(){let y=currentMonth.getFullYear(),m=currentMonth.getMonth();monthLabel.textContent=currentMonth.toLocaleDateString('de-DE',{month:'long',year:'numeric'});calendarGrid.innerHTML='';['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(w=>calendarGrid.insertAdjacentHTML('beforeend',`<div class="weekday">${w}</div>`));let first=new Date(y,m,1),off=(first.getDay()+6)%7,start=new Date(y,m,1-off);for(let i=0;i<42;i++){let d=new Date(start);d.setDate(start.getDate()+i);let iso=isoDate(d),es=calendarEntries().filter(e=>e.date===iso),cats=[...new Set(es.map(e=>e.category))];let div=document.createElement('div');div.className='day'+(d.getMonth()!==m?' other':'')+(iso===today()?' today':'')+(iso===selectedDay?' selected':'');div.innerHTML=`<div class="day-num">${d.getDate()}</div><div class="calendar-cats">${cats.slice(0,4).map(c=>`<span class="cat-chip ${catClass(c)}">${shortCat(c)}</span>`).join('')}</div>`;div.onclick=()=>{selectedDay=iso;renderCalendar();renderDayDetails()};calendarGrid.appendChild(div)} if(selectedDay)renderDayDetails()}
@@ -421,11 +454,11 @@ function todayDashboardRow(x,mode){
  if(mode==='due'){
    chip=x.days===999?'neu':(x.overdue>0?`+${x.overdue} T.`:'fällig');
    detail=`${last} · Wunsch: ${esc(freqLabel(x.freq))}`;
-   return `<div class="score-row"><span><b>${esc(x.sub)}</b><br><span class="tiny">${detail}</span></span><span class="pill green">${chip}</span></div>`;
+   return `<button type="button" class="score-row clickable-row" onclick="startNewEntryForExercise(today(),todayDog.value,'${attr(x.cat)}','${attr(x.sub)}')"><span><b>${esc(x.sub)}</b><br><span class="tiny">${detail}</span></span><span class="pill green">${chip}</span></button>`;
  }
  const dueText=x.dueIn===1?'morgen':`in ${x.dueIn} Tagen`;
  detail=`${last} · Wunsch: ${esc(freqLabel(x.freq))}`;
- return `<div class="score-row"><span><b>${esc(x.sub)}</b><br><span class="tiny">${detail}</span></span><span class="pill blue">fällig ${dueText}</span></div>`;
+ return `<button type="button" class="score-row clickable-row" onclick="startNewEntryForExercise(today(),todayDog.value,'${attr(x.cat)}','${attr(x.sub)}')"><span><b>${esc(x.sub)}</b><br><span class="tiny">${detail}</span></span><span class="pill blue">fällig ${dueText}</span></button>`;
 }
 function renderPausedGroups(groups,catOrder,emptyText){
  const cats=catOrder.filter(cat=>groups[cat]&&groups[cat].length);

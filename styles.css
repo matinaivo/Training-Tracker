@@ -130,3 +130,30 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
 .paused-group .score-row{background:rgba(237,241,244,.35)}
 .today-card{grid-column:1/-1}
 .today-group{border-top:1px solid var(--line);padding-top:.65rem;margin-top:.65rem}
+
+.entry-category{
+ background:#f8fcff;
+ border:1px solid var(--line);
+ border-radius:16px;
+ padding:.65rem .75rem;
+ margin:.55rem 0;
+}
+.entry-category summary{
+ font-weight:900;
+ cursor:pointer;
+ min-height:42px;
+ display:flex;
+ align-items:center;
+}
+.clickable-row{
+ width:100%;
+ text-align:left;
+ background:transparent;
+ color:inherit;
+ border:0;
+ border-bottom:1px solid var(--line);
+ border-radius:0;
+ box-shadow:none;
+ padding:.5rem 0;
+}
+.clickable-row:hover{background:#f6fbff}

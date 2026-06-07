@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Training Tracker</title>
-  <link rel="stylesheet" href="styles.css?v=34">
+  <link rel="stylesheet" href="styles.css?v=35">
 </head>
 <body>
 <header class="app-header">
@@ -57,18 +57,15 @@
         <label>Datum
           <input id="entryDate" type="date" required>
         </label>
-        <label>Kategorie
-          <select id="entryCategory" required></select>
-          <span class="tiny">Für mehrere Kategorien am selben Tag einfach nacheinander speichern.</span>
-        </label>
+        <label class="hidden">Kategorie<select id="entryCategory"></select></label>
         <label>Dauer gesamt (Min., optional)
           <input id="entryDuration" type="number" min="0" step="1">
         </label>
       </div>
 
       <div class="card inner">
-        <h3>Übungen</h3>
-        <p class="small">Angezeigt werden nur Übungen, die im Profil des ausgewählten Hundes aktiv sind.</p>
+        <h3>Übungen nach Kategorie</h3>
+        <p class="small">Alle aktiven Kategorien sind eingeklappt. Öffne die Kategorien und hake an, was trainiert wurde.</p>
         <div id="exerciseList"></div>
       </div>
 
@@ -78,7 +75,7 @@
         <button id="addTreadmillBlock" type="button" class="secondary">Block hinzufügen</button>
       </div>
 
-      <label>Notiz / Fortschritt
+      <label>Notiz / Fortschritt für alle gespeicherten Kategorien
         <textarea id="entryNote" rows="4" placeholder="Kurze Notiz, Fortschritt oder Besonderheit"></textarea>
       </label>
 
@@ -149,7 +146,7 @@
   </section>
 </main>
 
-<script src="app.js?v=34"></script>
-<footer class="version-footer">Training Tracker • V34</footer>
+<script src="app.js?v=35"></script>
+<footer class="version-footer">Training Tracker • V35</footer>
 </body>
 </html>
