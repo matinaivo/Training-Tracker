@@ -519,3 +519,16 @@ function clearAll(){
 }
 function catClass(c){if(c==='IGP Sonstiges'||c==='IGP')return'cat-IGP';if(c==='Basics')return'cat-Basics';return 'cat-'+String(c||'default').replace(/\s+/g,'-').replace(/[^\wäöüÄÖÜß-]/g,'')}
 function shortCat(c){return c==='Unterordnung'?'UO':(c==='IGP Sonstiges'||c==='IGP')?'IGP':c}
+
+function getTrainingType(){
+ const el=document.querySelector('input[name="trainingType"]:checked');
+ return el?el.value:'session';
+}
+document.addEventListener('change',e=>{
+ if(e.target&&e.target.name==='trainingType'){
+   const d=document.getElementById('entryDuration');
+   if(d){
+     d.parentElement.style.display=(getTrainingType()==='walk')?'none':'';
+   }
+ }
+});
