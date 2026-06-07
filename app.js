@@ -18,6 +18,7 @@ const rules={'Laufband':1,'Togo Ball':2,'Wackelbrett':1,'Propriozeptionsbälle':
 const clubSubs=new Set(['Schutzdienst Technik','Schutzdienst aktiv','Revieren','Hürde','Schrägwand','Verbellen']);
 const frequencyOptions=[
  {value:'daily',label:'täglich',days:1},
+ {value:'paused',label:'pausiert',days:999999},
  {value:'2d',label:'alle 2 Tage',days:2},
  {value:'3d',label:'alle 3 Tage',days:3},
  {value:'2w',label:'2× pro Woche',days:4},
@@ -382,7 +383,7 @@ function renderToday(){
  if(todayDog && d && todayDog.value!==d && data.dogs.includes(d)) todayDog.value=d;
  if(!d){todayContent.innerHTML='<div class="card"><h2>Noch kein Hund</h2><p>Bitte lege zuerst einen Hund an.</p></div>';return}
  const groupedDue={}, groupedRecent={};
- allSubs().filter(x=>active(d,x.cat,x.sub)&&!clubSubs.has(x.sub)).forEach(x=>{
+ allSubs().filter(x=>active(d,x.cat,x.sub)&&!clubSubs.has(x.sub)&&getFrequency(d,x.cat,x.sub)!=='paused').forEach(x=>{
    let l=last(d,x.sub), days=l?daysBetween(l.date):999, freq=getFrequency(d,x.cat,x.sub), target=freqDays(freq);
    let item={...x,days,target,freq,overdue:days===999?999:days-target};
    if(days===999 || days>=target){(groupedDue[x.cat]||(groupedDue[x.cat]=[])).push(item)}
@@ -420,7 +421,15 @@ function calendarEntries(){
 }
 
 function last(d,sub){return entries(d).filter(e=>e.exercises.some(x=>x.subcategory===sub)).sort((a,b)=>b.date.localeCompare(a.date))[0]}
-function backup(){let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='training-tracker-backup.json';a.click();URL.revokeObjectURL(a.href)}
+function backup(){
+ let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+ let a=document.createElement('a');
+ let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
+ a.href=URL.createObjectURL(blob);
+ a.download=`training-tracker-backup_${stamp}.json`;
+ a.click();
+ URL.revokeObjectURL(a.href);
+}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='training-tracker-backup.json';a.click();URL.revokeObjectURL(a.href)}
 function importBackup(ev){let f=ev.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{data=normalize(JSON.parse(r.result));save();refresh();toast('Backup importiert.')}catch{toast('Backup konnte nicht gelesen werden.','warn')}};r.readAsText(f)}
 function clearAll(){
  if(!confirm('Alle Daten löschen?'))return;
