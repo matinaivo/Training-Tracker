@@ -7,14 +7,14 @@ const LEGACY_STORAGE_KEYS=[
 ];
 const defaultCategories={
  'Unterordnung':['Fußarbeit','Sitz','Platz','Steh','Vorsitz','Grundposition','Positionswechsel','Kehrtwendungen','Hier'],
- 'Basics':['Futtertreiben','Liegen','Rückruf','Box','Decke','Bett','Clicker-Konditionierung'],
+ 'Basics':['Futtertreiben','Liegen','Rückruf','Boxentraining','Deckentraining','Ruhetraining','Impulskontrolle im Alltag','Clicker-Konditionierung'],
  'Fitness':['Laufband','Togo Ball','Wackelbrett','Propriozeptionsbälle','Cavaletti','Slalomstangen','Pylonen','Balancekissen'],
  'Sonstiges':['Fokus','Medical Training','Maulkorbtraining','Impulskontrolle'],
  'Nasenarbeit':['Fährte','Fährte Abgang','Verloren Suche','Anzeige','Geruchsdifferenzierung','Banknotensuche'],
  'IGP':['Apport','Voraus','Revieren','Hürde','Schrägwand','Verbellen','Schutzdienst Technik','Schutzdienst aktiv'],
  'Tricks':['Tricks allgemein']
 };
-const rules={'Laufband':1,'Togo Ball':2,'Wackelbrett':1,'Propriozeptionsbälle':1,'Balancekissen':1,'Cavaletti':1,'Slalomstangen':1,'Pylonen':1,'Fährte':1,'Fährte Abgang':1,'Verloren Suche':1,'Anzeige':1,'Banknotensuche':1,'Geruchsdifferenzierung':1,'Schutzdienst aktiv':2,'Hürde':1,'Schrägwand':2};
+const rules={'Laufband':1,'Togo Ball':2,'Wackelbrett':1,'Propriozeptionsbälle':1,'Balancekissen':1,'Cavaletti':1,'Slalomstangen':1,'Pylonen':1,'Fährte':1,'Fährte Abgang':1,'Verloren Suche':1,'Anzeige':1,'Geruchsdifferenzierung':1,'Banknotensuche':1,'Schutzdienst aktiv':2,'Hürde':1,'Schrägwand':2};
 const clubSubs=new Set(['Schutzdienst Technik','Schutzdienst aktiv','Revieren','Hürde','Schrägwand','Verbellen']);
 let data=load(), currentMonth=new Date(), selectedDay=null, editingId=null;
 
@@ -55,11 +55,14 @@ function migrateCategoriesAndEntries(d){
   'Gegenstandssuche':'Verloren Suche',
   'Technik':'Schutzdienst Technik',
   'Aktiver Schutzdienst':'Schutzdienst aktiv',
-  'Dehnen / Mobilisation':null
+  'Dehnen / Mobilisation':null,
+  'Box':'Boxentraining',
+  'Decke':'Deckentraining',
+  'Bett':null,
+  'Ruhiges Warten':'Ruhetraining'
  };
  const moveCat={
-  'Rückruf':'Basics',
-  'Clicker-Konditionierung':'Basics',
+  'Rückruf':'Basics','Futtertreiben':'Basics','Liegen':'Basics','Boxentraining':'Basics','Deckentraining':'Basics','Ruhetraining':'Basics','Impulskontrolle im Alltag':'Basics','Clicker-Konditionierung':'Basics',
   'Apport':'IGP','Voraus':'IGP','Revieren':'IGP','Hürde':'IGP','Schrägwand':'IGP','Verbellen':'IGP','Schutzdienst Technik':'IGP','Schutzdienst aktiv':'IGP'
  };
  d.entries=(d.entries||[]).map(e=>{
@@ -68,16 +71,22 @@ function migrateCategoriesAndEntries(d){
      if(!sub)return null;
      let cat=moveCat[sub]||ex.category;
      if(ex.category==='IGP Sonstiges'||ex.category==='Schutzdienst')cat='IGP';
-     if(sub==='Verloren Suche'||sub==='Fährte Abgang'||sub==='Banknotensuche')cat='Nasenarbeit';
+     if(['Verloren Suche','Fährte Abgang','Banknotensuche','Fährte','Anzeige','Geruchsdifferenzierung'].includes(sub))cat='Nasenarbeit';
      return {...ex,category:cat,subcategory:sub};
    }).filter(Boolean);
    if(e.exercises.length){e.category=e.exercises[0].category}
    return e;
  }).filter(e=>e.exercises&&e.exercises.length);
- // Alte Kategorien entfernen und neue Reihenfolge festlegen.
  d.categories=structuredClone(defaultCategories);
 }
 function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}
+function toast(msg,type='ok'){
+ let t=document.getElementById('toast');
+ if(!t){t=document.createElement('div');t.id='toast';document.body.appendChild(t)}
+ t.textContent=msg;t.className='show '+type;
+ clearTimeout(window.__toastTimer);
+ window.__toastTimer=setTimeout(()=>{t.className=''},1800);
+}
 function isoDate(dt){return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`}
 function today(){return isoDate(new Date())}
 function daysBetween(a,b=today()){return Math.floor((new Date(b+'T12:00')-new Date(a+'T12:00'))/86400000)}
@@ -117,21 +126,37 @@ function fillSelects(){
  }
  ['entryCategory','subcategoryCategory'].forEach(id=>{let s=document.getElementById(id),old=s.value;s.innerHTML='';Object.keys(data.categories).forEach(c=>s.add(new Option(c,c)));if(old&&data.categories[old])s.value=old});
 }
-function addDog(){let n=newDogName.value.trim(); if(!n)return; if(data.dogs.includes(n)){alert('Diesen Hund gibt es schon.');return} data.dogs.push(n); ensureProfile(n); newDogName.value=''; save(); refresh(); show('dogs')}
+function addDog(){let n=newDogName.value.trim(); if(!n)return; if(data.dogs.includes(n)){toast('Diesen Hund gibt es schon.','warn');return} data.dogs.push(n); ensureProfile(n); newDogName.value=''; save(); refresh(); show('dogs')}
 function renderDogList(){
  dogList.innerHTML=data.dogs.length?data.dogs.map(d=>`<div class="card"><div class="dog-head"><h2>${esc(d)}</h2><button class="danger" onclick="deleteDog('${attr(d)}')">Löschen</button></div><div class="row"><label>Umbenennen<input id="rename-${attr(d)}" value="${attr(d)}"></label><button class="secondary" onclick="renameDog('${attr(d)}')">Ändern</button></div><p class="small">${entries(d).length} Einträge</p>${renderInlineProfile(d)}</div>`).join(''):'<div class="card"><h2>Noch kein Hund</h2><p>Lege zuerst einen Hund an. Danach erscheint hier automatisch das Trainingsprofil.</p></div>';
+ updateCategoryMasterStates();
 }
 function renderInlineProfile(d){
  ensureProfile(d);
- return `<div class="inline-profile"><h3>Trainingsprofil</h3><p class="small">Nur aktivierte Übungen erscheinen bei „Heute sinnvoll“ und in der Balance.</p><div class="actions"><button type="button" class="secondary" onclick="setAllForDog('${attr(d)}',true)">Alles aktivieren</button><button type="button" class="secondary" onclick="setAllForDog('${attr(d)}',false)">Alles deaktivieren</button></div>${Object.entries(data.categories).map(([cat,subs])=>`<details class="profile-details"><summary>${esc(cat)}</summary>${subs.map(sub=>`<label class="profile-row"><input type="checkbox" ${active(d,cat,sub)?'checked':''} onchange="toggleProfile('${attr(d)}','${attr(cat)}','${attr(sub)}',this.checked)"> ${esc(sub)}</label>`).join('')}</details>`).join('')}</div>`;
+ return `<div class="inline-profile"><h3>Trainingsprofil</h3><p class="small">Aktiviere nur die Übungen, die für diesen Hund relevant sind.</p>${Object.entries(data.categories).map(([cat,subs])=>`<details class="profile-details"><summary><label class="category-master-label" onclick="event.stopPropagation()"><input type="checkbox" class="category-master" data-dog="${attr(d)}" data-cat="${attr(cat)}" onchange="toggleCategoryForDog('${attr(d)}','${attr(cat)}',this.checked)"> ${esc(cat)}</label></summary>${subs.map(sub=>`<label class="profile-row"><input type="checkbox" class="profile-sub" data-dog="${attr(d)}" data-cat="${attr(cat)}" data-sub="${attr(sub)}" ${active(d,cat,sub)?'checked':''} onchange="toggleProfile('${attr(d)}','${attr(cat)}','${attr(sub)}',this.checked)"> ${esc(sub)}</label>`).join('')}</details>`).join('')}</div>`;
 }
-window.renameDog=(old)=>{let neu=document.getElementById('rename-'+old).value.trim(); if(!neu||neu===old)return; if(data.dogs.includes(neu)){alert('Name existiert bereits.');return} data.dogs=data.dogs.map(d=>d===old?neu:d); data.profiles[neu]=data.profiles[old]; delete data.profiles[old]; data.entries.forEach(e=>{if(e.dog===old)e.dog=neu}); save(); refresh()}
+window.renameDog=(old)=>{let neu=document.getElementById('rename-'+old).value.trim(); if(!neu||neu===old)return; if(data.dogs.includes(neu)){toast('Name existiert bereits.','warn');return} data.dogs=data.dogs.map(d=>d===old?neu:d); data.profiles[neu]=data.profiles[old]; delete data.profiles[old]; data.entries.forEach(e=>{if(e.dog===old)e.dog=neu}); save(); refresh()}
 window.deleteDog=(d)=>{let c=entries(d).length;if(!confirm(`Hund "${d}" löschen?${c?`\n\n${c} Einträge werden mit gelöscht.`:''}`))return;if(c&&prompt('Bitte LÖSCHEN eingeben')!=='LÖSCHEN')return;data.dogs=data.dogs.filter(x=>x!==d);delete data.profiles[d];data.entries=data.entries.filter(e=>e.dog!==d);save();refresh()}
 
 function renderProfile(){renderDogList()}
-window.toggleProfile=(d,cat,sub,val)=>{setActive(d,cat,sub,val);renderExercises();renderToday();renderBalance()}
-function setAll(val){/* profile tab removed */}
-window.setAllForDog=(d,val)=>{allSubs().forEach(x=>setActive(d,x.cat,x.sub,val));renderDogList();renderExercises();renderToday();renderBalance()}
+window.toggleProfile=(d,cat,sub,val)=>{
+ setActive(d,cat,sub,val);
+ updateCategoryMasterStates();
+ renderExercises();renderToday();renderBalance();
+}
+window.toggleCategoryForDog=(d,cat,val)=>{
+ (data.categories[cat]||[]).forEach(sub=>setActive(d,cat,sub,val));
+ renderDogList();renderExercises();renderToday();renderBalance();
+}
+function updateCategoryMasterStates(){
+ document.querySelectorAll('.category-master').forEach(cb=>{
+   const d=cb.dataset.dog, cat=cb.dataset.cat, subs=data.categories[cat]||[];
+   const activeCount=subs.filter(sub=>active(d,cat,sub)).length;
+   cb.checked=activeCount===subs.length && subs.length>0;
+   cb.indeterminate=activeCount>0 && activeCount<subs.length;
+ });
+}
+function setAll(val){/* Profile-Reiter entfernt */}
 
 function renderExercises(){let d=entryDog.value||data.dogs[0],cat=entryCategory.value||Object.keys(data.categories)[0]; if(!d){exerciseList.innerHTML='<p>Bitte zuerst Hund anlegen.</p>';return} let subs=(data.categories[cat]||[]).filter(s=>active(d,cat,s)); exerciseList.innerHTML=subs.length?subs.map(s=>`<label class="exercise-row"><input type="checkbox" class="ex" data-cat="${attr(cat)}" data-sub="${attr(s)}" onchange="toggleTreadmill()"> ${esc(s)}</label>`).join(''):'<p>Keine aktive Übung in dieser Kategorie.</p>'; toggleTreadmill()}
 window.toggleTreadmill=()=>{let on=[...document.querySelectorAll('.ex:checked')].some(x=>x.dataset.sub==='Laufband'); treadmillBox.classList.toggle('hidden',!on); if(on&&!document.querySelector('.tm-block'))addTmBlock()}
@@ -139,15 +164,15 @@ function addTmBlock(min='',speed=''){let div=document.createElement('div');div.c
 function saveEntry(ev){
  ev.preventDefault();
  let ex=[...document.querySelectorAll('.ex:checked')].map(x=>({category:x.dataset.cat,subcategory:x.dataset.sub}));
- if(!ex.length){alert('Bitte Übung auswählen.');return}
+ if(!ex.length){toast('Bitte Übung auswählen.','warn');return}
  let keepDog=entryDog.value, keepDate=entryDate.value;
- let payload={dog:entryDog.value,date:entryDate.value,category:entryCategory.value,duration:entryDuration.value,club:entryClub.checked,exercises:ex,treadmill:[...document.querySelectorAll('.tm-block')].map(b=>({minutes:b.querySelector('.tm-min').value,speed:b.querySelector('.tm-speed').value})).filter(x=>x.minutes||x.speed),note:entryNote.value.trim()};
+ let payload={dog:entryDog.value,date:entryDate.value,category:entryCategory.value,duration:entryDuration.value,club:false,exercises:ex,treadmill:[...document.querySelectorAll('.tm-block')].map(b=>({minutes:b.querySelector('.tm-min').value,speed:b.querySelector('.tm-speed').value})).filter(x=>x.minutes||x.speed),note:entryNote.value.trim()};
  if(editingId){
    let i=data.entries.findIndex(e=>e.id===editingId);
    if(i>=0){
      data.entries[i]={...data.entries[i],...payload,updatedAt:new Date().toISOString()};
      save();
-     alert('Eintrag aktualisiert.');
+     toast('Eintrag aktualisiert.');
      resetForm();
      selectedDay=payload.date;
      renderToday();renderCalendar();renderBalance();renderDogList();show('calendar');renderDayDetails();
@@ -156,7 +181,7 @@ function saveEntry(ev){
  }
  data.entries.push({id:crypto.randomUUID(),...payload,createdAt:new Date().toISOString()});
  save();
- alert('Einheit gespeichert. Du kannst direkt eine weitere Kategorie für denselben Tag eintragen.');
+ toast('Einheit gespeichert.');
  clearEntryDetailsKeepDogDate(keepDog, keepDate);
  renderToday();renderCalendar();renderBalance();renderDogList();
 }
@@ -168,7 +193,7 @@ function clearEntryDetailsKeepDogDate(keepDog, keepDate){
  entryDog.value=keepDog;
  entryDate.value=keepDate;
  entryDuration.value='';
- entryClub.checked=false;
+ 
  entryNote.value='';
  treadmillBlocks.innerHTML='';
  treadmillBox.classList.add('hidden');
@@ -182,12 +207,10 @@ function loadEntry(e,dup=false){
  saveEntryBtn.textContent=dup?'Als neuen Eintrag speichern':'Änderungen speichern';
  entryDog.value=e.dog;
  entryCategory.value=e.category;
- // Falls eine Übung im Profil inzwischen deaktiviert wurde, für die Bearbeitung temporär wieder aktivieren.
  (e.exercises||[]).forEach(x=>{ if(!active(e.dog,x.category,x.subcategory)) setActive(e.dog,x.category,x.subcategory,true); });
  renderExercises();
  entryDate.value=dup?today():e.date;
  entryDuration.value=e.duration||'';
- entryClub.checked=!!e.club;
  entryNote.value=e.note||'';
  document.querySelectorAll('.ex').forEach(cb=>cb.checked=e.exercises.some(x=>x.category===cb.dataset.cat&&x.subcategory===cb.dataset.sub));
  treadmillBlocks.innerHTML='';
@@ -207,7 +230,7 @@ function renderDayDetails(){
  dayDetails.innerHTML=head+Object.entries(groups).map(([g,items])=>`<h3>${esc(g)}</h3>${items.map(renderEntry).join('')}`).join('');
 }
 window.closeDay=()=>{selectedDay=null;dayDetails.classList.add('hidden');renderCalendar()}
-function renderEntry(e){return `<div class="entry-card"><b>${esc(e.dog)}</b> <span class="cat-chip ${catClass(e.category)}">${esc(e.category)}</span> ${e.club?'<span class="pill">Hundeplatz</span>':''} ${e.duration?`<span class="pill">${esc(e.duration)} Min</span>`:''}<div>${e.exercises.map(x=>`<span class="pill">${esc(x.subcategory)}</span>`).join('')}</div>${e.treadmill?.length?`<p><b>Laufband:</b> ${e.treadmill.map(b=>`${esc(b.minutes)} Min ${esc(b.speed)} km/h`).join(' | ')}</p>`:''}${e.note?`<p>${esc(e.note)}</p>`:''}<div class="entry-actions"><button class="secondary" onclick="editEntry('${e.id}')">Bearbeiten</button><button class="secondary" onclick="dupEntry('${e.id}')">Duplizieren</button><button class="danger" onclick="delEntry('${e.id}')">Löschen</button></div></div>`}
+function renderEntry(e){return `<div class="entry-card"><b>${esc(e.dog)}</b> <span class="cat-chip ${catClass(e.category)}">${esc(e.category)}</span> ${e.duration?`<span class="pill">${esc(e.duration)} Min</span>`:''}<div>${e.exercises.map(x=>`<span class="pill">${esc(x.subcategory)}</span>`).join('')}</div>${e.treadmill?.length?`<p><b>Laufband:</b> ${e.treadmill.map(b=>`${esc(b.minutes)} Min ${esc(b.speed)} km/h`).join(' | ')}</p>`:''}${e.note?`<p>${esc(e.note)}</p>`:''}<div class="entry-actions"><button class="secondary" onclick="editEntry('${e.id}')">Bearbeiten</button><button class="secondary" onclick="dupEntry('${e.id}')">Duplizieren</button><button class="danger" onclick="delEntry('${e.id}')">Löschen</button></div></div>`}
 window.editEntry=id=>{let e=data.entries.find(x=>x.id===id);if(e)loadEntry(e,false)}
 window.dupEntry=id=>{let e=data.entries.find(x=>x.id===id);if(e)loadEntry(e,true)}
 window.delEntry=id=>{if(confirm('Eintrag löschen?')){data.entries=data.entries.filter(e=>e.id!==id);save();renderCalendar();renderToday();renderBalance()}}
@@ -219,8 +242,8 @@ function renderBalance(){let d=balanceDog.value||data.dogs[0]; if(!d){balanceCon
 function balanceCard(d,cat,compact){let subs=(data.categories[cat]||[]).filter(s=>active(d,cat,s));if(!subs.length)return `<div class="card"><h2>${esc(cat)}</h2><p>Keine aktiven Übungen.</p></div>`;let since=new Date();since.setDate(since.getDate()-30);let si=isoDate(since);let rows=subs.map(s=>{let cnt=entries(d).filter(e=>e.date>=si&&e.exercises.some(x=>x.category===cat&&x.subcategory===s)).length,l=last(d,s),days=l?daysBetween(l.date):999;return{sub:s,cnt,days}}).sort((a,b)=>a.cnt-b.cnt||b.days-a.days);let max=Math.max(1,...rows.map(r=>r.cnt));if(compact)rows=rows.slice(0,6);return `<div class="card"><h2>${esc(cat)} <span class="pill">30 Tage</span></h2><div class="score-list">${rows.map(r=>`<div class="score-row"><span style="flex:1"><b>${esc(r.sub)}</b><br><span class="tiny">${r.cnt}× · zuletzt ${r.days===999?'noch nie':'vor '+r.days+' T.'}</span><div class="bar-wrap"><div class="bar" style="width:${Math.max(4,Math.round(r.cnt/max*100))}%"></div></div></span><span class="pill ${r.cnt===0?'red':r.cnt<=1?'yellow':'green'}">${r.cnt}×</span></div>`).join('')}</div></div>`}
 
 function renderSettings(){categoryList.innerHTML=Object.entries(data.categories).map(([cat,subs])=>`<div class="card"><div class="manage-head"><h2>${esc(cat)}</h2><button class="danger" onclick="deleteCategory('${attr(cat)}')">Kategorie löschen</button></div><div class="sub-list">${subs.map(s=>`<span class="pill">${esc(s)}<button class="mini-delete" onclick="deleteSub('${attr(cat)}','${attr(s)}')">×</button></span>`).join('')}</div></div>`).join('')}
-function addCategory(){let c=newCategoryName.value.trim();if(!c)return;if(data.categories[c]){alert('Kategorie existiert bereits.');return}data.categories[c]=[];data.dogs.forEach(ensureProfile);newCategoryName.value='';save();refresh()}
-function addSubcategory(){let c=subcategoryCategory.value,s=newSubcategoryName.value.trim();if(!s)return;if(data.categories[c].includes(s)){alert('Unterkategorie existiert bereits.');return}data.categories[c].push(s);data.dogs.forEach(d=>{ensureProfile(d);data.profiles[d].active[k(c,s)]=true});newSubcategoryName.value='';save();refresh()}
+function addCategory(){let c=newCategoryName.value.trim();if(!c)return;if(data.categories[c]){toast('Kategorie existiert bereits.','warn');return}data.categories[c]=[];data.dogs.forEach(ensureProfile);newCategoryName.value='';save();refresh()}
+function addSubcategory(){let c=subcategoryCategory.value,s=newSubcategoryName.value.trim();if(!s)return;if(data.categories[c].includes(s)){toast('Unterkategorie existiert bereits.','warn');return}data.categories[c].push(s);data.dogs.forEach(d=>{ensureProfile(d);data.profiles[d].active[k(c,s)]=true});newSubcategoryName.value='';save();refresh()}
 window.deleteCategory=c=>{let cnt=data.entries.filter(e=>e.category===c||e.exercises.some(x=>x.category===c)).length;if(!confirm(`Kategorie "${c}" löschen?${cnt?`\n\n${cnt} Einträge nutzen sie.`:''}`))return;if(cnt&&prompt('Bitte LÖSCHEN eingeben')!=='LÖSCHEN')return;delete data.categories[c];Object.values(data.profiles).forEach(p=>Object.keys(p.active).forEach(key=>{if(key.startsWith(c+'||'))delete p.active[key]}));save();refresh()}
 window.deleteSub=(c,s)=>{let cnt=data.entries.filter(e=>e.exercises.some(x=>x.category===c&&x.subcategory===s)).length;if(!confirm(`Unterkategorie "${s}" löschen?${cnt?`\n\n${cnt} Einträge nutzen sie.`:''}`))return;if(cnt&&prompt('Bitte LÖSCHEN eingeben')!=='LÖSCHEN')return;data.categories[c]=data.categories[c].filter(x=>x!==s);Object.values(data.profiles).forEach(p=>delete p.active[k(c,s)]);save();refresh()}
 
@@ -232,7 +255,7 @@ function calendarEntries(){
 
 function last(d,sub){return entries(d).filter(e=>e.exercises.some(x=>x.subcategory===sub)).sort((a,b)=>b.date.localeCompare(a.date))[0]}
 function backup(){let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='training-tracker-backup.json';a.click();URL.revokeObjectURL(a.href)}
-function importBackup(ev){let f=ev.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{data=normalize(JSON.parse(r.result));save();refresh();alert('Backup importiert.')}catch{alert('Backup konnte nicht gelesen werden.')}};r.readAsText(f)}
+function importBackup(ev){let f=ev.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{data=normalize(JSON.parse(r.result));save();refresh();toast('Backup importiert.')}catch{toast('Backup konnte nicht gelesen werden.','warn')}};r.readAsText(f)}
 function clearAll(){
  if(!confirm('Alle Daten löschen?'))return;
  if(prompt('Bitte LÖSCHEN eingeben')!=='LÖSCHEN')return;
@@ -244,7 +267,7 @@ function clearAll(){
  selectedDay=null;
  refresh();
  show('dogs');
- alert('Alle App-Daten und alte Speicherstände wurden gelöscht.');
+ toast('Alle App-Daten gelöscht.');
 }
-function catClass(c){if(c==='IGP Sonstiges'||c==='IGP')return'cat-IGP';return 'cat-'+String(c||'default').replace(/\s+/g,'-').replace(/[^\wäöüÄÖÜß-]/g,'')}
-function shortCat(c){return c==='Unterordnung'?'UO':(c==='IGP Sonstiges'||c==='IGP')?'IGP':c==='Schutzdienst'?'SD':c}
+function catClass(c){if(c==='IGP Sonstiges'||c==='IGP')return'cat-IGP';if(c==='Basics')return'cat-Basics';return 'cat-'+String(c||'default').replace(/\s+/g,'-').replace(/[^\wäöüÄÖÜß-]/g,'')}
+function shortCat(c){return c==='Unterordnung'?'UO':(c==='IGP Sonstiges'||c==='IGP')?'IGP':c}
