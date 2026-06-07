@@ -1,7 +1,6 @@
-V60:
-- Echter Migrationsfix fuer leere Hundeliste nach V59.
-- Ursache behoben: Migration bricht nicht mehr bei alten/abweichenden Kategorieeintraegen ab.
-- JSON-Parsefehler und Migrationsfehler werden getrennt behandelt.
-- Hunde/Profile/Eintraege bleiben erhalten; keine automatische Suche in alten Speicherschluesseln.
-- V59-Aenderungen bleiben erhalten.
-- Cache-Busting: app.js/styles.css ?v=60.
+V61:
+- Interne Anzeige wirklich V61.
+- Cache-Busting wirklich ?v=61.
+- Echter Migrationsfix: Migrationsfehler leeren die Hundeliste nicht mehr.
+- Hunde/Profile/Eintraege bleiben erhalten.
+- Kein Durchsuchen alter Speicherschluessel.
