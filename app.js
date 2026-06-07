@@ -291,6 +291,15 @@ function renderExercises(){
  exerciseList.innerHTML=parts.length?parts.join(''):'<p>Für diesen Hund sind keine Übungen aktiv.</p>';
  toggleTreadmill();
 }
+function selectedExercisesByCategory(){
+ const groups={};
+ [...document.querySelectorAll('.ex:checked')].forEach(cb=>{
+   const cat=cb.dataset.cat, sub=cb.dataset.sub;
+   (groups[cat]||(groups[cat]=[])).push({category:cat,subcategory:sub});
+ });
+ return groups;
+}
+
 window.toggleTreadmill=()=>{let on=[...document.querySelectorAll('.ex:checked')].some(x=>x.dataset.sub==='Laufband'); treadmillBox.classList.toggle('hidden',!on); if(on&&!document.querySelector('.tm-block'))addTmBlock()}
 function addTmBlock(min='',speed=''){let div=document.createElement('div');div.className='row tm-block';div.innerHTML=`<label>Minuten<input class="tm-min" type="number" min="0" step="1" value="${attr(min)}"></label><label>km/h<input class="tm-speed" type="number" min="0" step="0.1" value="${attr(speed)}"></label><button type="button" class="secondary" onclick="this.parentElement.remove()">Entfernen</button>`;treadmillBlocks.appendChild(div)}
 function saveEntry(ev){
@@ -321,8 +330,8 @@ function saveEntry(ev){
  toast(cats.length===1?'Einheit gespeichert.':`${cats.length} Kategorien gespeichert.`);
  resetForm();
  selectedDay=keepDate;
- show('calendar');
- renderToday();renderCalendar();renderBalance();renderDogList();renderDayDetails();
+ renderToday();renderCalendar();renderBalance();renderDogList();
+ show('today');
 }
 function resetForm(){editingId=null;formTitle.textContent='Training eintragen';saveEntryBtn.textContent='Speichern';trainingForm.reset();entryDate.value=today();treadmillBlocks.innerHTML='';treadmillBox.classList.add('hidden');fillSelects();renderExercises()}
 function clearEntryDetailsKeepDogDate(keepDog, keepDate){
