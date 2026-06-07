@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Training Tracker</title>
-  <link rel="stylesheet" href="styles.css?v=35">
+  <link rel="stylesheet" href="styles.css?v=36">
 </head>
 <body>
 <header class="app-header">
@@ -58,7 +58,12 @@
           <input id="entryDate" type="date" required>
         </label>
         <label class="hidden">Kategorie<select id="entryCategory"></select></label>
-        <label>Dauer gesamt (Min., optional)
+        <div class="training-type-box">
+          <span class="field-title">Trainingsart</span>
+          <label class="radio-line"><input type="radio" name="trainingType" id="typeSession" value="session" checked> ⏱ Trainingseinheit</label>
+          <label class="radio-line"><input type="radio" name="trainingType" id="typeWalk" value="walk"> 🚶 Während Spaziergang</label>
+        </div>
+        <label id="durationWrap">Dauer gesamt (Min., optional)
           <input id="entryDuration" type="number" min="0" step="1">
         </label>
       </div>
@@ -146,7 +151,7 @@
   </section>
 </main>
 
-<script src="app.js?v=35"></script>
-<footer class="version-footer">Training Tracker • V35</footer>
+<script src="app.js?v=36"></script>
+<footer class="version-footer">Training Tracker • V36</footer>
 </body>
 </html>
