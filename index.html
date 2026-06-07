@@ -17,7 +17,6 @@
 <nav class="tabs">
   <button class="tab active" data-tab="today">Heute</button>
   <button class="tab" data-tab="dogs">Hunde</button>
-  <button class="tab" data-tab="profile">Profile</button>
   <button class="tab" data-tab="add">Eintragen</button>
   <button class="tab" data-tab="calendar">Kalender</button>
   <button class="tab" data-tab="balance">Balance</button>
@@ -47,21 +46,7 @@
       </div>
     </div>
     <div id="dogList" class="grid"></div>
-  </section>
-
-  <section id="profile" class="panel">
-    <div class="toolbar">
-      <label>Hund
-        <select id="profileDog"></select>
-      </label>
-    </div>
-    <div class="card">
-      <h2>Trainingsprofil</h2>
-      <p>Nur aktivierte Übungen werden bei „Heute sinnvoll“ und in der Balance berücksichtigt.</p>
-      <button id="enableAllBtn" class="secondary" type="button">Alles aktivieren</button>
-      <button id="disableAllBtn" class="secondary" type="button">Alles deaktivieren</button>
-    </div>
-    <div id="profileContent" class="grid"></div>
+    <div id="dogProfileInline"></div>
   </section>
 
   <section id="add" class="panel">
@@ -102,7 +87,6 @@
 
       <div class="actions">
         <button id="saveEntryBtn" type="submit">Speichern</button>
-        <button id="resetEntryBtn" type="button" class="secondary">Zurücksetzen</button>
       </div>
     </form>
   </section>
