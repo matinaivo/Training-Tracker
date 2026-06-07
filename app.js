@@ -308,12 +308,13 @@ function saveEntry(ev){
  const cats=Object.keys(groups);
  if(!cats.length){toast('Bitte Übung auswählen.','warn');return}
  let keepDate=entryDate.value;
+ const trainingType=typeof getTrainingType==='function'?getTrainingType():'session';
  const treadmillData=[...document.querySelectorAll('.tm-block')].map(b=>({minutes:b.querySelector('.tm-min').value,speed:b.querySelector('.tm-speed').value})).filter(x=>x.minutes||x.speed);
  if(editingId){
    let i=data.entries.findIndex(e=>e.id===editingId);
    if(i>=0){
      const cat=cats[0];
-     let payload={dog:entryDog.value,date:entryDate.value,category:cat,duration:entryDuration.value,club:false,exercises:groups[cat],treadmill:treadmillData,note:entryNote.value.trim()};
+     let payload={dog:entryDog.value,date:entryDate.value,category:cat,duration:trainingType==='walk'?'':entryDuration.value,trainingType,club:false,exercises:groups[cat],treadmill:treadmillData,note:entryNote.value.trim()};
      data.entries[i]={...data.entries[i],...payload,updatedAt:new Date().toISOString()};
      if(!save())return;
      toast('Eintrag aktualisiert.');
@@ -324,7 +325,7 @@ function saveEntry(ev){
    }
  }
  cats.forEach(cat=>{
-   data.entries.push({id:crypto.randomUUID(),dog:entryDog.value,date:entryDate.value,category:cat,duration:entryDuration.value,club:false,exercises:groups[cat],treadmill:groups[cat].some(x=>x.subcategory==='Laufband')?treadmillData:[],note:entryNote.value.trim(),createdAt:new Date().toISOString()});
+   data.entries.push({id:crypto.randomUUID(),dog:entryDog.value,date:entryDate.value,category:cat,duration:trainingType==='walk'?'':entryDuration.value,trainingType,club:false,exercises:groups[cat],treadmill:groups[cat].some(x=>x.subcategory==='Laufband')?treadmillData:[],note:entryNote.value.trim(),createdAt:new Date().toISOString()});
  });
  if(!save())return;
  toast(cats.length===1?'Einheit gespeichert.':`${cats.length} Kategorien gespeichert.`);
@@ -333,7 +334,7 @@ function saveEntry(ev){
  renderToday();renderCalendar();renderBalance();renderDogList();
  show('today');
 }
-function resetForm(){editingId=null;formTitle.textContent='Training eintragen';saveEntryBtn.textContent='Speichern';trainingForm.reset();entryDate.value=today();treadmillBlocks.innerHTML='';treadmillBox.classList.add('hidden');fillSelects();renderExercises()}
+function resetForm(){editingId=null;formTitle.textContent='Training eintragen';saveEntryBtn.textContent='Speichern';trainingForm.reset(); if(typeof setTrainingType==='function') setTrainingType('session');entryDate.value=today();treadmillBlocks.innerHTML='';treadmillBox.classList.add('hidden');fillSelects();renderExercises()}
 function clearEntryDetailsKeepDogDate(keepDog, keepDate){
  editingId=null;
  formTitle.textContent='Training eintragen';
@@ -360,7 +361,7 @@ function loadEntry(e,dup=false){
  (e.exercises||[]).forEach(x=>{ if(!active(e.dog,x.category,x.subcategory)) setActive(e.dog,x.category,x.subcategory,true); });
  renderExercises();
  entryDate.value=dup?today():e.date;
- entryDuration.value=e.duration||'';
+ entryDuration.value=e.duration||''; if(typeof setTrainingType==='function') setTrainingType(e.trainingType||'session');
  entryNote.value=e.note||'';
  document.querySelectorAll('.ex').forEach(cb=>{
    cb.checked=(e.exercises||[]).some(x=>x.category===cb.dataset.cat&&x.subcategory===cb.dataset.sub);
@@ -376,7 +377,7 @@ function startNewEntryForDate(dateIso){
  show('add');
  formTitle.textContent='Training hinzufügen';
  saveEntryBtn.textContent='Speichern';
- trainingForm.reset();
+ trainingForm.reset(); if(typeof setTrainingType==='function') setTrainingType('session');
  fillSelects();
  const calDog=document.getElementById('calendarDog')?.value || '__all__';
  if(calDog && calDog!=='__all__' && data.dogs.includes(calDog)) entryDog.value=calDog;
@@ -415,36 +416,9 @@ function renderDayDetails(){
  dayDetails.innerHTML=head+Object.entries(groups).map(([g,items])=>`<h3>${esc(g)}</h3>${items.map(renderEntry).join('')}`).join('');
 }
 window.closeDay=()=>{selectedDay=null;dayDetails.classList.add('hidden');renderCalendar()}
-function renderEntry(e){return `<div class="entry-card"><b>${esc(e.dog)}</b> <span class="cat-chip ${catClass(e.category)}">${esc(e.category)}</span> ${e.duration?`<span class="pill">${esc(e.duration)} Min</span>`:''}<div>${e.exercises.map(x=>`<span class="pill">${esc(x.subcategory)}</span>`).join('')}</div>${e.treadmill?.length?`<p><b>Laufband:</b> ${e.treadmill.map(b=>`${esc(b.minutes)} Min ${esc(b.speed)} km/h`).join(' | ')}</p>`:''}${e.note?`<p>${esc(e.note)}</p>`:''}<div class="entry-actions"><button class="secondary" onclick="editEntry('${e.id}')">Bearbeiten</button><button class="secondary" onclick="dupEntry('${e.id}')">Duplizieren</button><button class="danger" onclick="delEntry('${e.id}')">Löschen</button></div></div>`}
-window.editEntry=id=>{let e=data.entries.find(x=>x.id===id);if(e)loadEntry(e,false)}
-window.dupEntry=id=>{let e=data.entries.find(x=>x.id===id);if(e)loadEntry(e,true)}
-window.delEntry=id=>{if(confirm('Eintrag löschen?')){data.entries=data.entries.filter(e=>e.id!==id);save();renderCalendar();renderToday();renderBalance()}}
-
-function renderToday(){
- let d=todayDog.value||getUiState().currentDog||data.dogs[0]; 
- if(todayDog && d && todayDog.value!==d && data.dogs.includes(d)) todayDog.value=d; 
- if(!d){todayContent.innerHTML='<div class="card"><h2>Noch kein Hund</h2><p>Bitte lege zuerst einen Hund an.</p></div>';return}
- const due={}, notDue={}, paused={};
- allSubs().filter(x=>active(d,x.cat,x.sub)&&!clubSubs.has(x.sub)).forEach(x=>{
-   const freq=getFrequency(d,x.cat,x.sub);
-   if(freq==='paused'){
-     (paused[x.cat]||(paused[x.cat]=[])).push({...x,freq});
-     return;
-   }
-   let l=last(d,x.sub), days=l?daysBetween(l.date):999, target=freqDays(freq);
-   let item={...x,days,target,freq,overdue:days===999?999:days-target,dueIn:days===999?0:Math.max(0,target-days)};
-   if(days===999 || days>=target){
-     (due[x.cat]||(due[x.cat]=[])).push(item);
-   }else{
-     (notDue[x.cat]||(notDue[x.cat]=[])).push(item);
-   }
- });
- const catOrder=Object.keys(data.categories);
- Object.values(due).forEach(list=>list.sort((a,b)=>b.overdue-a.overdue || b.days-a.days));
- Object.values(notDue).forEach(list=>list.sort((a,b)=>a.dueIn-b.dueIn || b.days-a.days));
- Object.values(paused).forEach(list=>list.sort((a,b)=>a.sub.localeCompare(b.sub)));
- const dueCount=countGrouped(due), notDueCount=countGrouped(notDue), pausedCount=countGrouped(paused);
- todayContent.innerHTML=`<div class="card today-card"><h2>Heute sinnvoll <span class="pill green">${dueCount}</span></h2><p class="small">Fällige aktive Übungen von ${esc(d)}, sortiert nach Dringlichkeit.</p>${renderTodayGroups(due,catOrder,'due','Aktuell ist nichts fällig.')}</div><div class="card today-card"><h2>Aktuell nicht fällig <span class="pill blue">${notDueCount}</span></h2><p class="small">Diese Übungen werden trainiert, sind nach deiner gewünschten Häufigkeit aber noch nicht dran.</p>${renderTodayGroups(notDue,catOrder,'notdue','Keine aktiven Übungen in automatischer Pause.')}</div><div class="card today-card"><h2>Aktiv pausiert <span class="pill muted-pill">${pausedCount}</span></h2><p class="small">Diese Übungen sind im Profil bewusst auf „pausiert“ gestellt.</p>${renderPausedGroups(paused,catOrder,'Keine aktiv pausierten Übungen.')}</div>`;
+function renderEntry(e){
+ const typeInfo=e.trainingType==='walk'?' <span class="pill">🚶 Spaziergang</span>':(e.trainingType==='session'&&e.duration?` <span class="pill">⏱ ${esc(e.duration)} Min</span>`:(e.duration?` <span class="pill">${esc(e.duration)} Min</span>`:''));
+ return `<div class="entry-card"><b>${esc(e.dog)}</b> <span class="cat-chip ${catClass(e.category)}">${esc(e.category)}</span>${typeInfo}<div>${e.exercises.map(x=>`<span class="pill">${esc(x.subcategory)}</span>`).join('')}</div>${e.treadmill?.length?`<p><b>Laufband:</b> ${e.treadmill.map(b=>`${esc(b.minutes)} Min ${esc(b.speed)} km/h`).join(' | ')}</p>`:''}${e.note?`<p>${esc(e.note)}</p>`:''}<div class="entry-actions"><button class="secondary" onclick="editEntry('${e.id}')">Bearbeiten</button><button class="secondary" onclick="dupEntry('${e.id}')">Duplizieren</button><button class="danger" onclick="delEntry('${e.id}')">Löschen</button></div></div>`;
 }
 
 
@@ -520,15 +494,32 @@ function clearAll(){
 function catClass(c){if(c==='IGP Sonstiges'||c==='IGP')return'cat-IGP';if(c==='Basics')return'cat-Basics';return 'cat-'+String(c||'default').replace(/\s+/g,'-').replace(/[^\wäöüÄÖÜß-]/g,'')}
 function shortCat(c){return c==='Unterordnung'?'UO':(c==='IGP Sonstiges'||c==='IGP')?'IGP':c}
 
+
+
 function getTrainingType(){
  const el=document.querySelector('input[name="trainingType"]:checked');
  return el?el.value:'session';
 }
+function setTrainingType(value){
+ const el=document.querySelector(`input[name="trainingType"][value="${value||'session'}"]`) || document.querySelector('input[name="trainingType"][value="session"]');
+ if(el) el.checked=true;
+ updateTrainingTypeUi();
+}
+function updateTrainingTypeUi(){
+ const wrap=document.getElementById('durationWrap');
+ const duration=document.getElementById('entryDuration');
+ const isWalk=getTrainingType()==='walk';
+ if(wrap) wrap.style.display=isWalk?'none':'';
+ if(isWalk && duration) duration.value='';
+}
 document.addEventListener('change',e=>{
- if(e.target&&e.target.name==='trainingType'){
-   const d=document.getElementById('entryDuration');
-   if(d){
-     d.parentElement.style.display=(getTrainingType()==='walk')?'none':'';
-   }
- }
+ if(e.target&&e.target.name==='trainingType') updateTrainingTypeUi();
+});
+
+function cancelEntry(){
+ resetForm();
+ show('today');
+}
+document.addEventListener('click',e=>{
+ if(e.target&&e.target.id==='cancelEntryBtn') cancelEntry();
 });

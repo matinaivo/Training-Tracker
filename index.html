@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Training Tracker</title>
-  <link rel="stylesheet" href="styles.css?v=39">
+  <link rel="stylesheet" href="styles.css?v=40">
 </head>
 <body>
 <header class="app-header">
@@ -59,7 +59,7 @@
         </label>
         <label class="hidden">Kategorie<select id="entryCategory"></select></label>
         <label>Dauer gesamt (Min., optional)
-          <div class="training-type-box"><label><input type="radio" name="trainingType" value="session" checked> ⏱ Trainingseinheit</label><label><input type="radio" name="trainingType" value="walk"> 🚶 Während Spaziergang</label></div><input id="entryDuration" type="number" min="0" step="1">
+          <div class="training-type-box"><span class="field-title">Trainingsart</span><label class="radio-line"><input type="radio" name="trainingType" value="session" checked> ⏱ Trainingseinheit</label><label class="radio-line"><input type="radio" name="trainingType" value="walk"> 🚶 Während Spaziergang</label></div><span id="durationWrap"><input id="entryDuration" type="number" min="0" step="1"></span>
         </label>
       </div>
 
@@ -81,6 +81,7 @@
 
       <div class="actions">
         <button id="saveEntryBtn" type="submit">Speichern</button>
+        <button id="cancelEntryBtn" type="button" class="secondary">Abbrechen</button>
       </div>
     </form>
   </section>
@@ -146,7 +147,7 @@
   </section>
 </main>
 
-<script src="app.js?v=39"></script>
-<footer class="version-footer">Training Tracker • V39</footer>
+<script src="app.js?v=40"></script>
+<footer class="version-footer">Training Tracker • V40</footer>
 </body>
 </html>

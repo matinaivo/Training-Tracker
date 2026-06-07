@@ -157,3 +157,17 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
  padding:.5rem 0;
 }
 .clickable-row:hover{background:#f6fbff}
+
+.training-type-box{
+ display:flex;
+ flex-direction:column;
+ gap:.35rem;
+ background:#f8fcff;
+ border:1px solid var(--line);
+ border-radius:14px;
+ padding:.65rem .75rem;
+}
+.field-title{font-weight:900}
+.radio-line{font-weight:800;display:flex;gap:.45rem;align-items:center}
+.radio-line input{width:auto;margin:0}
+#durationWrap{display:block}
