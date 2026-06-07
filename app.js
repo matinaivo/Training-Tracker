@@ -119,8 +119,8 @@ function ensureProfileInDataObject(target,dog){
  if(!target.profiles[dog].frequency)target.profiles[dog].frequency={};
  Object.entries(target.categories).flatMap(([cat,subs])=>subs.map(sub=>({cat,sub}))).forEach(({cat,sub})=>{
    const kk=cat+'||'+sub;
-   if(typeof target.profiles[dog].active[kk]!=='boolean')target.profiles[dog].active[kk]=true;
-   if(!target.profiles[dog].frequency[kk])target.profiles[dog].frequency[kk]='daily';
+   if(typeof target.profiles[dog].active[kk]!=='boolean')target.profiles[dog].active[kk]=false;
+   if(!target.profiles[dog].frequency[kk])target.profiles[dog].frequency[kk]='1w';
  });
 }
 function migrateCategoriesAndEntries(d){
@@ -140,7 +140,9 @@ function migrateCategoriesAndEntries(d){
   'Decke':'Deckentraining',
   'Bett':null,
   'Ruhiges Warten':'Ruhetraining',
-  'Impulskontrolle':'Impulskontrolle im Alltag'
+  'Impulskontrolle':'Impulskontrolle im Alltag',
+  'Fokus':null,
+  'Medical Training':'Kooperationssignal'
  };
  const moveCat={
   'Fußarbeit':'BH','180° Kehrtwendung':'BH','Winkel links':'BH','Winkel rechts':'BH','Grundstellung':'BH','Anhalten mit Grundstellung':'BH','Vorsitz':'BH','Abrufen mit Hier':'BH','Sitz':'BH','Platz':'BH','Steh':'BH','Sitz aus der Bewegung':'BH','Platz aus der Bewegung':'BH','Steh aus der Bewegung':'BH','Ablage':'BH','Gruppe':'BH',
@@ -153,14 +155,16 @@ function migrateCategoriesAndEntries(d){
   'Pfote':'Tricks','Pfote links':'Tricks','Pfote rechts':'Tricks','Männchen':'Tricks','Schlafen':'Tricks','Zurück':'Tricks',
   'Sitzen':'Basics','Liegen':'Basics','Down':'Basics','Leg dich hin':'Basics','Rückruf':'Basics','Zu mir':'Basics',"Gib's mir":'Basics','Links':'Basics','Rechts':'Basics',
   'Besitzerorientierung':'Spaziergang','Leinenführigkeit kurze Leine':'Spaziergang','Leinenführigkeit Schleppleine':'Spaziergang','Raus / Auf den Weg':'Spaziergang',
-  'Kooperationssignal':'Medical Training','Medical Training':'Medical Training','Fokus Training Futter':'Medical Training','Fokus Training Objekt':'Medical Training','Maulkorbtraining':'Medical Training','Hochheben':'Medical Training','Fiebermessen':'Medical Training','Krallen schneiden':'Medical Training','Tablettengabe':'Medical Training','Bürsten':'Medical Training','Augentropfen':'Medical Training','Ohrensäubern':'Medical Training',
+  'Kooperationssignal':'Medical Training','Fokus Training Futter':'Medical Training','Fokus Training Objekt':'Medical Training','Maulkorbtraining':'Medical Training','Hochheben':'Medical Training','Fiebermessen':'Medical Training','Krallen schneiden':'Medical Training','Tablettengabe':'Medical Training','Bürsten':'Medical Training','Augentropfen':'Medical Training','Ohrensäubern':'Medical Training',
   'Ruhetraining':'Entspannung','Boxentraining':'Entspannung','Deckentraining':'Entspannung','Entspannungssignal':'Entspannung','Anbinden':'Entspannung','Alleine bleiben':'Entspannung','Warten':'Entspannung'
  };
+ const allowed=new Set(Object.values(defaultCategories).flat());
  d.entries=(d.entries||[]).map(e=>{
    e.exercises=(e.exercises||[]).map(ex=>{
      let sub=renameSub.hasOwnProperty(ex.subcategory)?renameSub[ex.subcategory]:ex.subcategory;
-     if(!sub)return null;
+     if(!sub || !allowed.has(sub))return null;
      let cat=moveCat[sub]||ex.category;
+     if(!defaultCategories[cat])return null;
      return {...ex,category:cat,subcategory:sub};
    }).filter(Boolean);
    if(e.exercises.length){e.category=e.exercises[0].category}
@@ -168,45 +172,17 @@ function migrateCategoriesAndEntries(d){
  }).filter(e=>e.exercises&&e.exercises.length);
  const merged=structuredClone(defaultCategories);
  Object.entries(d.categories||{}).forEach(([cat,subs])=>{
+   if(cat==='Sonstiges')return;
    (subs||[]).forEach(sub=>{
      const renamed=renameSub.hasOwnProperty(sub)?renameSub[sub]:sub;
-     if(!renamed)return;
+     if(!renamed || !allowed.has(renamed))return;
      const targetCat=moveCat[renamed]||cat;
-     if(!merged[targetCat])merged[targetCat]=[];
+     if(!merged[targetCat])return;
      if(!merged[targetCat].includes(renamed))merged[targetCat].push(renamed);
    });
  });
  d.categories=merged;
 }
-function save(){
- try{
-   const serialized=JSON.stringify(data);
-   localStorage.setItem(STORAGE_KEY,serialized);
-   const check=localStorage.getItem(STORAGE_KEY);
-   if(check!==serialized){
-     throw new Error('localStorage verification failed');
-   }
-   window.__lastSaveOk=true;
-   return true;
- }catch(err){
-   console.error('Training Tracker: Speichern fehlgeschlagen.', err);
-   window.__lastSaveOk=false;
-   alert('Speichern fehlgeschlagen. Der Browser verhindert offenbar die lokale Speicherung. Bitte Backup exportieren und Browser/Privatmodus prüfen.');
-   return false;
- }
-}
-function toast(msg,type='ok'){
- let t=document.getElementById('toast');
- if(!t){t=document.createElement('div');t.id='toast';document.body.appendChild(t)}
- t.textContent=msg;t.className='show '+type;
- clearTimeout(window.__toastTimer);
- window.__toastTimer=setTimeout(()=>{t.className=''},1800);
-}
-function isoDate(dt){return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`}
-function today(){return isoDate(new Date())}
-function daysBetween(a,b=today()){return Math.floor((new Date(b+'T12:00')-new Date(a+'T12:00'))/86400000)}
-function allSubs(){return Object.entries(data.categories).flatMap(([cat,subs])=>subs.map(sub=>({cat,sub})))}
-function k(cat,sub){return cat+'||'+sub}
 function ensureProfile(dog){
  if(!dog)return;
  if(!data.profiles[dog])data.profiles[dog]={active:{},frequency:{}};
@@ -214,14 +190,14 @@ function ensureProfile(dog){
  if(!data.profiles[dog].frequency)data.profiles[dog].frequency={};
  allSubs().forEach(x=>{
    const kk=k(x.cat,x.sub);
-   if(typeof data.profiles[dog].active[kk]!=='boolean')data.profiles[dog].active[kk]=true;
-   if(!data.profiles[dog].frequency[kk])data.profiles[dog].frequency[kk]='daily';
+   if(typeof data.profiles[dog].active[kk]!=='boolean')data.profiles[dog].active[kk]=false;
+   if(!data.profiles[dog].frequency[kk])data.profiles[dog].frequency[kk]='1w';
  });
 }
 function active(dog,cat,sub){ensureProfile(dog); return !!data.profiles[dog]?.active?.[k(cat,sub)]}
 function setActive(dog,cat,sub,val){ensureProfile(dog); data.profiles[dog].active[k(cat,sub)]=!!val; save()}
-function getFrequency(dog,cat,sub){ensureProfile(dog); return data.profiles[dog].frequency?.[k(cat,sub)]||'daily'}
-function setFrequency(dog,cat,sub,val){ensureProfile(dog); data.profiles[dog].frequency[k(cat,sub)]=val||'daily'; save()}
+function getFrequency(dog,cat,sub){ensureProfile(dog); return data.profiles[dog].frequency?.[k(cat,sub)]||'1w'}
+function setFrequency(dog,cat,sub,val){ensureProfile(dog); data.profiles[dog].frequency[k(cat,sub)]=val||'1w'; save()}
 function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function attr(s){return esc(s).replace(/'/g,'&#39;')}
 
@@ -543,11 +519,13 @@ function sug(x,cls){return `<div class="score-row"><span><b>${esc(x.sub)}</b><br
 function renderBalance(){let d=balanceDog.value||data.dogs[0]; if(!d){balanceContent.innerHTML='<div class="card">Noch kein Hund.</div>';return} let order=[...categoryBlocks.flatMap(b=>b.categories),...Object.keys(data.categories).filter(c=>!categoryBlocks.flatMap(b=>b.categories).includes(c))]; balanceContent.innerHTML=order.filter(c=>data.categories[c]).map(c=>balanceCard(d,c,false)).join('')}
 function balanceCard(d,cat,compact){let subs=(data.categories[cat]||[]).filter(s=>active(d,cat,s));if(!subs.length)return `<div class="card"><h2>${esc(cat)}</h2><p>Keine aktiven Übungen.</p></div>`;let since=new Date();since.setDate(since.getDate()-30);let si=isoDate(since);let rows=subs.map(s=>{let cnt=entries(d).filter(e=>e.date>=si&&e.exercises.some(x=>x.category===cat&&x.subcategory===s)).length,l=last(d,s),days=l?daysBetween(l.date):999;return{sub:s,cnt,days}}).sort((a,b)=>a.cnt-b.cnt||b.days-a.days);let max=Math.max(1,...rows.map(r=>r.cnt));if(compact)rows=rows.slice(0,6);return `<div class="card"><h2>${esc(cat)} <span class="pill">30 Tage</span></h2><div class="score-list">${rows.map(r=>`<div class="score-row"><span style="flex:1"><b>${esc(r.sub)}</b><br><span class="tiny">${r.cnt}× · zuletzt ${r.days===999?'noch nie':'vor '+r.days+' T.'}</span><div class="bar-wrap"><div class="bar" style="width:${Math.max(4,Math.round(r.cnt/max*100))}%"></div></div></span><span class="pill ${r.cnt===0?'red':r.cnt<=1?'yellow':'green'}">${r.cnt}×</span></div>`).join('')}</div></div>`}
 
-function renderSettings(){categoryList.innerHTML=Object.entries(data.categories).map(([cat,subs])=>`<div class="card"><div class="manage-head"><h2>${esc(cat)}</h2><button class="danger" onclick="deleteCategory('${attr(cat)}')">Kategorie löschen</button></div><div class="sub-list">${subs.map(s=>`<span class="pill">${esc(s)}<button class="mini-delete" onclick="deleteSub('${attr(cat)}','${attr(s)}')">×</button></span>`).join('')}</div></div>`).join('')}
+function renderSettings(){
+ categoryList.innerHTML=Object.entries(data.categories).map(([cat,subs])=>`<details class="settings-category-card"><summary><span>${esc(cat)}</span><button type="button" class="secondary category-edit-btn" onclick="event.preventDefault();this.closest('details').open=true">Bearbeiten</button></summary><div class="settings-sub-list">${subs.map(s=>`<div class="settings-sub-row"><span>${esc(s)}</span><button type="button" class="icon-btn delete" title="Unterkategorie löschen" aria-label="Unterkategorie löschen" onclick="deleteSub('${attr(cat)}','${attr(s)}')">🗑️</button></div>`).join('')}</div><div class="settings-danger-zone"><button type="button" class="danger soft-danger" onclick="deleteCategory('${attr(cat)}')">Kategorie löschen</button></div></details>`).join('');
+}
 function addCategory(){let c=newCategoryName.value.trim();if(!c)return;if(data.categories[c]){toast('Kategorie existiert bereits.','warn');return}data.categories[c]=[];data.dogs.forEach(ensureProfile);newCategoryName.value='';save();refresh()}
-function addSubcategory(){let c=subcategoryCategory.value,s=newSubcategoryName.value.trim();if(!s)return;if(data.categories[c].includes(s)){toast('Unterkategorie existiert bereits.','warn');return}data.categories[c].push(s);data.dogs.forEach(d=>{ensureProfile(d);data.profiles[d].active[k(c,s)]=true});newSubcategoryName.value='';save();refresh()}
-window.deleteCategory=c=>{let cnt=data.entries.filter(e=>e.category===c||e.exercises.some(x=>x.category===c)).length;if(!confirm(`Kategorie "${c}" löschen?${cnt?`\n\n${cnt} Einträge nutzen sie.`:''}`))return;if(cnt&&prompt('Bitte LÖSCHEN eingeben')!=='LÖSCHEN')return;delete data.categories[c];Object.values(data.profiles).forEach(p=>Object.keys(p.active).forEach(key=>{if(key.startsWith(c+'||'))delete p.active[key]}));save();refresh()}
-window.deleteSub=(c,s)=>{let cnt=data.entries.filter(e=>e.exercises.some(x=>x.category===c&&x.subcategory===s)).length;if(!confirm(`Unterkategorie "${s}" löschen?${cnt?`\n\n${cnt} Einträge nutzen sie.`:''}`))return;if(cnt&&prompt('Bitte LÖSCHEN eingeben')!=='LÖSCHEN')return;data.categories[c]=data.categories[c].filter(x=>x!==s);Object.values(data.profiles).forEach(p=>delete p.active[k(c,s)]);save();refresh()}
+function addSubcategory(){let c=subcategoryCategory.value,s=newSubcategoryName.value.trim();if(!s)return;if(data.categories[c].includes(s)){toast('Unterkategorie existiert bereits.','warn');return}data.categories[c].push(s);data.dogs.forEach(d=>{ensureProfile(d);data.profiles[d].active[k(c,s)]=false;data.profiles[d].frequency[k(c,s)]='1w'});newSubcategoryName.value='';save();refresh()}
+window.deleteCategory=c=>{let cnt=data.entries.filter(e=>e.category===c||e.exercises.some(x=>x.category===c)).length;if(!confirm(`Kategorie "${c}" wirklich löschen?\n\nDiese Aktion kann nicht rückgängig gemacht werden.${cnt?`\n\nAchtung: ${cnt} Einträge nutzen diese Kategorie.`:''}`))return;if(cnt&&prompt('Bitte LÖSCHEN eingeben')!=='LÖSCHEN')return;delete data.categories[c];Object.values(data.profiles).forEach(p=>Object.keys(p.active).forEach(key=>{if(key.startsWith(c+'||'))delete p.active[key]}));save();refresh()}
+window.deleteSub=(c,s)=>{let cnt=data.entries.filter(e=>e.exercises.some(x=>x.category===c&&x.subcategory===s)).length;if(!confirm(`Unterkategorie "${s}" wirklich löschen?\n\nDiese Aktion kann nicht rückgängig gemacht werden.${cnt?`\n\nAchtung: ${cnt} Einträge nutzen diese Unterkategorie.`:''}`))return;if(cnt&&prompt('Bitte LÖSCHEN eingeben')!=='LÖSCHEN')return;data.categories[c]=data.categories[c].filter(x=>x!==s);Object.values(data.profiles).forEach(p=>delete p.active[k(c,s)]);save();refresh()}
 
 function entries(d){return data.entries.filter(e=>e.dog===d)}
 function calendarEntries(){

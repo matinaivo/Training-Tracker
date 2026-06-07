@@ -1,8 +1,9 @@
-V58:
-- Neue Kategoriestruktur mit Oberbloecken.
-- Oberbloecke: Hundesport, Training & Aufbau, Alltag & Management.
-- Oberbloecke in Hundeseite und Trainingseingabe einklappbar.
-- Mobile Touchflaechen vergroessert.
-- Kategorien und bestehende Eintraege werden migriert.
-- Basis: stabile V57.
-- Cache-Busting: app.js/styles.css ?v=58.
+V59:
+- Sonstiges inkl. Fokus entfernt.
+- Medical Training-Unterkategorie 'Medical Training' entfernt/zu Kooperationssignal migriert.
+- Neue Übungen standardmäßig nicht aktiv.
+- Neue Trainingshäufigkeit standardmäßig 1x pro Woche.
+- Kategorienübersicht: Löschen erst in Bearbeiten-Ansicht, mit Hinweis und Bestätigung.
+- Kategorie-/Unterkategorie-Löschbuttons optisch an Trainingseinheiten angepasst.
+- Basis: V58.
+- Cache-Busting: app.js/styles.css ?v=59.
