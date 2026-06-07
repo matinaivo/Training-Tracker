@@ -6,16 +6,16 @@ const LEGACY_STORAGE_KEYS=[
  'trainingTrackerStableV1'
 ];
 const defaultCategories={
- 'Unterordnung':['Fußarbeit','Sitz','Platz','Steh','Vorsitz','Positionswechsel','Kehrtwendungen','Abrufen / Rückruf'],
- 'Fitness':['Laufband','Togo Ball','Wackelbrett','Propriozeptionsbälle','Cavaletti','Slalomstangen','Pylonen','Balancekissen','Dehnen / Mobilisation'],
+ 'Unterordnung':['Fußarbeit','Sitz','Platz','Steh','Vorsitz','Grundposition','Positionswechsel','Kehrtwendungen','Hier'],
+ 'Basics':['Futtertreiben','Liegen','Rückruf','Box','Decke','Bett','Clicker-Konditionierung'],
+ 'Fitness':['Laufband','Togo Ball','Wackelbrett','Propriozeptionsbälle','Cavaletti','Slalomstangen','Pylonen','Balancekissen'],
  'Sonstiges':['Fokus','Medical Training','Maulkorbtraining','Impulskontrolle'],
- 'Nasenarbeit':['Fährte','Gegenstandssuche','Anzeige','Geruchsdifferenzierung'],
- 'IGP Sonstiges':['Apport ebenerdig','Hürde','Schrägwand','Revieren','Voraus'],
- 'Schutzdienst':['Technik','Aktiver Schutzdienst'],
+ 'Nasenarbeit':['Fährte','Fährte Abgang','Verloren Suche','Anzeige','Geruchsdifferenzierung','Banknotensuche'],
+ 'IGP':['Apport','Voraus','Revieren','Hürde','Schrägwand','Verbellen','Schutzdienst Technik','Schutzdienst aktiv'],
  'Tricks':['Tricks allgemein']
 };
-const rules={'Laufband':1,'Togo Ball':2,'Wackelbrett':1,'Propriozeptionsbälle':1,'Balancekissen':1,'Cavaletti':1,'Slalomstangen':1,'Pylonen':1,'Fährte':1,'Gegenstandssuche':1,'Anzeige':1,'Geruchsdifferenzierung':1,'Aktiver Schutzdienst':2,'Hürde':1,'Schrägwand':2};
-const clubSubs=new Set(['Technik','Aktiver Schutzdienst','Revieren','Hürde','Schrägwand']);
+const rules={'Laufband':1,'Togo Ball':2,'Wackelbrett':1,'Propriozeptionsbälle':1,'Balancekissen':1,'Cavaletti':1,'Slalomstangen':1,'Pylonen':1,'Fährte':1,'Fährte Abgang':1,'Verloren Suche':1,'Anzeige':1,'Banknotensuche':1,'Geruchsdifferenzierung':1,'Schutzdienst aktiv':2,'Hürde':1,'Schrägwand':2};
+const clubSubs=new Set(['Schutzdienst Technik','Schutzdienst aktiv','Revieren','Hürde','Schrägwand','Verbellen']);
 let data=load(), currentMonth=new Date(), selectedDay=null, editingId=null;
 
 function load(){
@@ -36,7 +36,47 @@ function load(){
    return normalize({});
  }
 }
-function normalize(x){let d={dogs:[],categories:structuredClone(defaultCategories),profiles:{},entries:[],...x}; if(!d.categories)d.categories=structuredClone(defaultCategories); if(!Array.isArray(d.dogs))d.dogs=[]; if(!d.profiles)d.profiles={}; if(!Array.isArray(d.entries))d.entries=[]; d.dogs.forEach(ensureProfile); return d}
+function normalize(x){
+ let d={dogs:[],categories:structuredClone(defaultCategories),profiles:{},entries:[],...x};
+ if(!d.categories)d.categories=structuredClone(defaultCategories);
+ // Struktur-Migration: neue Standardstruktur ergänzen und alte Bezeichnungen in Einträgen aktualisieren.
+ d.categories={...structuredClone(defaultCategories), ...d.categories};
+ migrateCategoriesAndEntries(d);
+ if(!Array.isArray(d.dogs))d.dogs=[];
+ if(!d.profiles)d.profiles={};
+ if(!Array.isArray(d.entries))d.entries=[];
+ d.dogs.forEach(ensureProfile);
+ return d
+}
+function migrateCategoriesAndEntries(d){
+ const renameSub={
+  'Abrufen / Rückruf':'Rückruf',
+  'Apport ebenerdig':'Apport',
+  'Gegenstandssuche':'Verloren Suche',
+  'Technik':'Schutzdienst Technik',
+  'Aktiver Schutzdienst':'Schutzdienst aktiv',
+  'Dehnen / Mobilisation':null
+ };
+ const moveCat={
+  'Rückruf':'Basics',
+  'Clicker-Konditionierung':'Basics',
+  'Apport':'IGP','Voraus':'IGP','Revieren':'IGP','Hürde':'IGP','Schrägwand':'IGP','Verbellen':'IGP','Schutzdienst Technik':'IGP','Schutzdienst aktiv':'IGP'
+ };
+ d.entries=(d.entries||[]).map(e=>{
+   e.exercises=(e.exercises||[]).map(ex=>{
+     let sub=renameSub.hasOwnProperty(ex.subcategory)?renameSub[ex.subcategory]:ex.subcategory;
+     if(!sub)return null;
+     let cat=moveCat[sub]||ex.category;
+     if(ex.category==='IGP Sonstiges'||ex.category==='Schutzdienst')cat='IGP';
+     if(sub==='Verloren Suche'||sub==='Fährte Abgang'||sub==='Banknotensuche')cat='Nasenarbeit';
+     return {...ex,category:cat,subcategory:sub};
+   }).filter(Boolean);
+   if(e.exercises.length){e.category=e.exercises[0].category}
+   return e;
+ }).filter(e=>e.exercises&&e.exercises.length);
+ // Alte Kategorien entfernen und neue Reihenfolge festlegen.
+ d.categories=structuredClone(defaultCategories);
+}
 function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}
 function isoDate(dt){return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`}
 function today(){return isoDate(new Date())}
@@ -136,7 +176,7 @@ window.delEntry=id=>{if(confirm('Eintrag löschen?')){data.entries=data.entries.
 function renderToday(){let d=todayDog.value||data.dogs[0]; if(!d){todayContent.innerHTML='<div class="card"><h2>Noch kein Hund</h2><p>Bitte lege zuerst einen Hund an.</p></div>';return} let good=[],recent=[];allSubs().filter(x=>active(d,x.cat,x.sub)&&!clubSubs.has(x.sub)).forEach(x=>{let l=last(d,x.sub),days=l?daysBetween(l.date):999,p=rules[x.sub]??0;(days<=p?recent:good).push({...x,days})});good.sort((a,b)=>b.days-a.days);recent.sort((a,b)=>a.days-b.days);todayContent.innerHTML=`<div class="card"><h2>Heute sinnvoll</h2><div class="score-list">${good.slice(0,8).map(x=>sug(x,'green')).join('')||'<p>Keine Vorschläge.</p>'}</div></div><div class="card"><h2>Kürzlich trainiert</h2><div class="score-list">${recent.slice(0,8).map(x=>sug(x,'red')).join('')||'<p>Nichts blockiert.</p>'}</div></div>${balanceCard(d,'Fitness',true)}${balanceCard(d,'Unterordnung',true)}`}
 function sug(x,cls){return `<div class="score-row"><span><b>${esc(x.sub)}</b><br><span class="tiny">${esc(x.cat)}</span></span><span class="pill ${cls}">${x.days===999?'noch nie':'vor '+x.days+' T.'}</span></div>`}
 
-function renderBalance(){let d=balanceDog.value||data.dogs[0]; if(!d){balanceContent.innerHTML='<div class="card">Noch kein Hund.</div>';return} let order=['Fitness','Unterordnung','Sonstiges','Nasenarbeit','IGP Sonstiges','Schutzdienst','Tricks',...Object.keys(data.categories).filter(c=>!['Fitness','Unterordnung','Sonstiges','Nasenarbeit','IGP Sonstiges','Schutzdienst','Tricks'].includes(c))]; balanceContent.innerHTML=order.filter(c=>data.categories[c]).map(c=>balanceCard(d,c,false)).join('')}
+function renderBalance(){let d=balanceDog.value||data.dogs[0]; if(!d){balanceContent.innerHTML='<div class="card">Noch kein Hund.</div>';return} let order=['Unterordnung','Basics','Fitness','Sonstiges','Nasenarbeit','IGP','Tricks',...Object.keys(data.categories).filter(c=>!['Unterordnung','Basics','Fitness','Sonstiges','Nasenarbeit','IGP','Tricks'].includes(c))]; balanceContent.innerHTML=order.filter(c=>data.categories[c]).map(c=>balanceCard(d,c,false)).join('')}
 function balanceCard(d,cat,compact){let subs=(data.categories[cat]||[]).filter(s=>active(d,cat,s));if(!subs.length)return `<div class="card"><h2>${esc(cat)}</h2><p>Keine aktiven Übungen.</p></div>`;let since=new Date();since.setDate(since.getDate()-30);let si=isoDate(since);let rows=subs.map(s=>{let cnt=entries(d).filter(e=>e.date>=si&&e.exercises.some(x=>x.category===cat&&x.subcategory===s)).length,l=last(d,s),days=l?daysBetween(l.date):999;return{sub:s,cnt,days}}).sort((a,b)=>a.cnt-b.cnt||b.days-a.days);let max=Math.max(1,...rows.map(r=>r.cnt));if(compact)rows=rows.slice(0,6);return `<div class="card"><h2>${esc(cat)} <span class="pill">30 Tage</span></h2><div class="score-list">${rows.map(r=>`<div class="score-row"><span style="flex:1"><b>${esc(r.sub)}</b><br><span class="tiny">${r.cnt}× · zuletzt ${r.days===999?'noch nie':'vor '+r.days+' T.'}</span><div class="bar-wrap"><div class="bar" style="width:${Math.max(4,Math.round(r.cnt/max*100))}%"></div></div></span><span class="pill ${r.cnt===0?'red':r.cnt<=1?'yellow':'green'}">${r.cnt}×</span></div>`).join('')}</div></div>`}
 
 function renderSettings(){categoryList.innerHTML=Object.entries(data.categories).map(([cat,subs])=>`<div class="card"><div class="manage-head"><h2>${esc(cat)}</h2><button class="danger" onclick="deleteCategory('${attr(cat)}')">Kategorie löschen</button></div><div class="sub-list">${subs.map(s=>`<span class="pill">${esc(s)}<button class="mini-delete" onclick="deleteSub('${attr(cat)}','${attr(s)}')">×</button></span>`).join('')}</div></div>`).join('')}
@@ -150,5 +190,5 @@ function last(d,sub){return entries(d).filter(e=>e.exercises.some(x=>x.subcatego
 function backup(){let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='training-tracker-backup.json';a.click();URL.revokeObjectURL(a.href)}
 function importBackup(ev){let f=ev.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{data=normalize(JSON.parse(r.result));save();refresh();alert('Backup importiert.')}catch{alert('Backup konnte nicht gelesen werden.')}};r.readAsText(f)}
 function clearAll(){if(!confirm('Alle Daten löschen?'))return;if(prompt('Bitte LÖSCHEN eingeben')!=='LÖSCHEN')return;localStorage.removeItem(STORAGE_KEY);data=normalize({});selectedDay=null;refresh();show('dogs')}
-function catClass(c){if(c==='IGP Sonstiges')return'cat-IGP';return 'cat-'+String(c||'default').replace(/\s+/g,'-').replace(/[^\wäöüÄÖÜß-]/g,'')}
-function shortCat(c){return c==='Unterordnung'?'UO':c==='IGP Sonstiges'?'IGP':c==='Schutzdienst'?'SD':c}
+function catClass(c){if(c==='IGP Sonstiges'||c==='IGP')return'cat-IGP';return 'cat-'+String(c||'default').replace(/\s+/g,'-').replace(/[^\wäöüÄÖÜß-]/g,'')}
+function shortCat(c){return c==='Unterordnung'?'UO':(c==='IGP Sonstiges'||c==='IGP')?'IGP':c==='Schutzdienst'?'SD':c}
