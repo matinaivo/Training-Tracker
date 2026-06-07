@@ -6,10 +6,10 @@ const LEGACY_STORAGE_KEYS=[
  'trainingTrackerStableV1'
 ];
 const defaultCategories={
- 'Unterordnung':['Fußarbeit','Sitz','Platz','Steh','Vorsitz','Grundposition','Positionswechsel','Kehrtwendungen','Hier'],
- 'Basics':['Futtertreiben','Liegen','Rückruf','Boxentraining','Deckentraining','Ruhetraining','Impulskontrolle im Alltag','Clicker-Konditionierung'],
+ 'Unterordnung':['Fußarbeit','Sitz','Platz','Down','Steh','Vorsitz','Grundposition','Positionswechsel','Kehrtwendungen','Hier'],
+ 'Basics':['Futtertreiben','Liegen','Sitzen','Rückruf','Boxentraining','Deckentraining','Ruhetraining','Impulskontrolle im Alltag','Clicker-Konditionierung'],
  'Fitness':['Laufband','Togo Ball','Wackelbrett','Propriozeptionsbälle','Cavaletti','Slalomstangen','Pylonen','Balancekissen'],
- 'Sonstiges':['Fokus','Medical Training','Maulkorbtraining','Impulskontrolle'],
+ 'Sonstiges':['Fokus','Medical Training','Maulkorbtraining'],
  'Nasenarbeit':['Fährte','Fährte Abgang','Verloren Suche','Anzeige','Geruchsdifferenzierung','Banknotensuche'],
  'IGP':['Apport','Voraus','Revieren','Hürde','Schrägwand','Verbellen','Schutzdienst Technik','Schutzdienst aktiv'],
  'Tricks':['Tricks allgemein']
@@ -17,6 +17,11 @@ const defaultCategories={
 const rules={'Laufband':1,'Togo Ball':2,'Wackelbrett':1,'Propriozeptionsbälle':1,'Balancekissen':1,'Cavaletti':1,'Slalomstangen':1,'Pylonen':1,'Fährte':1,'Fährte Abgang':1,'Verloren Suche':1,'Anzeige':1,'Geruchsdifferenzierung':1,'Banknotensuche':1,'Schutzdienst aktiv':2,'Hürde':1,'Schrägwand':2};
 const clubSubs=new Set(['Schutzdienst Technik','Schutzdienst aktiv','Revieren','Hürde','Schrägwand','Verbellen']);
 let data=load(), currentMonth=new Date(), selectedDay=null, editingId=null;
+const UI_STATE_KEY='trainingTrackerV27UiState';
+function getUiState(){try{return JSON.parse(localStorage.getItem(UI_STATE_KEY)||'{}')}catch{return {}}}
+function setUiState(patch){const s={...getUiState(),...patch};localStorage.setItem(UI_STATE_KEY,JSON.stringify(s));}
+function rememberSelect(id){const el=document.getElementById(id); if(!el)return; el.addEventListener('change',()=>setUiState({[id]:el.value}));}
+function restoreSelect(id){const el=document.getElementById(id), s=getUiState(); if(el && s[id] && [...el.options].some(o=>o.value===s[id])) el.value=s[id];}
 
 function load(){
  const raw=localStorage.getItem(STORAGE_KEY);
@@ -64,13 +69,13 @@ function migrateCategoriesAndEntries(d){
   'Box':'Boxentraining',
   'Decke':'Deckentraining',
   'Bett':null,
-  'Ruhiges Warten':'Ruhetraining'
+  'Ruhiges Warten':'Ruhetraining',
+  'Impulskontrolle':'Impulskontrolle im Alltag'
  };
  const moveCat={
-  'Rückruf':'Basics','Futtertreiben':'Basics','Liegen':'Basics','Boxentraining':'Basics','Deckentraining':'Basics','Ruhetraining':'Basics','Impulskontrolle im Alltag':'Basics','Clicker-Konditionierung':'Basics',
+  'Rückruf':'Basics','Futtertreiben':'Basics','Liegen':'Basics','Sitzen':'Basics','Boxentraining':'Basics','Deckentraining':'Basics','Ruhetraining':'Basics','Impulskontrolle im Alltag':'Basics','Clicker-Konditionierung':'Basics',
   'Apport':'IGP','Voraus':'IGP','Revieren':'IGP','Hürde':'IGP','Schrägwand':'IGP','Verbellen':'IGP','Schutzdienst Technik':'IGP','Schutzdienst aktiv':'IGP'
  };
-
  d.entries=(d.entries||[]).map(e=>{
    e.exercises=(e.exercises||[]).map(ex=>{
      let sub=renameSub.hasOwnProperty(ex.subcategory)?renameSub[ex.subcategory]:ex.subcategory;
@@ -78,21 +83,20 @@ function migrateCategoriesAndEntries(d){
      let cat=moveCat[sub]||ex.category;
      if(ex.category==='IGP Sonstiges'||ex.category==='Schutzdienst')cat='IGP';
      if(['Verloren Suche','Fährte Abgang','Banknotensuche','Fährte','Anzeige','Geruchsdifferenzierung'].includes(sub))cat='Nasenarbeit';
+     if(sub==='Impulskontrolle im Alltag')cat='Basics';
      return {...ex,category:cat,subcategory:sub};
    }).filter(Boolean);
    if(e.exercises.length){e.category=e.exercises[0].category}
    return e;
  }).filter(e=>e.exercises&&e.exercises.length);
-
- // Standardkategorien aktualisieren, aber eigene Kategorien/Unterkategorien erhalten.
  const merged=structuredClone(defaultCategories);
  Object.entries(d.categories||{}).forEach(([cat,subs])=>{
    if(cat==='IGP Sonstiges'||cat==='Schutzdienst')return;
-   if(!merged[cat])merged[cat]=[];
    (subs||[]).forEach(sub=>{
      const renamed=renameSub.hasOwnProperty(sub)?renameSub[sub]:sub;
      if(!renamed)return;
      const targetCat=moveCat[renamed]||cat;
+     if(targetCat==='Sonstiges' && renamed==='Impulskontrolle')return;
      if(!merged[targetCat])merged[targetCat]=[];
      if(!merged[targetCat].includes(renamed))merged[targetCat].push(renamed);
    });
@@ -140,7 +144,11 @@ document.addEventListener('DOMContentLoaded',()=>{
  entryDate.value=today();
  bind();
  refresh();
- if(!data.dogs.length) show('dogs');
+ ['entryDog','todayDog','balanceDog','calendarDog'].forEach(rememberSelect);
+ const s=getUiState();
+ ['entryDog','todayDog','balanceDog','calendarDog'].forEach(restoreSelect);
+ const tab=s.lastTab && document.getElementById(s.lastTab) ? s.lastTab : (data.dogs.length?'today':'dogs');
+ show(tab);
 });
 function bind(){
  addDogBtn.onclick=addDog;
@@ -149,7 +157,7 @@ function bind(){
  addTreadmillBlock.onclick=()=>addTmBlock(); prevMonth.onclick=()=>{currentMonth.setMonth(currentMonth.getMonth()-1);renderCalendar()}; nextMonth.onclick=()=>{currentMonth.setMonth(currentMonth.getMonth()+1);renderCalendar()};
  addCategoryBtn.onclick=addCategory; addSubcategoryBtn.onclick=addSubcategory; backupBtn.onclick=backup; importFile.onchange=importBackup; clearAllBtn.onclick=clearAll;
 }
-function show(id){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id===id));refresh()}
+function show(id){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id===id));if(id!=='add')setUiState({lastTab:id});refresh()}
 function refresh(){fillSelects();renderDogList();renderProfile();renderExercises();renderToday();renderCalendar();renderBalance();renderSettings();renderStorageStatus()}
 function renderStorageStatus(){
  const box=document.getElementById('storageStatus');
@@ -178,10 +186,10 @@ function renderStorageStatus(){
  }
 }
 function fillSelects(){
- ['entryDog','todayDog','balanceDog'].forEach(id=>{let s=document.getElementById(id),old=s.value;s.innerHTML='';data.dogs.forEach(d=>s.add(new Option(d,d)));if(old&&data.dogs.includes(old))s.value=old});
+ ['entryDog','todayDog','balanceDog'].forEach(id=>{let s=document.getElementById(id),old=s.value||getUiState()[id];s.innerHTML='';data.dogs.forEach(d=>s.add(new Option(d,d)));if(old&&data.dogs.includes(old))s.value=old});
  let cal=document.getElementById('calendarDog');
  if(cal){
-   let old=cal.value || '__all__';
+   let old=cal.value || getUiState().calendarDog || '__all__';
    cal.innerHTML='';
    cal.add(new Option('Alle Hunde','__all__'));
    data.dogs.forEach(d=>cal.add(new Option(d,d)));
@@ -192,11 +200,10 @@ function fillSelects(){
 function addDog(){let n=newDogName.value.trim(); if(!n)return; if(data.dogs.includes(n)){toast('Diesen Hund gibt es schon.','warn');return} data.dogs.push(n); ensureProfile(n); if(!save())return; newDogName.value=''; refresh(); show('dogs'); toast('Hund gespeichert.');renderStorageStatus()}
 function renderDogList(){
  dogList.innerHTML=data.dogs.length?data.dogs.map(d=>`<div class="card"><div class="dog-head"><h2>${esc(d)}</h2><button class="danger" onclick="deleteDog('${attr(d)}')">Löschen</button></div><div class="row"><label>Umbenennen<input id="rename-${attr(d)}" value="${attr(d)}"></label><button class="secondary" onclick="renameDog('${attr(d)}')">Ändern</button></div><p class="small">${entries(d).length} Einträge</p>${renderInlineProfile(d)}</div>`).join(''):'<div class="card"><h2>Noch kein Hund</h2><p>Lege zuerst einen Hund an. Danach erscheint hier automatisch das Trainingsprofil.</p></div>';
- updateCategoryMasterStates();
 }
 function renderInlineProfile(d){
  ensureProfile(d);
- return `<div class="inline-profile"><h3>Trainingsprofil</h3><p class="small">Aktiviere nur die Übungen, die für diesen Hund relevant sind.</p>${Object.entries(data.categories).map(([cat,subs])=>`<details class="profile-details"><summary><label class="category-master-label" onclick="event.stopPropagation()"><input type="checkbox" class="category-master" data-dog="${attr(d)}" data-cat="${attr(cat)}" onchange="toggleCategoryForDog('${attr(d)}','${attr(cat)}',this.checked)"> ${esc(cat)}</label></summary>${subs.map(sub=>`<label class="profile-row"><input type="checkbox" class="profile-sub" data-dog="${attr(d)}" data-cat="${attr(cat)}" data-sub="${attr(sub)}" ${active(d,cat,sub)?'checked':''} onchange="toggleProfile('${attr(d)}','${attr(cat)}','${attr(sub)}',this.checked)"> ${esc(sub)}</label>`).join('')}</details>`).join('')}</div>`;
+ return `<div class="inline-profile"><h3>Trainingsprofil</h3><p class="small">Aktiviere nur die Übungen, die für diesen Hund relevant sind.</p>${Object.entries(data.categories).map(([cat,subs])=>`<details class="profile-details"><summary>${esc(cat)}</summary><div class="profile-category-actions"><button type="button" class="secondary profile-action" onclick="toggleCategoryForDog('${attr(d)}','${attr(cat)}',true)">Alle aktivieren</button><button type="button" class="secondary profile-action" onclick="toggleCategoryForDog('${attr(d)}','${attr(cat)}',false)">Alle deaktivieren</button></div>${subs.map(sub=>`<label class="profile-row"><input type="checkbox" class="profile-sub" data-dog="${attr(d)}" data-cat="${attr(cat)}" data-sub="${attr(sub)}" ${active(d,cat,sub)?'checked':''} onchange="toggleProfile('${attr(d)}','${attr(cat)}','${attr(sub)}',this.checked)"> ${esc(sub)}</label>`).join('')}</details>`).join('')}</div>`;
 }
 window.renameDog=(old)=>{let neu=document.getElementById('rename-'+old).value.trim(); if(!neu||neu===old)return; if(data.dogs.includes(neu)){toast('Name existiert bereits.','warn');return} data.dogs=data.dogs.map(d=>d===old?neu:d); data.profiles[neu]=data.profiles[old]; delete data.profiles[old]; data.entries.forEach(e=>{if(e.dog===old)e.dog=neu}); save(); refresh()}
 window.deleteDog=(d)=>{let c=entries(d).length;if(!confirm(`Hund "${d}" löschen?${c?`\n\n${c} Einträge werden mit gelöscht.`:''}`))return;if(c&&prompt('Bitte LÖSCHEN eingeben')!=='LÖSCHEN')return;data.dogs=data.dogs.filter(x=>x!==d);delete data.profiles[d];data.entries=data.entries.filter(e=>e.dog!==d);save();refresh()}
@@ -204,7 +211,6 @@ window.deleteDog=(d)=>{let c=entries(d).length;if(!confirm(`Hund "${d}" löschen
 function renderProfile(){renderDogList()}
 window.toggleProfile=(d,cat,sub,val)=>{
  setActive(d,cat,sub,val);
- updateCategoryMasterStates();
  renderExercises();renderToday();renderBalance();
  toast('Profil automatisch gespeichert.');
 }
@@ -212,14 +218,6 @@ window.toggleCategoryForDog=(d,cat,val)=>{
  (data.categories[cat]||[]).forEach(sub=>setActive(d,cat,sub,val));
  renderDogList();renderExercises();renderToday();renderBalance();
  toast('Profil automatisch gespeichert.');
-}
-function updateCategoryMasterStates(){
- document.querySelectorAll('.category-master').forEach(cb=>{
-   const d=cb.dataset.dog, cat=cb.dataset.cat, subs=data.categories[cat]||[];
-   const activeCount=subs.filter(sub=>active(d,cat,sub)).length;
-   cb.checked=activeCount===subs.length && subs.length>0;
-   cb.indeterminate=activeCount>0 && activeCount<subs.length;
- });
 }
 function setAll(val){/* Profile-Reiter entfernt */}
 
@@ -236,19 +234,21 @@ function saveEntry(ev){
    let i=data.entries.findIndex(e=>e.id===editingId);
    if(i>=0){
      data.entries[i]={...data.entries[i],...payload,updatedAt:new Date().toISOString()};
-     save();
+     if(!save())return;
      toast('Eintrag aktualisiert.');
      resetForm();
      selectedDay=payload.date;
-     renderToday();renderCalendar();renderBalance();renderDogList();renderStorageStatus();show('calendar');renderDayDetails();
+     renderToday();renderCalendar();renderBalance();renderDogList();show('calendar');renderDayDetails();
      return;
    }
  }
  data.entries.push({id:crypto.randomUUID(),...payload,createdAt:new Date().toISOString()});
- save();
+ if(!save())return;
  toast('Einheit gespeichert.');
- clearEntryDetailsKeepDogDate(keepDog, keepDate);
- renderToday();renderCalendar();renderBalance();renderDogList();renderStorageStatus();
+ resetForm();
+ selectedDay=keepDate;
+ show('calendar');
+ renderToday();renderCalendar();renderBalance();renderDogList();renderDayDetails();
 }
 function resetForm(){editingId=null;formTitle.textContent='Training eintragen';saveEntryBtn.textContent='Speichern';trainingForm.reset();entryDate.value=today();treadmillBlocks.innerHTML='';treadmillBox.classList.add('hidden');fillSelects();renderExercises()}
 function clearEntryDetailsKeepDogDate(keepDog, keepDate){
@@ -277,10 +277,28 @@ function loadEntry(e,dup=false){
  entryDate.value=dup?today():e.date;
  entryDuration.value=e.duration||'';
  entryNote.value=e.note||'';
- document.querySelectorAll('.ex').forEach(cb=>cb.checked=e.exercises.some(x=>x.category===cb.dataset.cat&&x.subcategory===cb.dataset.sub));
+ document.querySelectorAll('.ex').forEach(cb=>{
+   cb.checked=(e.exercises||[]).some(x=>x.category===cb.dataset.cat&&x.subcategory===cb.dataset.sub);
+ });
  treadmillBlocks.innerHTML='';
  (e.treadmill||[]).forEach(b=>addTmBlock(b.minutes,b.speed));
  toggleTreadmill();
+ show('add');
+}
+function startNewEntryForDate(dateIso){
+ editingId=null;
+ formTitle.textContent='Training hinzufügen';
+ saveEntryBtn.textContent='Speichern';
+ trainingForm.reset();
+ fillSelects();
+ const calDog=document.getElementById('calendarDog')?.value || '__all__';
+ if(calDog && calDog!=='__all__' && data.dogs.includes(calDog)) entryDog.value=calDog;
+ else if(getUiState().entryDog && data.dogs.includes(getUiState().entryDog)) entryDog.value=getUiState().entryDog;
+ else if(data.dogs.length) entryDog.value=data.dogs[0];
+ entryDate.value=dateIso || selectedDay || today();
+ treadmillBlocks.innerHTML='';
+ treadmillBox.classList.add('hidden');
+ renderExercises();
  show('add');
 }
 
@@ -288,7 +306,7 @@ function renderCalendar(){let y=currentMonth.getFullYear(),m=currentMonth.getMon
 function renderDayDetails(){
  let es=calendarEntries().filter(e=>e.date===selectedDay).sort((a,b)=>(a.dog||'').localeCompare(b.dog||'')||(a.category||'').localeCompare(b.category||''));
  dayDetails.classList.remove('hidden');
- let head=`<div class="detail-head"><h2>${new Date(selectedDay+'T12:00').toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'})}</h2><button class="secondary" onclick="closeDay()">Zur Monatsübersicht</button></div>`;
+ let head=`<div class="detail-head"><h2>${new Date(selectedDay+'T12:00').toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'})}</h2><button class="secondary" onclick="closeDay()">Zur Monatsübersicht</button></div><div class="actions"><button type="button" onclick="startNewEntryForDate('${selectedDay}')">Training hinzufügen</button></div>`;
  if(!es.length){dayDetails.innerHTML=head+'<p>Kein Training.</p>';return}
  let groups={};
  es.forEach(e=>{let g=e.dog+' · '+e.category;(groups[g]||(groups[g]=[])).push(e)});

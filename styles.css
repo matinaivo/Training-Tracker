@@ -97,3 +97,11 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
  padding:.1rem .3rem;
  border-radius:6px;
 }
+
+.inline-profile{margin-top:1rem;border-top:1px solid var(--line);padding-top:.8rem}
+.profile-details{background:#f8fcff;border:1px solid var(--line);border-radius:16px;padding:.65rem .75rem;margin:.55rem 0}
+.profile-details summary{font-weight:900;cursor:pointer;min-height:42px;display:flex;align-items:center}
+.profile-category-actions{display:flex;gap:.5rem;flex-wrap:wrap;margin:.55rem 0 .35rem}
+.profile-action{min-height:40px}
+.cat-Basics{background:#edf1f4;color:#4d5a66}
+.version-footer{text-align:center;padding:18px;font-size:12px;color:#667789}
