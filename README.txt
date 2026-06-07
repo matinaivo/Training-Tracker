@@ -1,6 +1,8 @@
-V56:
-- Speichern fuehrt wie Abbrechen zur urspruenglichen Ansicht zurueck.
-- Aus Kalender/Tagesansicht gespeicherte Eintraege bleiben in der Tagesansicht.
-- Laufband-Bloecke mobil optisch verbessert.
-- Basis: V55.
-- Cache-Busting: app.js/styles.css ?v=56.
+V58:
+- Neue Kategoriestruktur mit Oberbloecken.
+- Oberbloecke: Hundesport, Training & Aufbau, Alltag & Management.
+- Oberbloecke in Hundeseite und Trainingseingabe einklappbar.
+- Mobile Touchflaechen vergroessert.
+- Kategorien und bestehende Eintraege werden migriert.
+- Basis: stabile V57.
+- Cache-Busting: app.js/styles.css ?v=58.

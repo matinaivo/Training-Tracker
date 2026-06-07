@@ -6,14 +6,30 @@ const LEGACY_STORAGE_KEYS=[
  'trainingTrackerStableV1'
 ];
 const defaultCategories={
- 'Unterordnung':['Fußarbeit','Sitz','Platz','Down','Steh','Vorsitz','Grundposition','Positionswechsel','Kehrtwendungen','Hier'],
- 'Basics':['Futtertreiben','Liegen','Sitzen','Rückruf','Boxentraining','Deckentraining','Ruhetraining','Impulskontrolle im Alltag','Clicker-Konditionierung','Leinenführigkeit kurze Leine','Leinenführigkeit Schleppleine','Besitzerorientierung','Links','Rechts'],
- 'Fitness':['Laufband','Togo Ball','Wackelbrett','Propriozeptionsbälle','Cavaletti','Slalomstangen','Pylonen','Balancekissen'],
- 'Sonstiges':['Fokus','Medical Training','Maulkorbtraining'],
- 'Nasenarbeit':['Fährte','Fährte Abgang','Verloren Suche','Anzeige','Geruchsdifferenzierung','Banknotensuche'],
- 'IGP':['Apport','Voraus','Revieren','Hürde','Schrägwand','Verbellen','Schutzdienst Technik','Schutzdienst aktiv'],
- 'Tricks':['Tricks allgemein']
+ 'BH':['Fußarbeit','180° Kehrtwendung','Winkel links','Winkel rechts','Grundstellung','Anhalten mit Grundstellung','Vorsitz','Abrufen mit Hier','Sitz','Platz','Steh','Sitz aus der Bewegung','Platz aus der Bewegung','Steh aus der Bewegung','Ablage','Gruppe'],
+ 'IGP':['Voraus','Apport ebenerdig','Apport Sprung','Apport Kletterwand','Hürde','Schrägwand'],
+ 'Schutzdienst':['Revieren','Verbellen','Helferfokus','Rückentransport','Seitentransport','Kurze Flucht','Lange Flucht','Angriff aus Bewachung','Überfall aus Transport','Aus'],
+ 'Obedience':['Distanzkontrolle','Box','Richtungsapport','Pylon','Positionswechsel','Identifikation'],
+ 'Nasenarbeit':['Fährte','Fährte Abgang','Verlorensuche','Anzeige','Geruchsdifferenzierung','Banknotensuche'],
+ 'Trainingsmethoden':['Futtertreiben','Clicker-Konditionierung','Nasentarget','Vorderpfotentarget / Vorne','Hinterpfotentarget / Hinten','Ganz drauf','Vier Pfoten'],
+ 'Fitness':['Laufband','Togo Ball','Wackelbrett','Propriozeptionsbälle','Cavaletti','Slalomstangen','Pylonen','Balancekissen','Balancieren'],
+ 'Tricks':['Pfote','Pfote links','Pfote rechts','Männchen','Schlafen','Zurück'],
+ 'Basics':['Sitzen','Liegen','Down','Leg dich hin','Rückruf','Zu mir','Gib\'s mir','Links','Rechts'],
+ 'Spaziergang':['Besitzerorientierung','Leinenführigkeit kurze Leine','Leinenführigkeit Schleppleine','Raus / Auf den Weg'],
+ 'Medical Training':['Kooperationssignal','Fokus Training Futter','Fokus Training Objekt','Maulkorbtraining','Hochheben','Fiebermessen','Krallen schneiden','Tablettengabe','Bürsten','Augentropfen','Ohrensäubern'],
+ 'Entspannung':['Ruhetraining','Boxentraining','Deckentraining','Entspannungssignal','Anbinden','Alleine bleiben','Warten']
 };
+
+const categoryBlocks=[
+ {name:'Hundesport',categories:['BH','IGP','Schutzdienst','Obedience','Nasenarbeit']},
+ {name:'Training & Aufbau',categories:['Trainingsmethoden','Fitness','Tricks']},
+ {name:'Alltag & Management',categories:['Basics','Spaziergang','Medical Training','Entspannung']}
+];
+function blockForCategory(cat){
+ const b=categoryBlocks.find(x=>x.categories.includes(cat));
+ return b?b.name:'Weitere';
+}
+
 const rules={'Laufband':1,'Togo Ball':2,'Wackelbrett':1,'Propriozeptionsbälle':1,'Balancekissen':1,'Cavaletti':1,'Slalomstangen':1,'Pylonen':1,'Fährte':1,'Fährte Abgang':1,'Verloren Suche':1,'Anzeige':1,'Geruchsdifferenzierung':1,'Banknotensuche':1,'Schutzdienst aktiv':2,'Hürde':1,'Schrägwand':2};
 const clubSubs=new Set(['Schutzdienst Technik','Schutzdienst aktiv','Revieren','Hürde','Schrägwand','Verbellen']);
 const frequencyOptions=[
@@ -110,8 +126,13 @@ function ensureProfileInDataObject(target,dog){
 function migrateCategoriesAndEntries(d){
  const renameSub={
   'Abrufen / Rückruf':'Rückruf',
-  'Apport ebenerdig':'Apport',
-  'Gegenstandssuche':'Verloren Suche',
+  'Hier':'Abrufen mit Hier',
+  'Grundposition':'Grundstellung',
+  'Kehrtwendungen':'180° Kehrtwendung',
+  'Apport':'Apport ebenerdig',
+  'Apport ebenerdig':'Apport ebenerdig',
+  'Gegenstandssuche':'Verlorensuche',
+  'Verloren Suche':'Verlorensuche',
   'Technik':'Schutzdienst Technik',
   'Aktiver Schutzdienst':'Schutzdienst aktiv',
   'Dehnen / Mobilisation':null,
@@ -122,17 +143,24 @@ function migrateCategoriesAndEntries(d){
   'Impulskontrolle':'Impulskontrolle im Alltag'
  };
  const moveCat={
-  'Rückruf':'Basics','Futtertreiben':'Basics','Liegen':'Basics','Sitzen':'Basics','Boxentraining':'Basics','Deckentraining':'Basics','Ruhetraining':'Basics','Impulskontrolle im Alltag':'Basics','Clicker-Konditionierung':'Basics',
-  'Apport':'IGP','Voraus':'IGP','Revieren':'IGP','Hürde':'IGP','Schrägwand':'IGP','Verbellen':'IGP','Schutzdienst Technik':'IGP','Schutzdienst aktiv':'IGP'
+  'Fußarbeit':'BH','180° Kehrtwendung':'BH','Winkel links':'BH','Winkel rechts':'BH','Grundstellung':'BH','Anhalten mit Grundstellung':'BH','Vorsitz':'BH','Abrufen mit Hier':'BH','Sitz':'BH','Platz':'BH','Steh':'BH','Sitz aus der Bewegung':'BH','Platz aus der Bewegung':'BH','Steh aus der Bewegung':'BH','Ablage':'BH','Gruppe':'BH',
+  'Voraus':'IGP','Apport ebenerdig':'IGP','Apport Sprung':'IGP','Apport Kletterwand':'IGP','Hürde':'IGP','Schrägwand':'IGP',
+  'Revieren':'Schutzdienst','Verbellen':'Schutzdienst','Helferfokus':'Schutzdienst','Rückentransport':'Schutzdienst','Seitentransport':'Schutzdienst','Kurze Flucht':'Schutzdienst','Lange Flucht':'Schutzdienst','Angriff aus Bewachung':'Schutzdienst','Überfall aus Transport':'Schutzdienst','Aus':'Schutzdienst','Schutzdienst Technik':'Schutzdienst','Schutzdienst aktiv':'Schutzdienst',
+  'Distanzkontrolle':'Obedience','Box':'Obedience','Richtungsapport':'Obedience','Pylon':'Obedience','Positionswechsel':'Obedience','Identifikation':'Obedience',
+  'Fährte':'Nasenarbeit','Fährte Abgang':'Nasenarbeit','Verlorensuche':'Nasenarbeit','Anzeige':'Nasenarbeit','Geruchsdifferenzierung':'Nasenarbeit','Banknotensuche':'Nasenarbeit',
+  'Futtertreiben':'Trainingsmethoden','Clicker-Konditionierung':'Trainingsmethoden','Nasentarget':'Trainingsmethoden','Vorderpfotentarget / Vorne':'Trainingsmethoden','Hinterpfotentarget / Hinten':'Trainingsmethoden','Ganz drauf':'Trainingsmethoden','Vier Pfoten':'Trainingsmethoden',
+  'Laufband':'Fitness','Togo Ball':'Fitness','Wackelbrett':'Fitness','Propriozeptionsbälle':'Fitness','Cavaletti':'Fitness','Slalomstangen':'Fitness','Pylonen':'Fitness','Balancekissen':'Fitness','Balancieren':'Fitness',
+  'Pfote':'Tricks','Pfote links':'Tricks','Pfote rechts':'Tricks','Männchen':'Tricks','Schlafen':'Tricks','Zurück':'Tricks',
+  'Sitzen':'Basics','Liegen':'Basics','Down':'Basics','Leg dich hin':'Basics','Rückruf':'Basics','Zu mir':'Basics',"Gib's mir":'Basics','Links':'Basics','Rechts':'Basics',
+  'Besitzerorientierung':'Spaziergang','Leinenführigkeit kurze Leine':'Spaziergang','Leinenführigkeit Schleppleine':'Spaziergang','Raus / Auf den Weg':'Spaziergang',
+  'Kooperationssignal':'Medical Training','Medical Training':'Medical Training','Fokus Training Futter':'Medical Training','Fokus Training Objekt':'Medical Training','Maulkorbtraining':'Medical Training','Hochheben':'Medical Training','Fiebermessen':'Medical Training','Krallen schneiden':'Medical Training','Tablettengabe':'Medical Training','Bürsten':'Medical Training','Augentropfen':'Medical Training','Ohrensäubern':'Medical Training',
+  'Ruhetraining':'Entspannung','Boxentraining':'Entspannung','Deckentraining':'Entspannung','Entspannungssignal':'Entspannung','Anbinden':'Entspannung','Alleine bleiben':'Entspannung','Warten':'Entspannung'
  };
  d.entries=(d.entries||[]).map(e=>{
    e.exercises=(e.exercises||[]).map(ex=>{
      let sub=renameSub.hasOwnProperty(ex.subcategory)?renameSub[ex.subcategory]:ex.subcategory;
      if(!sub)return null;
      let cat=moveCat[sub]||ex.category;
-     if(ex.category==='IGP Sonstiges'||ex.category==='Schutzdienst')cat='IGP';
-     if(['Verloren Suche','Fährte Abgang','Banknotensuche','Fährte','Anzeige','Geruchsdifferenzierung'].includes(sub))cat='Nasenarbeit';
-     if(sub==='Impulskontrolle im Alltag')cat='Basics';
      return {...ex,category:cat,subcategory:sub};
    }).filter(Boolean);
    if(e.exercises.length){e.category=e.exercises[0].category}
@@ -140,12 +168,10 @@ function migrateCategoriesAndEntries(d){
  }).filter(e=>e.exercises&&e.exercises.length);
  const merged=structuredClone(defaultCategories);
  Object.entries(d.categories||{}).forEach(([cat,subs])=>{
-   if(cat==='IGP Sonstiges'||cat==='Schutzdienst')return;
    (subs||[]).forEach(sub=>{
      const renamed=renameSub.hasOwnProperty(sub)?renameSub[sub]:sub;
      if(!renamed)return;
      const targetCat=moveCat[renamed]||cat;
-     if(targetCat==='Sonstiges' && renamed==='Impulskontrolle')return;
      if(!merged[targetCat])merged[targetCat]=[];
      if(!merged[targetCat].includes(renamed))merged[targetCat].push(renamed);
    });
@@ -267,7 +293,7 @@ function renderDogList(){
 }
 function renderInlineProfile(d){
  ensureProfile(d);
- return `<div class="inline-profile"><h3>Trainingsprofil</h3><p class="small">Aktiviere nur die Übungen, die für diesen Hund relevant sind, und wähle die gewünschte Trainingshäufigkeit.</p>${Object.entries(data.categories).map(([cat,subs])=>`<details class="profile-details"><summary>${esc(cat)}</summary><div class="profile-category-actions"><button type="button" class="secondary profile-action" onclick="toggleCategoryForDog('${attr(d)}','${attr(cat)}',true)">Alle aktivieren</button><button type="button" class="secondary profile-action" onclick="toggleCategoryForDog('${attr(d)}','${attr(cat)}',false)">Alle deaktivieren</button></div>${subs.map(sub=>`<div class="profile-row profile-row-frequency"><label><input type="checkbox" class="profile-sub" data-dog="${attr(d)}" data-cat="${attr(cat)}" data-sub="${attr(sub)}" ${active(d,cat,sub)?'checked':''} onchange="toggleProfile('${attr(d)}','${attr(cat)}','${attr(sub)}',this.checked)"> ${esc(sub)}</label><select class="frequency-select" onchange="changeFrequency('${attr(d)}','${attr(cat)}','${attr(sub)}',this.value)">${frequencyOptions.map(f=>`<option value="${f.value}" ${getFrequency(d,cat,sub)===f.value?'selected':''}>${f.label}</option>`).join('')}</select></div>`).join('')}</details>`).join('')}</div>`;
+ return `<div class="inline-profile"><h3>Trainingsprofil</h3><p class="small">Öffne einen Oberbereich und aktiviere die Übungen, die für diesen Hund relevant sind.</p>${categoryBlocks.map(block=>`<details class="profile-block"><summary>${esc(block.name)}</summary>${block.categories.filter(cat=>data.categories[cat]).map(cat=>`<details class="profile-details"><summary>${esc(cat)}</summary><div class="profile-category-actions"><button type="button" class="secondary profile-action" onclick="toggleCategoryForDog('${attr(d)}','${attr(cat)}',true)">Alle aktivieren</button><button type="button" class="secondary profile-action" onclick="toggleCategoryForDog('${attr(d)}','${attr(cat)}',false)">Alle deaktivieren</button></div>${(data.categories[cat]||[]).map(sub=>`<div class="profile-row profile-row-frequency"><label><input type="checkbox" class="profile-sub" data-dog="${attr(d)}" data-cat="${attr(cat)}" data-sub="${attr(sub)}" ${active(d,cat,sub)?'checked':''} onchange="toggleProfile('${attr(d)}','${attr(cat)}','${attr(sub)}',this.checked)"> ${esc(sub)}</label><select class="frequency-select" onchange="changeFrequency('${attr(d)}','${attr(cat)}','${attr(sub)}',this.value)">${frequencyOptions.map(f=>`<option value="${f.value}" ${getFrequency(d,cat,sub)===f.value?'selected':''}>${f.label}</option>`).join('')}</select></div>`).join('')}</details>`).join('')}</details>`).join('')}</div>`;
 }
 
 window.renameDog=(old)=>{let neu=document.getElementById('rename-'+old).value.trim(); if(!neu||neu===old)return; if(data.dogs.includes(neu)){toast('Name existiert bereits.','warn');return} data.dogs=data.dogs.map(d=>d===old?neu:d); data.profiles[neu]=data.profiles[old]; delete data.profiles[old]; data.entries.forEach(e=>{if(e.dog===old)e.dog=neu}); save(); refresh()}
@@ -294,24 +320,17 @@ function setAll(val){/* Profile-Reiter entfernt */}
 function renderExercises(){
  let d=entryDog.value||data.dogs[0];
  if(!d){exerciseList.innerHTML='<p>Bitte zuerst Hund anlegen.</p>';return}
- const parts=[];
- Object.keys(data.categories).forEach(cat=>{
-   const subs=(data.categories[cat]||[]).filter(s=>active(d,cat,s));
-   if(!subs.length)return;
-   parts.push(`<details class="entry-category"><summary>${esc(cat)}</summary>${subs.map(s=>`<label class="exercise-row"><input type="checkbox" class="ex" data-cat="${attr(cat)}" data-sub="${attr(s)}" onchange="toggleTreadmill()"> ${esc(s)}</label>`).join('')}</details>`);
- });
- exerciseList.innerHTML=parts.length?parts.join(''):'<p>Für diesen Hund sind keine Übungen aktiv.</p>';
+ const blocks=categoryBlocks.map(block=>{
+   const cats=block.categories.filter(cat=>(data.categories[cat]||[]).some(s=>active(d,cat,s)));
+   if(!cats.length)return '';
+   return `<details class="entry-block"><summary>${esc(block.name)}</summary>${cats.map(cat=>{
+     const subs=(data.categories[cat]||[]).filter(s=>active(d,cat,s));
+     return `<details class="entry-category"><summary>${esc(cat)}</summary>${subs.map(s=>`<label class="exercise-row"><input type="checkbox" class="ex" data-cat="${attr(cat)}" data-sub="${attr(s)}" onchange="toggleTreadmill()"> ${esc(s)}</label>`).join('')}</details>`;
+   }).join('')}</details>`;
+ }).filter(Boolean);
+ exerciseList.innerHTML=blocks.length?blocks.join(''):'<p>Für diesen Hund sind keine Übungen aktiv.</p>';
  toggleTreadmill();
 }
-function selectedExercisesByCategory(){
- const groups={};
- [...document.querySelectorAll('.ex:checked')].forEach(cb=>{
-   const cat=cb.dataset.cat, sub=cb.dataset.sub;
-   (groups[cat]||(groups[cat]=[])).push({category:cat,subcategory:sub});
- });
- return groups;
-}
-
 window.toggleTreadmill=()=>{let on=[...document.querySelectorAll('.ex:checked')].some(x=>x.dataset.sub==='Laufband'); treadmillBox.classList.toggle('hidden',!on); if(on&&!document.querySelector('.tm-block'))addTmBlock()}
 function addTmBlock(min='',speed=''){let div=document.createElement('div');div.className='tm-block';div.innerHTML=`<label>Minuten<input class="tm-min" type="number" min="0" step="1" value="${attr(min)}"></label><label>km/h<input class="tm-speed" type="number" min="0" step="0.1" value="${attr(speed)}"></label><button type="button" class="secondary" onclick="this.parentElement.remove()">Entfernen</button>`;treadmillBlocks.appendChild(div)}
 function saveEntry(ev){
@@ -521,7 +540,7 @@ function pausedRow(x){
 }
 function sug(x,cls){return `<div class="score-row"><span><b>${esc(x.sub)}</b><br><span class="tiny">${esc(x.cat)}</span></span><span class="pill ${cls}">${x.days===999?'noch nie':'vor '+x.days+' T.'}</span></div>`}
 
-function renderBalance(){let d=balanceDog.value||data.dogs[0]; if(!d){balanceContent.innerHTML='<div class="card">Noch kein Hund.</div>';return} let order=['Unterordnung','Basics','Fitness','Sonstiges','Nasenarbeit','IGP','Tricks',...Object.keys(data.categories).filter(c=>!['Unterordnung','Basics','Fitness','Sonstiges','Nasenarbeit','IGP','Tricks'].includes(c))]; balanceContent.innerHTML=order.filter(c=>data.categories[c]).map(c=>balanceCard(d,c,false)).join('')}
+function renderBalance(){let d=balanceDog.value||data.dogs[0]; if(!d){balanceContent.innerHTML='<div class="card">Noch kein Hund.</div>';return} let order=[...categoryBlocks.flatMap(b=>b.categories),...Object.keys(data.categories).filter(c=>!categoryBlocks.flatMap(b=>b.categories).includes(c))]; balanceContent.innerHTML=order.filter(c=>data.categories[c]).map(c=>balanceCard(d,c,false)).join('')}
 function balanceCard(d,cat,compact){let subs=(data.categories[cat]||[]).filter(s=>active(d,cat,s));if(!subs.length)return `<div class="card"><h2>${esc(cat)}</h2><p>Keine aktiven Übungen.</p></div>`;let since=new Date();since.setDate(since.getDate()-30);let si=isoDate(since);let rows=subs.map(s=>{let cnt=entries(d).filter(e=>e.date>=si&&e.exercises.some(x=>x.category===cat&&x.subcategory===s)).length,l=last(d,s),days=l?daysBetween(l.date):999;return{sub:s,cnt,days}}).sort((a,b)=>a.cnt-b.cnt||b.days-a.days);let max=Math.max(1,...rows.map(r=>r.cnt));if(compact)rows=rows.slice(0,6);return `<div class="card"><h2>${esc(cat)} <span class="pill">30 Tage</span></h2><div class="score-list">${rows.map(r=>`<div class="score-row"><span style="flex:1"><b>${esc(r.sub)}</b><br><span class="tiny">${r.cnt}× · zuletzt ${r.days===999?'noch nie':'vor '+r.days+' T.'}</span><div class="bar-wrap"><div class="bar" style="width:${Math.max(4,Math.round(r.cnt/max*100))}%"></div></div></span><span class="pill ${r.cnt===0?'red':r.cnt<=1?'yellow':'green'}">${r.cnt}×</span></div>`).join('')}</div></div>`}
 
 function renderSettings(){categoryList.innerHTML=Object.entries(data.categories).map(([cat,subs])=>`<div class="card"><div class="manage-head"><h2>${esc(cat)}</h2><button class="danger" onclick="deleteCategory('${attr(cat)}')">Kategorie löschen</button></div><div class="sub-list">${subs.map(s=>`<span class="pill">${esc(s)}<button class="mini-delete" onclick="deleteSub('${attr(cat)}','${attr(s)}')">×</button></span>`).join('')}</div></div>`).join('')}
