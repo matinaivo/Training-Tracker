@@ -38,6 +38,7 @@ function restoreSelect(id){const el=document.getElementById(id), s=getUiState();
 function dogGroupKey(date,dog){return 'dogGroup_'+date+'_'+dog}
 function isDogGroupCollapsed(date,dog){return !!getUiState()[dogGroupKey(date,dog)]}
 function toggleDogGroup(date,dog){
+ if(date)selectedDay=date;
  const key=dogGroupKey(date,dog);
  const s=getUiState();
  setUiState({[key]:!s[key]});
@@ -211,7 +212,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 function bind(){
  addDogBtn.onclick=addDog;
- todayDog.onchange=()=>syncDogSelection('todayDog'); balanceDog.onchange=()=>syncDogSelection('balanceDog'); calendarDog.onchange=()=>{ if(calendarDog.value==='__all__'){setUiState({calendarDog:'__all__'}); selectedDay=null; renderCalendar();} else syncDogSelection('calendarDog');};
+ todayDog.onchange=()=>syncDogSelection('todayDog'); balanceDog.onchange=()=>syncDogSelection('balanceDog'); calendarDog.onchange=()=>{ if(calendarDog.value==='__all__'){setUiState({calendarDog:'__all__'}); renderCalendar(); if(selectedDay)renderDayDetails();} else {syncDogSelection('calendarDog'); if(selectedDay)renderDayDetails();} };
  entryDog.onchange=()=>syncDogSelection('entryDog'); entryCategory.onchange=renderExercises; trainingForm.onsubmit=saveEntry;
  addTreadmillBlock.onclick=()=>addTmBlock(); prevMonth.onclick=()=>{currentMonth.setMonth(currentMonth.getMonth()-1);renderCalendar()}; nextMonth.onclick=()=>{currentMonth.setMonth(currentMonth.getMonth()+1);renderCalendar()};
  addCategoryBtn.onclick=addCategory; addSubcategoryBtn.onclick=addSubcategory; backupBtn.onclick=backup; importFile.onchange=importBackup; clearAllBtn.onclick=clearAll;
@@ -415,6 +416,7 @@ function startNewEntryForExercise(dateIso,dogName,cat,sub){
 
 function renderCalendar(){let y=currentMonth.getFullYear(),m=currentMonth.getMonth();monthLabel.textContent=currentMonth.toLocaleDateString('de-DE',{month:'long',year:'numeric'});calendarGrid.innerHTML='';['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(w=>calendarGrid.insertAdjacentHTML('beforeend',`<div class="weekday">${w}</div>`));let first=new Date(y,m,1),off=(first.getDay()+6)%7,start=new Date(y,m,1-off);for(let i=0;i<42;i++){let d=new Date(start);d.setDate(start.getDate()+i);let iso=isoDate(d),es=calendarEntries().filter(e=>e.date===iso),cats=[...new Set(es.map(e=>e.category))];let div=document.createElement('div');div.className='day'+(d.getMonth()!==m?' other':'')+(iso===today()?' today':'')+(iso===selectedDay?' selected':'');div.innerHTML=`<div class="day-num">${d.getDate()}</div><div class="calendar-cats">${cats.slice(0,4).map(c=>`<span class="cat-chip ${catClass(c)}">${shortCat(c)}</span>`).join('')}</div>`;div.onclick=()=>{selectedDay=iso;renderCalendar();renderDayDetails()};calendarGrid.appendChild(div)} if(selectedDay)renderDayDetails()}
 function renderDayDetails(){
+ if(!selectedDay){dayDetails.classList.add('hidden');return}
  let es=calendarEntries().filter(e=>e.date===selectedDay).sort((a,b)=>(a.dog||'').localeCompare(b.dog||'')||(a.category||'').localeCompare(b.category||''));
  dayDetails.classList.remove('hidden');
  let head=`<div class="detail-head"><h2>${new Date(selectedDay+'T12:00').toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'})}</h2><button class="secondary" onclick="closeDay()">Zur Monatsübersicht</button></div><div class="actions"><button type="button" onclick="startNewEntryForDate('${selectedDay}')">Training hinzufügen</button></div>`;
