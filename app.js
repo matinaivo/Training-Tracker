@@ -415,27 +415,36 @@ function renderDayDetails(){
  dayDetails.innerHTML=head+Object.entries(groups).map(([g,items])=>`<h3>${esc(g)}</h3>${items.map(renderEntry).join('')}`).join('');
 }
 window.closeDay=()=>{selectedDay=null;dayDetails.classList.add('hidden');renderCalendar()}
-function renderEntry(e){
- const typeInfo=e.trainingType==='walk'
-   ? '<span class="entry-meta">🚶 Spaziergang</span>'
-   : (e.trainingType==='session'&&e.duration
-      ? `<span class="entry-meta">⏱ ${esc(e.duration)} Min.</span>`
-      : (e.duration?`<span class="entry-meta">${esc(e.duration)} Min.</span>`:''));
- const exercises=(e.exercises||[]).map(x=>esc(x.subcategory)).join(' · ');
- const note=e.note?`<div class="entry-note">📝 ${esc(e.note)}</div>`:'';
- const treadmill=e.treadmill?.length?`<div class="entry-note"><b>Laufband:</b> ${e.treadmill.map(b=>`${esc(b.minutes)} Min ${esc(b.speed)} km/h`).join(' · ')}</div>`:'';
- return `<div class="entry-card compact-entry">
-   <div class="entry-top">
-     <div><span class="cat-chip ${catClass(e.category)}">${esc(e.category)}</span> ${typeInfo}</div>
-     <div class="entry-icon-actions">
-       <button class="icon-btn edit" title="Bearbeiten" aria-label="Bearbeiten" onclick="editEntry('${e.id}')">✏️</button>
-       <button class="icon-btn duplicate" title="Duplizieren" aria-label="Duplizieren" onclick="dupEntry('${e.id}')">⧉</button>
-       <button class="icon-btn delete" title="Löschen" aria-label="Löschen" onclick="delEntry('${e.id}')">🗑️</button>
-     </div>
-   </div>
-   <div class="entry-exercises">${exercises}</div>
-   ${treadmill}${note}
- </div>`;
+function renderEntry(e){return `<div class="entry-card"><b>${esc(e.dog)}</b> <span class="cat-chip ${catClass(e.category)}">${esc(e.category)}</span> ${e.duration?`<span class="pill">${esc(e.duration)} Min</span>`:''}<div>${e.exercises.map(x=>`<span class="pill">${esc(x.subcategory)}</span>`).join('')}</div>${e.treadmill?.length?`<p><b>Laufband:</b> ${e.treadmill.map(b=>`${esc(b.minutes)} Min ${esc(b.speed)} km/h`).join(' | ')}</p>`:''}${e.note?`<p>${esc(e.note)}</p>`:''}<div class="entry-actions"><button class="secondary" onclick="editEntry('${e.id}')">Bearbeiten</button><button class="secondary" onclick="dupEntry('${e.id}')">Duplizieren</button><button class="danger" onclick="delEntry('${e.id}')">Löschen</button></div></div>`}
+window.editEntry=id=>{let e=data.entries.find(x=>x.id===id);if(e)loadEntry(e,false)}
+window.dupEntry=id=>{let e=data.entries.find(x=>x.id===id);if(e)loadEntry(e,true)}
+window.delEntry=id=>{if(confirm('Eintrag löschen?')){data.entries=data.entries.filter(e=>e.id!==id);save();renderCalendar();renderToday();renderBalance()}}
+
+function renderToday(){
+ let d=todayDog.value||getUiState().currentDog||data.dogs[0]; 
+ if(todayDog && d && todayDog.value!==d && data.dogs.includes(d)) todayDog.value=d; 
+ if(!d){todayContent.innerHTML='<div class="card"><h2>Noch kein Hund</h2><p>Bitte lege zuerst einen Hund an.</p></div>';return}
+ const due={}, notDue={}, paused={};
+ allSubs().filter(x=>active(d,x.cat,x.sub)&&!clubSubs.has(x.sub)).forEach(x=>{
+   const freq=getFrequency(d,x.cat,x.sub);
+   if(freq==='paused'){
+     (paused[x.cat]||(paused[x.cat]=[])).push({...x,freq});
+     return;
+   }
+   let l=last(d,x.sub), days=l?daysBetween(l.date):999, target=freqDays(freq);
+   let item={...x,days,target,freq,overdue:days===999?999:days-target,dueIn:days===999?0:Math.max(0,target-days)};
+   if(days===999 || days>=target){
+     (due[x.cat]||(due[x.cat]=[])).push(item);
+   }else{
+     (notDue[x.cat]||(notDue[x.cat]=[])).push(item);
+   }
+ });
+ const catOrder=Object.keys(data.categories);
+ Object.values(due).forEach(list=>list.sort((a,b)=>b.overdue-a.overdue || b.days-a.days));
+ Object.values(notDue).forEach(list=>list.sort((a,b)=>a.dueIn-b.dueIn || b.days-a.days));
+ Object.values(paused).forEach(list=>list.sort((a,b)=>a.sub.localeCompare(b.sub)));
+ const dueCount=countGrouped(due), notDueCount=countGrouped(notDue), pausedCount=countGrouped(paused);
+ todayContent.innerHTML=`<div class="card today-card"><h2>Heute sinnvoll <span class="pill green">${dueCount}</span></h2><p class="small">Fällige aktive Übungen von ${esc(d)}, sortiert nach Dringlichkeit.</p>${renderTodayGroups(due,catOrder,'due','Aktuell ist nichts fällig.')}</div><div class="card today-card"><h2>Aktuell nicht fällig <span class="pill blue">${notDueCount}</span></h2><p class="small">Diese Übungen werden trainiert, sind nach deiner gewünschten Häufigkeit aber noch nicht dran.</p>${renderTodayGroups(notDue,catOrder,'notdue','Keine aktiven Übungen in automatischer Pause.')}</div><div class="card today-card"><h2>Aktiv pausiert <span class="pill muted-pill">${pausedCount}</span></h2><p class="small">Diese Übungen sind im Profil bewusst auf „pausiert“ gestellt.</p>${renderPausedGroups(paused,catOrder,'Keine aktiv pausierten Übungen.')}</div>`;
 }
 
 

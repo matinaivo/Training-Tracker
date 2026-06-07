@@ -158,66 +158,29 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
 }
 .clickable-row:hover{background:#f6fbff}
 
-.compact-entry{
- padding:1rem;
-}
-.entry-top{
+
+/* V43 UI polish only */
+.entry-actions{
  display:flex;
- align-items:flex-start;
- justify-content:space-between;
- gap:.75rem;
- margin-bottom:.55rem;
-}
-.entry-meta{
- display:inline-block;
- margin-left:.35rem;
- background:#edf7ff;
- border-radius:999px;
- padding:.18rem .55rem;
- font-weight:800;
- font-size:.88rem;
- color:#31506a;
-}
-.entry-exercises{
- font-weight:800;
- line-height:1.45;
- margin:.4rem 0;
- color:var(--text);
-}
-.entry-note{
- margin-top:.45rem;
- color:#526170;
- line-height:1.35;
-}
-.entry-icon-actions{
- display:flex;
+ justify-content:flex-end;
  gap:.35rem;
- align-items:center;
- flex-shrink:0;
+ margin-top:.6rem;
 }
-.icon-btn{
- border:0;
- background:#eef7ff;
- box-shadow:none;
- border-radius:12px;
- min-width:38px;
- min-height:38px;
- padding:.35rem;
- font-size:1.05rem;
- display:inline-flex;
- align-items:center;
- justify-content:center;
+.entry-actions button{
+ min-width:auto;
+ padding:.45rem .65rem;
 }
-.icon-btn.edit{color:#0057d9}
-.icon-btn.duplicate{color:#23384f}
-.icon-btn.delete{
- color:#d92753;
- background:#fff0f4;
+.entry-actions .danger{
+ background:#fff1f4;
+ color:#d7264d;
 }
-.icon-btn:active{transform:scale(.96)}
-@media(max-width:650px){
- .compact-entry{padding:.85rem}
- .entry-top{gap:.45rem}
- .icon-btn{min-width:34px;min-height:34px}
- .entry-meta{display:inline-block;margin-top:.25rem;margin-left:0}
+.cat-chip{
+ border-radius:999px;
+ font-weight:700;
 }
+.cat-basics{background:#eef1f4;}
+.cat-unterordnung{background:#e8f1ff;}
+.cat-fitness{background:#e9f8ee;}
+.cat-nasenarbeit{background:#fff2df;}
+.cat-igp{background:#ffe7e7;}
+.cat-tricks{background:#f2e8ff;}
