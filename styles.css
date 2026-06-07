@@ -227,3 +227,71 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
 .entry-actions .danger::before{
   color:#d7264d;
 }
+
+/* V48 Tagesansicht: Hundebloecke und kompakte Karten */
+.dog-day-group{
+ background:#f8fcff;
+ border:1px solid var(--line);
+ border-radius:18px;
+ padding:.65rem;
+ margin:.9rem 0;
+}
+.dog-group-head{
+ width:100%;
+ border:0;
+ background:transparent;
+ box-shadow:none;
+ color:var(--text);
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:.6rem;
+ padding:.35rem .25rem .65rem;
+ font-size:1.15rem;
+ font-weight:900;
+}
+.dog-count{
+ background:#edf1f4;
+ color:#4d5a66;
+ border-radius:999px;
+ padding:.18rem .55rem;
+ font-size:.82rem;
+ white-space:nowrap;
+}
+.dog-group-body{display:grid;gap:.55rem}
+.compact-entry{padding:.85rem!important;margin:.45rem 0!important}
+.entry-card-head{
+ display:flex;
+ align-items:flex-start;
+ justify-content:space-between;
+ gap:.6rem;
+ margin-bottom:.4rem;
+}
+.entry-title-line{display:flex;align-items:center;flex-wrap:wrap;gap:.35rem}
+.entry-meta{
+ background:#edf7ff;
+ color:#31506a;
+ border-radius:999px;
+ padding:.18rem .52rem;
+ font-weight:800;
+ font-size:.86rem;
+}
+.entry-exercises{font-weight:800;line-height:1.45;margin:.35rem 0}
+.entry-note{margin-top:.35rem;color:#526170;line-height:1.35}
+.entry-icon-actions{display:flex;gap:.3rem;flex-shrink:0}
+.icon-btn{
+ border:0;
+ box-shadow:none;
+ border-radius:11px;
+ min-width:34px;
+ min-height:34px;
+ padding:.25rem;
+ display:inline-flex;
+ align-items:center;
+ justify-content:center;
+ background:#eef7ff;
+ font-size:1rem;
+}
+.icon-btn.delete{background:#fff1f4;color:#d7264d}
+.icon-btn.duplicate{color:#0057d9}
+.icon-btn.edit{color:#0057d9}
