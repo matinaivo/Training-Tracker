@@ -178,3 +178,52 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
  background:#fff1f4;
  color:#d7264d;
 }
+
+
+/* V45: Aktionen als Icons, nur CSS, keine Logikänderung */
+.entry-actions{
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  gap:.4rem;
+  margin-top:.65rem;
+}
+
+.entry-actions button{
+  width:38px;
+  height:38px;
+  min-width:38px;
+  padding:0;
+  border-radius:12px;
+  font-size:0;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:none;
+}
+
+.entry-actions button::before{
+  font-size:1.05rem;
+  line-height:1;
+}
+
+.entry-actions button:nth-child(1)::before{
+  content:"✏️";
+}
+
+.entry-actions button:nth-child(2)::before{
+  content:"⧉";
+}
+
+.entry-actions button:nth-child(3)::before{
+  content:"🗑️";
+}
+
+.entry-actions .danger{
+  background:#fff1f4;
+  color:#d7264d;
+}
+
+.entry-actions .danger::before{
+  color:#d7264d;
+}
