@@ -443,9 +443,9 @@ function renderEntry(e){
    <div class="entry-card-head">
      <div class="entry-title-line"><span class="cat-chip ${catClass(e.category)}">${esc(e.category)}</span>${typeInfo}</div>
      <div class="entry-icon-actions">
-       <button type="button" class="icon-btn edit" title="Bearbeiten" aria-label="Bearbeiten"  data-entry-action="edit" data-entry-id="${e.id}">✏️</button>
-       <button type="button" class="icon-btn duplicate" title="Duplizieren" aria-label="Duplizieren"  data-entry-action="duplicate" data-entry-id="${e.id}">⧉</button>
-       <button type="button" class="icon-btn delete" title="Löschen" aria-label="Löschen"  data-entry-action="delete" data-entry-id="${e.id}">🗑️</button>
+       <button type="button" class="icon-btn edit" title="Bearbeiten" aria-label="Bearbeiten" onclick="editEntry(&quot;${e.id}&quot;)">✏️</button>
+       <button type="button" class="icon-btn duplicate" title="Duplizieren" aria-label="Duplizieren" onclick="dupEntry(&quot;${e.id}&quot;)">⧉</button>
+       <button type="button" class="icon-btn delete" title="Löschen" aria-label="Löschen" onclick="delEntry(&quot;${e.id}&quot;)">🗑️</button>
      </div>
    </div>
    ${exercises?`<div class="entry-exercises">${exercises}</div>`:''}
@@ -573,15 +573,9 @@ document.addEventListener('click',function(e){
  }
 });
 
-function handleEntryActionClick(ev){
- const btn=ev.target.closest('[data-entry-action]');
- if(!btn)return;
- ev.preventDefault();
- ev.stopPropagation();
- const id=btn.dataset.entryId;
- const action=btn.dataset.entryAction;
- if(action==='edit')editEntry(id);
- if(action==='duplicate')dupEntry(id);
- if(action==='delete')delEntry(id);
-}
-document.addEventListener('click',handleEntryActionClick);
+
+window.editEntry=id=>{let e=data.entries.find(x=>x.id===id);if(e)loadEntry(e,false)}
+
+window.dupEntry=id=>{let e=data.entries.find(x=>x.id===id);if(e)loadEntry(e,true)}
+
+window.delEntry=id=>{if(confirm('Eintrag löschen?')){data.entries=data.entries.filter(e=>e.id!==id);save();renderCalendar();renderToday();renderBalance();if(selectedDay)renderDayDetails();if(selectedDay)renderDayDetails()}}

@@ -1,5 +1,5 @@
-V53:
-- Fix: Icon-Aktionen Bearbeiten, Duplizieren, Löschen funktionieren wieder zuverlässig.
-- Icons nutzen jetzt data-action und einen zentralen Klick-Handler.
-- Basis: V52.
-- Cache-Busting: app.js/styles.css ?v=53.
+V54:
+- Fix: Icon-Buttons haben wieder direkte onclick-Aktionen.
+- Bearbeiten, Duplizieren, Löschen funktionieren wieder.
+- Header-Unterzeile entfernt.
+- Cache-Busting: app.js/styles.css ?v=54.

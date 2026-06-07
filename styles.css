@@ -312,3 +312,16 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
 .entry-icon-actions{
  pointer-events:auto;
 }
+
+/* V54 button fix */
+.icon-btn{
+ pointer-events:auto!important;
+ cursor:pointer!important;
+ position:relative;
+ z-index:3;
+}
+.entry-icon-actions{
+ pointer-events:auto!important;
+ position:relative;
+ z-index:3;
+}
