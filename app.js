@@ -22,6 +22,28 @@ function getUiState(){try{return JSON.parse(localStorage.getItem(UI_STATE_KEY)||
 function setUiState(patch){const s={...getUiState(),...patch};localStorage.setItem(UI_STATE_KEY,JSON.stringify(s));}
 function rememberSelect(id){const el=document.getElementById(id); if(!el)return; el.addEventListener('change',()=>setUiState({[id]:el.value}));}
 function restoreSelect(id){const el=document.getElementById(id), s=getUiState(); if(el && s[id] && [...el.options].some(o=>o.value===s[id])) el.value=s[id];}
+function syncDogSelection(sourceId){
+ const source=document.getElementById(sourceId);
+ if(!source)return;
+ const val=source.value;
+ if(!val || val==='__all__')return;
+ setUiState({currentDog:val, entryDog:val, todayDog:val, balanceDog:val, calendarDog:val});
+ ['entryDog','todayDog','balanceDog','calendarDog'].forEach(id=>{
+   const el=document.getElementById(id);
+   if(el && [...el.options].some(o=>o.value===val)) el.value=val;
+ });
+ renderToday();renderBalance();renderExercises();renderCalendar();
+}
+function restoreGlobalDog(){
+ const s=getUiState();
+ const val=s.currentDog;
+ if(!val || !data.dogs.includes(val))return;
+ ['entryDog','todayDog','balanceDog','calendarDog'].forEach(id=>{
+   const el=document.getElementById(id);
+   if(el && [...el.options].some(o=>o.value===val)) el.value=val;
+ });
+}
+
 
 function load(){
  const raw=localStorage.getItem(STORAGE_KEY);
@@ -147,13 +169,14 @@ document.addEventListener('DOMContentLoaded',()=>{
  ['entryDog','todayDog','balanceDog','calendarDog'].forEach(rememberSelect);
  const s=getUiState();
  ['entryDog','todayDog','balanceDog','calendarDog'].forEach(restoreSelect);
+ restoreGlobalDog();
  const tab=s.lastTab && document.getElementById(s.lastTab) ? s.lastTab : (data.dogs.length?'today':'dogs');
  show(tab);
 });
 function bind(){
  addDogBtn.onclick=addDog;
- todayDog.onchange=renderToday; balanceDog.onchange=renderBalance; calendarDog.onchange=()=>{selectedDay=null;renderCalendar()};
- entryDog.onchange=renderExercises; entryCategory.onchange=renderExercises; trainingForm.onsubmit=saveEntry;
+ todayDog.onchange=()=>syncDogSelection('todayDog'); balanceDog.onchange=()=>syncDogSelection('balanceDog'); calendarDog.onchange=()=>{ if(calendarDog.value==='__all__'){setUiState({calendarDog:'__all__'}); selectedDay=null; renderCalendar();} else syncDogSelection('calendarDog');};
+ entryDog.onchange=()=>syncDogSelection('entryDog'); entryCategory.onchange=renderExercises; trainingForm.onsubmit=saveEntry;
  addTreadmillBlock.onclick=()=>addTmBlock(); prevMonth.onclick=()=>{currentMonth.setMonth(currentMonth.getMonth()-1);renderCalendar()}; nextMonth.onclick=()=>{currentMonth.setMonth(currentMonth.getMonth()+1);renderCalendar()};
  addCategoryBtn.onclick=addCategory; addSubcategoryBtn.onclick=addSubcategory; backupBtn.onclick=backup; importFile.onchange=importBackup; clearAllBtn.onclick=clearAll;
 }
@@ -196,6 +219,8 @@ function fillSelects(){
    if(old==='__all__' || data.dogs.includes(old)) cal.value=old;
  }
  ['entryCategory','subcategoryCategory'].forEach(id=>{let s=document.getElementById(id),old=s.value;s.innerHTML='';Object.keys(data.categories).forEach(c=>s.add(new Option(c,c)));if(old&&data.categories[old])s.value=old});
+
+ restoreGlobalDog();
 }
 function addDog(){let n=newDogName.value.trim(); if(!n)return; if(data.dogs.includes(n)){toast('Diesen Hund gibt es schon.','warn');return} data.dogs.push(n); ensureProfile(n); if(!save())return; newDogName.value=''; refresh(); show('dogs'); toast('Hund gespeichert.');renderStorageStatus()}
 function renderDogList(){
@@ -268,9 +293,11 @@ function clearEntryDetailsKeepDogDate(keepDog, keepDate){
 
 function loadEntry(e,dup=false){
  editingId=dup?null:e.id;
+ show('add');
  formTitle.textContent=dup?'Eintrag duplizieren':'Eintrag bearbeiten';
  saveEntryBtn.textContent=dup?'Als neuen Eintrag speichern':'Änderungen speichern';
  entryDog.value=e.dog;
+ setUiState({currentDog:e.dog, entryDog:e.dog, todayDog:e.dog, balanceDog:e.dog, calendarDog:e.dog});
  entryCategory.value=e.category;
  (e.exercises||[]).forEach(x=>{ if(!active(e.dog,x.category,x.subcategory)) setActive(e.dog,x.category,x.subcategory,true); });
  renderExercises();
@@ -283,23 +310,23 @@ function loadEntry(e,dup=false){
  treadmillBlocks.innerHTML='';
  (e.treadmill||[]).forEach(b=>addTmBlock(b.minutes,b.speed));
  toggleTreadmill();
- show('add');
 }
 function startNewEntryForDate(dateIso){
  editingId=null;
+ show('add');
  formTitle.textContent='Training hinzufügen';
  saveEntryBtn.textContent='Speichern';
  trainingForm.reset();
  fillSelects();
  const calDog=document.getElementById('calendarDog')?.value || '__all__';
  if(calDog && calDog!=='__all__' && data.dogs.includes(calDog)) entryDog.value=calDog;
- else if(getUiState().entryDog && data.dogs.includes(getUiState().entryDog)) entryDog.value=getUiState().entryDog;
+ else if(getUiState().currentDog && data.dogs.includes(getUiState().currentDog)) entryDog.value=getUiState().currentDog;
  else if(data.dogs.length) entryDog.value=data.dogs[0];
+ setUiState({currentDog:entryDog.value, entryDog:entryDog.value, todayDog:entryDog.value, balanceDog:entryDog.value, calendarDog:entryDog.value});
  entryDate.value=dateIso || selectedDay || today();
  treadmillBlocks.innerHTML='';
  treadmillBox.classList.add('hidden');
  renderExercises();
- show('add');
 }
 
 function renderCalendar(){let y=currentMonth.getFullYear(),m=currentMonth.getMonth();monthLabel.textContent=currentMonth.toLocaleDateString('de-DE',{month:'long',year:'numeric'});calendarGrid.innerHTML='';['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(w=>calendarGrid.insertAdjacentHTML('beforeend',`<div class="weekday">${w}</div>`));let first=new Date(y,m,1),off=(first.getDay()+6)%7,start=new Date(y,m,1-off);for(let i=0;i<42;i++){let d=new Date(start);d.setDate(start.getDate()+i);let iso=isoDate(d),es=calendarEntries().filter(e=>e.date===iso),cats=[...new Set(es.map(e=>e.category))];let div=document.createElement('div');div.className='day'+(d.getMonth()!==m?' other':'')+(iso===today()?' today':'')+(iso===selectedDay?' selected':'');div.innerHTML=`<div class="day-num">${d.getDate()}</div><div class="calendar-cats">${cats.slice(0,4).map(c=>`<span class="cat-chip ${catClass(c)}">${shortCat(c)}</span>`).join('')}</div>`;div.onclick=()=>{selectedDay=iso;renderCalendar();renderDayDetails()};calendarGrid.appendChild(div)} if(selectedDay)renderDayDetails()}
@@ -318,7 +345,7 @@ window.editEntry=id=>{let e=data.entries.find(x=>x.id===id);if(e)loadEntry(e,fal
 window.dupEntry=id=>{let e=data.entries.find(x=>x.id===id);if(e)loadEntry(e,true)}
 window.delEntry=id=>{if(confirm('Eintrag löschen?')){data.entries=data.entries.filter(e=>e.id!==id);save();renderCalendar();renderToday();renderBalance()}}
 
-function renderToday(){let d=todayDog.value||data.dogs[0]; if(!d){todayContent.innerHTML='<div class="card"><h2>Noch kein Hund</h2><p>Bitte lege zuerst einen Hund an.</p></div>';return} let good=[],recent=[];allSubs().filter(x=>active(d,x.cat,x.sub)&&!clubSubs.has(x.sub)).forEach(x=>{let l=last(d,x.sub),days=l?daysBetween(l.date):999,p=rules[x.sub]??0;(days<=p?recent:good).push({...x,days})});good.sort((a,b)=>b.days-a.days);recent.sort((a,b)=>a.days-b.days);todayContent.innerHTML=`<div class="card"><h2>Heute sinnvoll</h2><div class="score-list">${good.slice(0,8).map(x=>sug(x,'green')).join('')||'<p>Keine Vorschläge.</p>'}</div></div><div class="card"><h2>Kürzlich trainiert</h2><div class="score-list">${recent.slice(0,8).map(x=>sug(x,'red')).join('')||'<p>Nichts blockiert.</p>'}</div></div>${balanceCard(d,'Fitness',true)}${balanceCard(d,'Unterordnung',true)}`}
+function renderToday(){let d=todayDog.value||getUiState().currentDog||data.dogs[0]; if(todayDog && d && todayDog.value!==d && data.dogs.includes(d)) todayDog.value=d; if(!d){todayContent.innerHTML='<div class="card"><h2>Noch kein Hund</h2><p>Bitte lege zuerst einen Hund an.</p></div>';return} let good=[],recent=[];allSubs().filter(x=>active(d,x.cat,x.sub)&&!clubSubs.has(x.sub)).forEach(x=>{let l=last(d,x.sub),days=l?daysBetween(l.date):999,p=rules[x.sub]??0;(days<=p?recent:good).push({...x,days})});good.sort((a,b)=>b.days-a.days);recent.sort((a,b)=>a.days-b.days);todayContent.innerHTML=`<div class="card"><h2>Heute sinnvoll</h2><div class="score-list">${good.slice(0,8).map(x=>sug(x,'green')).join('')||'<p>Keine Vorschläge.</p>'}</div></div><div class="card"><h2>Kürzlich trainiert</h2><div class="score-list">${recent.slice(0,8).map(x=>sug(x,'red')).join('')||'<p>Nichts blockiert.</p>'}</div></div>${balanceCard(d,'Fitness',true)}${balanceCard(d,'Unterordnung',true)}`}
 function sug(x,cls){return `<div class="score-row"><span><b>${esc(x.sub)}</b><br><span class="tiny">${esc(x.cat)}</span></span><span class="pill ${cls}">${x.days===999?'noch nie':'vor '+x.days+' T.'}</span></div>`}
 
 function renderBalance(){let d=balanceDog.value||data.dogs[0]; if(!d){balanceContent.innerHTML='<div class="card">Noch kein Hund.</div>';return} let order=['Unterordnung','Basics','Fitness','Sonstiges','Nasenarbeit','IGP','Tricks',...Object.keys(data.categories).filter(c=>!['Unterordnung','Basics','Fitness','Sonstiges','Nasenarbeit','IGP','Tricks'].includes(c))]; balanceContent.innerHTML=order.filter(c=>data.categories[c]).map(c=>balanceCard(d,c,false)).join('')}
