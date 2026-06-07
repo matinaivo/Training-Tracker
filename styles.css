@@ -71,3 +71,13 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
  font-size:12px;
  color:#667789;
 }
+
+.storage-status{
+ background:#eef7ff;
+ border:1px solid var(--line);
+ border-radius:14px;
+ padding:.7rem;
+ margin:.6rem 0 1rem;
+ color:#33485c;
+ font-weight:800;
+}

@@ -19,21 +19,14 @@ const clubSubs=new Set(['Schutzdienst Technik','Schutzdienst aktiv','Revieren','
 let data=load(), currentMonth=new Date(), selectedDay=null, editingId=null;
 
 function load(){
+ const raw=localStorage.getItem(STORAGE_KEY);
+ if(!raw) return normalize({});
  try{
-   let raw=localStorage.getItem(STORAGE_KEY);
-   if(!raw){
-     for(const legacyKey of LEGACY_STORAGE_KEYS){
-       const legacy=localStorage.getItem(legacyKey);
-       if(legacy){
-         localStorage.setItem(STORAGE_KEY, legacy);
-         raw=legacy;
-         break;
-       }
-     }
-   }
-   return normalize(JSON.parse(raw||'{}'));
- }catch{
-   return normalize({});
+   return normalize(JSON.parse(raw));
+ }catch(err){
+   console.error('Training Tracker: gespeicherte Daten konnten nicht gelesen werden.', err, raw);
+   window.__storageLoadError=true;
+   return {dogs:[],categories:structuredClone(defaultCategories),profiles:{},entries:[],__loadError:true};
  }
 }
 function normalize(x){
@@ -106,7 +99,23 @@ function migrateCategoriesAndEntries(d){
  });
  d.categories=merged;
 }
-function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}
+function save(){
+ try{
+   const serialized=JSON.stringify(data);
+   localStorage.setItem(STORAGE_KEY,serialized);
+   const check=localStorage.getItem(STORAGE_KEY);
+   if(check!==serialized){
+     throw new Error('localStorage verification failed');
+   }
+   window.__lastSaveOk=true;
+   return true;
+ }catch(err){
+   console.error('Training Tracker: Speichern fehlgeschlagen.', err);
+   window.__lastSaveOk=false;
+   alert('Speichern fehlgeschlagen. Der Browser verhindert offenbar die lokale Speicherung. Bitte Backup exportieren und Browser/Privatmodus prüfen.');
+   return false;
+ }
+}
 function toast(msg,type='ok'){
  let t=document.getElementById('toast');
  if(!t){t=document.createElement('div');t.id='toast';document.body.appendChild(t)}
@@ -126,6 +135,7 @@ function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt
 function attr(s){return esc(s).replace(/'/g,'&#39;')}
 
 document.addEventListener('DOMContentLoaded',()=>{
+ if(data.__loadError){setTimeout(()=>alert('Die gespeicherten App-Daten konnten nicht gelesen werden. Es wurde NICHT absichtlich gelöscht. Bitte Backup importieren oder Screenshot senden.'),300)}
  document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>show(b.dataset.tab));
  entryDate.value=today();
  bind();
@@ -140,7 +150,13 @@ function bind(){
  addCategoryBtn.onclick=addCategory; addSubcategoryBtn.onclick=addSubcategory; backupBtn.onclick=backup; importFile.onchange=importBackup; clearAllBtn.onclick=clearAll;
 }
 function show(id){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id===id));refresh()}
-function refresh(){fillSelects();renderDogList();renderProfile();renderExercises();renderToday();renderCalendar();renderBalance();renderSettings()}
+function refresh(){fillSelects();renderDogList();renderProfile();renderExercises();renderToday();renderCalendar();renderBalance();renderSettings();renderStorageStatus()}
+function renderStorageStatus(){
+ const box=document.getElementById('storageStatus'); if(!box)return;
+ const raw=localStorage.getItem(STORAGE_KEY);
+ let msg=raw ? `Speicher aktiv · ${raw.length} Zeichen · Hunde: ${data.dogs.length} · Einträge: ${data.entries.length}` : 'Noch keine gespeicherten Daten im Browser.';
+ box.textContent=msg;
+}
 function fillSelects(){
  ['entryDog','todayDog','balanceDog'].forEach(id=>{let s=document.getElementById(id),old=s.value;s.innerHTML='';data.dogs.forEach(d=>s.add(new Option(d,d)));if(old&&data.dogs.includes(old))s.value=old});
  let cal=document.getElementById('calendarDog');
@@ -153,7 +169,7 @@ function fillSelects(){
  }
  ['entryCategory','subcategoryCategory'].forEach(id=>{let s=document.getElementById(id),old=s.value;s.innerHTML='';Object.keys(data.categories).forEach(c=>s.add(new Option(c,c)));if(old&&data.categories[old])s.value=old});
 }
-function addDog(){let n=newDogName.value.trim(); if(!n)return; if(data.dogs.includes(n)){toast('Diesen Hund gibt es schon.','warn');return} data.dogs.push(n); ensureProfile(n); newDogName.value=''; save(); refresh(); show('dogs')}
+function addDog(){let n=newDogName.value.trim(); if(!n)return; if(data.dogs.includes(n)){toast('Diesen Hund gibt es schon.','warn');return} data.dogs.push(n); ensureProfile(n); if(!save())return; newDogName.value=''; refresh(); show('dogs'); toast('Hund gespeichert.')}
 function renderDogList(){
  dogList.innerHTML=data.dogs.length?data.dogs.map(d=>`<div class="card"><div class="dog-head"><h2>${esc(d)}</h2><button class="danger" onclick="deleteDog('${attr(d)}')">Löschen</button></div><div class="row"><label>Umbenennen<input id="rename-${attr(d)}" value="${attr(d)}"></label><button class="secondary" onclick="renameDog('${attr(d)}')">Ändern</button></div><p class="small">${entries(d).length} Einträge</p>${renderInlineProfile(d)}</div>`).join(''):'<div class="card"><h2>Noch kein Hund</h2><p>Lege zuerst einen Hund an. Danach erscheint hier automatisch das Trainingsprofil.</p></div>';
  updateCategoryMasterStates();
