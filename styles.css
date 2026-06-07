@@ -158,98 +158,23 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
 }
 .clickable-row:hover{background:#f6fbff}
 
-
-/* V43 UI polish only */
+/* V44 kompaktere Karten */
+.entry-card{
+ padding:12px !important;
+}
+.entry-card b:first-child{
+ font-size:0; /* blendet doppelten Hundenamen aus */
+}
 .entry-actions{
  display:flex;
  justify-content:flex-end;
- gap:.35rem;
- margin-top:.6rem;
+ gap:6px;
 }
 .entry-actions button{
+ padding:6px 10px;
  min-width:auto;
- padding:.45rem .65rem;
 }
 .entry-actions .danger{
  background:#fff1f4;
  color:#d7264d;
-}
-.cat-chip{
- border-radius:999px;
- font-weight:700;
-}
-.cat-basics{background:#eef1f4;}
-.cat-unterordnung{background:#e8f1ff;}
-.cat-fitness{background:#e9f8ee;}
-.cat-nasenarbeit{background:#fff2df;}
-.cat-igp{background:#ffe7e7;}
-.cat-tricks{background:#f2e8ff;}
-
-/* V45 echte kompakte Kalender-/Tageskarten */
-.compact-entry{
- padding: .85rem !important;
-}
-.entry-card-head{
- display:flex;
- justify-content:space-between;
- align-items:flex-start;
- gap:.65rem;
- margin-bottom:.45rem;
-}
-.entry-title-line{
- display:flex;
- align-items:center;
- gap:.4rem;
- flex-wrap:wrap;
-}
-.entry-meta{
- display:inline-block;
- background:#edf7ff;
- border-radius:999px;
- padding:.18rem .55rem;
- font-weight:800;
- font-size:.86rem;
- color:#31506a;
-}
-.entry-exercises{
- font-weight:800;
- line-height:1.45;
- margin:.35rem 0;
- color:var(--text);
-}
-.entry-note{
- margin-top:.42rem;
- color:#526170;
- line-height:1.35;
-}
-.entry-icon-actions{
- display:flex;
- gap:.28rem;
- flex-shrink:0;
- align-items:center;
-}
-.icon-btn{
- border:0;
- box-shadow:none;
- border-radius:11px;
- min-width:34px;
- min-height:34px;
- padding:.25rem;
- font-size:1rem;
- display:inline-flex;
- align-items:center;
- justify-content:center;
- background:#eef7ff;
-}
-.icon-btn.edit{color:#0057d9}
-.icon-btn.duplicate{color:#23384f}
-.icon-btn.delete{
- color:#d7264d;
- background:#fff1f4;
-}
-.icon-btn:active{transform:scale(.96)}
-@media(max-width:650px){
- .compact-entry{padding:.75rem!important}
- .entry-card-head{gap:.45rem}
- .icon-btn{min-width:32px;min-height:32px}
 }
