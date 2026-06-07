@@ -152,10 +152,30 @@ function bind(){
 function show(id){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id===id));refresh()}
 function refresh(){fillSelects();renderDogList();renderProfile();renderExercises();renderToday();renderCalendar();renderBalance();renderSettings();renderStorageStatus()}
 function renderStorageStatus(){
- const box=document.getElementById('storageStatus'); if(!box)return;
- const raw=localStorage.getItem(STORAGE_KEY);
- let msg=raw ? `Speicher aktiv · ${raw.length} Zeichen · Hunde: ${data.dogs.length} · Einträge: ${data.entries.length}` : 'Noch keine gespeicherten Daten im Browser.';
- box.textContent=msg;
+ const box=document.getElementById('storageStatus');
+ const debug=document.getElementById('storageDebug');
+ if(!box&&!debug)return;
+ let raw=null, parsed=null, parseError=null;
+ try{
+   raw=localStorage.getItem(STORAGE_KEY);
+   if(raw) parsed=JSON.parse(raw);
+ }catch(e){parseError=e.message || String(e);}
+ let testBefore=localStorage.getItem('trainingTrackerStorageTest');
+ try{localStorage.setItem('trainingTrackerStorageTest',String(Date.now()));}catch(e){}
+ let testAfter=localStorage.getItem('trainingTrackerStorageTest');
+ if(box){
+   box.textContent=raw
+    ? `Speicher aktiv · Rohdaten: ${raw.length} Zeichen · Hunde im Speicher: ${(parsed?.dogs||[]).length} · Einträge im Speicher: ${(parsed?.entries||[]).length}`
+    : 'Kein gespeicherter Rohdatensatz für diese App gefunden.';
+ }
+ if(debug){
+   debug.innerHTML=`<b>Speicherdiagnose</b><br>
+   Speicher-Schlüssel: <code>${STORAGE_KEY}</code><br>
+   Aktuelle App-Daten: Hunde ${data.dogs.length}, Einträge ${data.entries.length}<br>
+   Rohdaten vorhanden: ${raw?'ja':'nein'}<br>
+   JSON lesbar: ${parseError?'nein ('+parseError+')':'ja'}<br>
+   Browser-Speichertest: ${testAfter?'ok':'fehlgeschlagen'}${testBefore?'<br>Testwert war vor Reload vorhanden: ja':'<br>Testwert war vor Reload vorhanden: nein/erstmalig'}`;
+ }
 }
 function fillSelects(){
  ['entryDog','todayDog','balanceDog'].forEach(id=>{let s=document.getElementById(id),old=s.value;s.innerHTML='';data.dogs.forEach(d=>s.add(new Option(d,d)));if(old&&data.dogs.includes(old))s.value=old});
@@ -169,7 +189,7 @@ function fillSelects(){
  }
  ['entryCategory','subcategoryCategory'].forEach(id=>{let s=document.getElementById(id),old=s.value;s.innerHTML='';Object.keys(data.categories).forEach(c=>s.add(new Option(c,c)));if(old&&data.categories[old])s.value=old});
 }
-function addDog(){let n=newDogName.value.trim(); if(!n)return; if(data.dogs.includes(n)){toast('Diesen Hund gibt es schon.','warn');return} data.dogs.push(n); ensureProfile(n); if(!save())return; newDogName.value=''; refresh(); show('dogs'); toast('Hund gespeichert.')}
+function addDog(){let n=newDogName.value.trim(); if(!n)return; if(data.dogs.includes(n)){toast('Diesen Hund gibt es schon.','warn');return} data.dogs.push(n); ensureProfile(n); if(!save())return; newDogName.value=''; refresh(); show('dogs'); toast('Hund gespeichert.');renderStorageStatus()}
 function renderDogList(){
  dogList.innerHTML=data.dogs.length?data.dogs.map(d=>`<div class="card"><div class="dog-head"><h2>${esc(d)}</h2><button class="danger" onclick="deleteDog('${attr(d)}')">Löschen</button></div><div class="row"><label>Umbenennen<input id="rename-${attr(d)}" value="${attr(d)}"></label><button class="secondary" onclick="renameDog('${attr(d)}')">Ändern</button></div><p class="small">${entries(d).length} Einträge</p>${renderInlineProfile(d)}</div>`).join(''):'<div class="card"><h2>Noch kein Hund</h2><p>Lege zuerst einen Hund an. Danach erscheint hier automatisch das Trainingsprofil.</p></div>';
  updateCategoryMasterStates();
@@ -220,7 +240,7 @@ function saveEntry(ev){
      toast('Eintrag aktualisiert.');
      resetForm();
      selectedDay=payload.date;
-     renderToday();renderCalendar();renderBalance();renderDogList();show('calendar');renderDayDetails();
+     renderToday();renderCalendar();renderBalance();renderDogList();renderStorageStatus();show('calendar');renderDayDetails();
      return;
    }
  }
@@ -228,7 +248,7 @@ function saveEntry(ev){
  save();
  toast('Einheit gespeichert.');
  clearEntryDetailsKeepDogDate(keepDog, keepDate);
- renderToday();renderCalendar();renderBalance();renderDogList();
+ renderToday();renderCalendar();renderBalance();renderDogList();renderStorageStatus();
 }
 function resetForm(){editingId=null;formTitle.textContent='Training eintragen';saveEntryBtn.textContent='Speichern';trainingForm.reset();entryDate.value=today();treadmillBlocks.innerHTML='';treadmillBox.classList.add('hidden');fillSelects();renderExercises()}
 function clearEntryDetailsKeepDogDate(keepDog, keepDate){

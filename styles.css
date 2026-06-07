@@ -81,3 +81,19 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
  color:#33485c;
  font-weight:800;
 }
+
+.storage-debug{
+ background:#fff;
+ border:1px dashed var(--line);
+ border-radius:14px;
+ padding:.7rem;
+ margin:.6rem 0 1rem;
+ color:#33485c;
+ font-size:.88rem;
+ line-height:1.5;
+}
+.storage-debug code{
+ background:#eef7ff;
+ padding:.1rem .3rem;
+ border-radius:6px;
+}
