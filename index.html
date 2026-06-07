@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Training Tracker</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="app-header">
+  <div>
+    <h1>Training Tracker</h1>
+    <p>Trainingsbalance, Regeneration und Kalender für beliebig viele Hunde</p>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-tab="today">Heute</button>
+  <button class="tab" data-tab="dogs">Hunde</button>
+  <button class="tab" data-tab="profile">Profile</button>
+  <button class="tab" data-tab="add">Eintragen</button>
+  <button class="tab" data-tab="calendar">Kalender</button>
+  <button class="tab" data-tab="balance">Balance</button>
+  <button class="tab" data-tab="settings">Kategorien</button>
+  <button class="tab" data-tab="data">Daten</button>
+</nav>
+
+<main>
+  <section id="today" class="panel active">
+    <div class="toolbar">
+      <label>Hund
+        <select id="todayDog"></select>
+      </label>
+    </div>
+    <div id="todayContent" class="grid"></div>
+  </section>
+
+  <section id="dogs" class="panel">
+    <div class="card">
+      <h2>Hunde verwalten</h2>
+      <p>Lege hier deine Hunde an. Jeder Hund bekommt ein eigenes Trainingsprofil.</p>
+      <div class="row">
+        <label>Hundename
+          <input id="newDogName" type="text" placeholder="z. B. Rookie">
+        </label>
+        <button id="addDogBtn" type="button">Hund hinzufügen</button>
+      </div>
+    </div>
+    <div id="dogList" class="grid"></div>
+  </section>
+
+  <section id="profile" class="panel">
+    <div class="toolbar">
+      <label>Hund
+        <select id="profileDog"></select>
+      </label>
+    </div>
+    <div class="card">
+      <h2>Trainingsprofil</h2>
+      <p>Nur aktivierte Übungen werden bei „Heute sinnvoll“ und in der Balance berücksichtigt.</p>
+      <button id="enableAllBtn" class="secondary" type="button">Alles aktivieren</button>
+      <button id="disableAllBtn" class="secondary" type="button">Alles deaktivieren</button>
+    </div>
+    <div id="profileContent" class="grid"></div>
+  </section>
+
+  <section id="add" class="panel">
+    <form id="trainingForm" class="card">
+      <h2 id="formTitle">Training eintragen</h2>
+      <div class="row">
+        <label>Hund
+          <select id="entryDog" required></select>
+        </label>
+        <label>Datum
+          <input id="entryDate" type="date" required>
+        </label>
+        <label>Kategorie
+          <select id="entryCategory" required></select>
+          <span class="tiny">Für mehrere Kategorien am selben Tag einfach nacheinander speichern.</span>
+        </label>
+        <label>Dauer gesamt (Min., optional)
+          <input id="entryDuration" type="number" min="0" step="1">
+        </label>
+      </div>
+      <label class="checkline"><input id="entryClub" type="checkbox"> Hundeplatztraining</label>
+
+      <div class="card inner">
+        <h3>Übungen</h3>
+        <p class="small">Angezeigt werden nur Übungen, die im Profil des ausgewählten Hundes aktiv sind.</p>
+        <div id="exerciseList"></div>
+      </div>
+
+      <div id="treadmillBox" class="card inner hidden">
+        <h3>Laufband-Blöcke</h3>
+        <div id="treadmillBlocks"></div>
+        <button id="addTreadmillBlock" type="button" class="secondary">Block hinzufügen</button>
+      </div>
+
+      <label>Notiz / Fortschritt
+        <textarea id="entryNote" rows="4" placeholder="Kurze Notiz, Fortschritt oder Besonderheit"></textarea>
+      </label>
+
+      <div class="actions">
+        <button id="saveEntryBtn" type="submit">Speichern</button>
+        <button id="resetEntryBtn" type="button" class="secondary">Zurücksetzen</button>
+      </div>
+    </form>
+  </section>
+
+  <section id="calendar" class="panel">
+    <div class="toolbar">
+      <button id="prevMonth" type="button" class="secondary">‹</button>
+      <h2 id="monthLabel"></h2>
+      <button id="nextMonth" type="button" class="secondary">›</button>
+    </div>
+    <div id="calendarGrid" class="calendar"></div>
+    <div id="dayDetails" class="card hidden"></div>
+  </section>
+
+  <section id="balance" class="panel">
+    <div class="toolbar">
+      <label>Hund
+        <select id="balanceDog"></select>
+      </label>
+    </div>
+    <div id="balanceContent" class="grid"></div>
+  </section>
+
+  <section id="settings" class="panel">
+    <div class="card">
+      <h2>Kategorien verwalten</h2>
+      <p>Neue Unterkategorien werden bei allen Hunden automatisch aktiviert und können im Profil pro Hund deaktiviert werden.</p>
+      <div class="row">
+        <label>Neue Kategorie
+          <input id="newCategoryName" type="text" placeholder="z. B. Reha">
+        </label>
+        <button id="addCategoryBtn" type="button">Kategorie hinzufügen</button>
+      </div>
+      <hr>
+      <div class="row">
+        <label>Kategorie
+          <select id="subcategoryCategory"></select>
+        </label>
+        <label>Neue Unterkategorie
+          <input id="newSubcategoryName" type="text" placeholder="z. B. Targettraining">
+        </label>
+        <button id="addSubcategoryBtn" type="button">Unterkategorie hinzufügen</button>
+      </div>
+    </div>
+    <div id="categoryList"></div>
+  </section>
+
+  <section id="data" class="panel">
+    <div class="card">
+      <h2>Datenverwaltung</h2>
+      <p>Die Daten werden lokal im Browser gespeichert. Ab dieser Version bleibt derselbe Speicherbereich erhalten, damit Updates deine Einträge nicht löschen. Erstelle trotzdem regelmäßig ein Backup.</p>
+      <button id="backupBtn" type="button">Backup exportieren</button>
+      <label class="file-label">Backup importieren<input id="importFile" type="file" accept="application/json"></label>
+      <button id="clearAllBtn" type="button" class="danger">Alle Daten löschen</button>
+    </div>
+  </section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
