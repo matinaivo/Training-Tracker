@@ -379,29 +379,61 @@ window.dupEntry=id=>{let e=data.entries.find(x=>x.id===id);if(e)loadEntry(e,true
 window.delEntry=id=>{if(confirm('Eintrag löschen?')){data.entries=data.entries.filter(e=>e.id!==id);save();renderCalendar();renderToday();renderBalance()}}
 
 function renderToday(){
- let d=todayDog.value||getUiState().currentDog||data.dogs[0];
- if(todayDog && d && todayDog.value!==d && data.dogs.includes(d)) todayDog.value=d;
+ let d=todayDog.value||getUiState().currentDog||data.dogs[0]; 
+ if(todayDog && d && todayDog.value!==d && data.dogs.includes(d)) todayDog.value=d; 
  if(!d){todayContent.innerHTML='<div class="card"><h2>Noch kein Hund</h2><p>Bitte lege zuerst einen Hund an.</p></div>';return}
- const groupedDue={}, groupedRecent={};
- allSubs().filter(x=>active(d,x.cat,x.sub)&&!clubSubs.has(x.sub)&&getFrequency(d,x.cat,x.sub)!=='paused').forEach(x=>{
-   let l=last(d,x.sub), days=l?daysBetween(l.date):999, freq=getFrequency(d,x.cat,x.sub), target=freqDays(freq);
-   let item={...x,days,target,freq,overdue:days===999?999:days-target};
-   if(days===999 || days>=target){(groupedDue[x.cat]||(groupedDue[x.cat]=[])).push(item)}
-   else{(groupedRecent[x.cat]||(groupedRecent[x.cat]=[])).push(item)}
+ const due={}, notDue={}, paused={};
+ allSubs().filter(x=>active(d,x.cat,x.sub)&&!clubSubs.has(x.sub)).forEach(x=>{
+   const freq=getFrequency(d,x.cat,x.sub);
+   if(freq==='paused'){
+     (paused[x.cat]||(paused[x.cat]=[])).push({...x,freq});
+     return;
+   }
+   let l=last(d,x.sub), days=l?daysBetween(l.date):999, target=freqDays(freq);
+   let item={...x,days,target,freq,overdue:days===999?999:days-target,dueIn:days===999?0:Math.max(0,target-days)};
+   if(days===999 || days>=target){
+     (due[x.cat]||(due[x.cat]=[])).push(item);
+   }else{
+     (notDue[x.cat]||(notDue[x.cat]=[])).push(item);
+   }
  });
  const catOrder=Object.keys(data.categories);
- Object.values(groupedDue).forEach(list=>list.sort((a,b)=>b.overdue-a.overdue || b.days-a.days));
- Object.values(groupedRecent).forEach(list=>list.sort((a,b)=>a.days-b.days));
- todayContent.innerHTML=`<div class="card today-card"><h2>Heute sinnvoll</h2><p class="small">Nur aktive Übungen von ${esc(d)}, gruppiert nach Kategorie und gewünschter Trainingshäufigkeit.</p>${renderTodayGroups(groupedDue,catOrder,'green','Aktuell ist nichts fällig.')}</div><div class="card today-card"><h2>Kürzlich trainiert</h2><p class="small">Diese Übungen sind nach deiner gewünschten Häufigkeit noch nicht fällig.</p>${renderTodayGroups(groupedRecent,catOrder,'red','Nichts blockiert.')}</div>`;
+ Object.values(due).forEach(list=>list.sort((a,b)=>b.overdue-a.overdue || b.days-a.days));
+ Object.values(notDue).forEach(list=>list.sort((a,b)=>a.dueIn-b.dueIn || b.days-a.days));
+ Object.values(paused).forEach(list=>list.sort((a,b)=>a.sub.localeCompare(b.sub)));
+ const dueCount=countGrouped(due), notDueCount=countGrouped(notDue), pausedCount=countGrouped(paused);
+ todayContent.innerHTML=`<div class="card today-card"><h2>Heute sinnvoll <span class="pill green">${dueCount}</span></h2><p class="small">Fällige aktive Übungen von ${esc(d)}, sortiert nach Dringlichkeit.</p>${renderTodayGroups(due,catOrder,'due','Aktuell ist nichts fällig.')}</div><div class="card today-card"><h2>Aktuell nicht fällig <span class="pill blue">${notDueCount}</span></h2><p class="small">Diese Übungen werden trainiert, sind nach deiner gewünschten Häufigkeit aber noch nicht dran.</p>${renderTodayGroups(notDue,catOrder,'notdue','Keine aktiven Übungen in automatischer Pause.')}</div><div class="card today-card"><h2>Aktiv pausiert <span class="pill muted-pill">${pausedCount}</span></h2><p class="small">Diese Übungen sind im Profil bewusst auf „pausiert“ gestellt.</p>${renderPausedGroups(paused,catOrder,'Keine aktiv pausierten Übungen.')}</div>`;
 }
-function renderTodayGroups(groups,catOrder,color,emptyText){
+
+
+
+function countGrouped(groups){
+ return Object.values(groups).reduce((sum,list)=>sum+list.length,0);
+}
+function renderTodayGroups(groups,catOrder,mode,emptyText){
  const cats=catOrder.filter(cat=>groups[cat]&&groups[cat].length);
  if(!cats.length)return `<p>${emptyText}</p>`;
- return cats.map(cat=>`<div class="today-group"><h3><span class="cat-chip ${catClass(cat)}">${esc(cat)}</span></h3><div class="score-list">${groups[cat].slice(0,5).map(x=>todayRow(x,color)).join('')}</div></div>`).join('');
+ return cats.map(cat=>`<div class="today-group"><h3><span class="cat-chip ${catClass(cat)}">${esc(cat)}</span></h3><div class="score-list">${groups[cat].slice(0,6).map(x=>todayDashboardRow(x,mode)).join('')}</div></div>`).join('');
 }
-function todayRow(x,color){
+function todayDashboardRow(x,mode){
  const last=x.days===999?'noch nie':`vor ${x.days} Tag${x.days===1?'':'en'}`;
- return `<div class="score-row"><span><b>${esc(x.sub)}</b><br><span class="tiny">${last} · Wunsch: ${esc(freqLabel(x.freq))}</span></span><span class="pill ${color}">${x.days===999?'neu':(x.days>=x.target?'fällig':'pausieren')}</span></div>`;
+ let chip='', detail='';
+ if(mode==='due'){
+   chip=x.days===999?'neu':(x.overdue>0?`+${x.overdue} T.`:'fällig');
+   detail=`${last} · Wunsch: ${esc(freqLabel(x.freq))}`;
+   return `<div class="score-row"><span><b>${esc(x.sub)}</b><br><span class="tiny">${detail}</span></span><span class="pill green">${chip}</span></div>`;
+ }
+ const dueText=x.dueIn===1?'morgen':`in ${x.dueIn} Tagen`;
+ detail=`${last} · Wunsch: ${esc(freqLabel(x.freq))}`;
+ return `<div class="score-row"><span><b>${esc(x.sub)}</b><br><span class="tiny">${detail}</span></span><span class="pill blue">fällig ${dueText}</span></div>`;
+}
+function renderPausedGroups(groups,catOrder,emptyText){
+ const cats=catOrder.filter(cat=>groups[cat]&&groups[cat].length);
+ if(!cats.length)return `<p>${emptyText}</p>`;
+ return cats.map(cat=>`<div class="today-group paused-group"><h3><span class="cat-chip ${catClass(cat)}">${esc(cat)}</span></h3><div class="score-list">${groups[cat].map(x=>pausedRow(x)).join('')}</div></div>`).join('');
+}
+function pausedRow(x){
+ return `<div class="score-row paused-row"><span><b>${esc(x.sub)}</b><br><span class="tiny">aktiv auf „pausiert“ gestellt</span></span><span class="pill muted-pill">pausiert</span></div>`;
 }
 function sug(x,cls){return `<div class="score-row"><span><b>${esc(x.sub)}</b><br><span class="tiny">${esc(x.cat)}</span></span><span class="pill ${cls}">${x.days===999?'noch nie':'vor '+x.days+' T.'}</span></div>`}
 

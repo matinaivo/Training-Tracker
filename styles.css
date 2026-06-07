@@ -123,3 +123,10 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
  .profile-row-frequency{grid-template-columns:1fr}
  .frequency-select{width:100%}
 }
+
+.pill.blue{background:#dcecff;color:#0057d9}
+.muted-pill{background:#edf1f4!important;color:#4d5a66!important}
+.paused-row{opacity:.9}
+.paused-group .score-row{background:rgba(237,241,244,.35)}
+.today-card{grid-column:1/-1}
+.today-group{border-top:1px solid var(--line);padding-top:.65rem;margin-top:.65rem}
