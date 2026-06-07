@@ -408,3 +408,68 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
    width:100%;
  }
 }
+
+/* V58 Oberbloecke und mobile Touchflächen */
+.profile-block,
+.entry-block{
+ background:#eef7ff;
+ border:1px solid var(--line);
+ border-radius:18px;
+ padding:.65rem .75rem;
+ margin:.8rem 0;
+}
+.profile-block>summary,
+.entry-block>summary{
+ min-height:54px;
+ display:flex;
+ align-items:center;
+ font-size:1.05rem;
+ font-weight:900;
+ cursor:pointer;
+ list-style-position:inside;
+}
+.profile-details,
+.entry-category{
+ background:#fff;
+ border:1px solid var(--line);
+ border-radius:16px;
+ padding:.6rem .7rem;
+ margin:.55rem 0;
+}
+.profile-details>summary,
+.entry-category>summary{
+ min-height:48px;
+ display:flex;
+ align-items:center;
+ font-weight:900;
+ cursor:pointer;
+}
+.profile-category-actions{
+ display:flex;
+ gap:.5rem;
+ flex-wrap:wrap;
+ margin:.55rem 0;
+}
+.profile-action{
+ min-height:40px;
+}
+.exercise-row{
+ min-height:44px;
+ display:flex;
+ align-items:center;
+}
+@media(max-width:650px){
+ .profile-block,
+ .entry-block{
+   padding:.6rem;
+   margin:.75rem 0;
+ }
+ .profile-block>summary,
+ .entry-block>summary{
+   min-height:56px;
+ }
+ .profile-details>summary,
+ .entry-category>summary{
+   min-height:50px;
+ }
+}
