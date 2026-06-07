@@ -303,3 +303,12 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
 .entry-note{font-size:.9rem!important;color:#6b7280!important}
 .entry-meta{background:none!important;padding:0!important}
 .cat-chip{opacity:.85}
+
+/* V53 Icon action fix */
+.icon-btn{
+ pointer-events:auto;
+ cursor:pointer;
+}
+.entry-icon-actions{
+ pointer-events:auto;
+}
