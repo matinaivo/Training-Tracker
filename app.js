@@ -189,6 +189,18 @@ function entries(d){return data.entries.filter(e=>e.dog===d)}
 function last(d,sub){return entries(d).filter(e=>e.exercises.some(x=>x.subcategory===sub)).sort((a,b)=>b.date.localeCompare(a.date))[0]}
 function backup(){let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='training-tracker-backup.json';a.click();URL.revokeObjectURL(a.href)}
 function importBackup(ev){let f=ev.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{data=normalize(JSON.parse(r.result));save();refresh();alert('Backup importiert.')}catch{alert('Backup konnte nicht gelesen werden.')}};r.readAsText(f)}
-function clearAll(){if(!confirm('Alle Daten löschen?'))return;if(prompt('Bitte LÖSCHEN eingeben')!=='LÖSCHEN')return;localStorage.removeItem(STORAGE_KEY);data=normalize({});selectedDay=null;refresh();show('dogs')}
+function clearAll(){
+ if(!confirm('Alle Daten löschen?'))return;
+ if(prompt('Bitte LÖSCHEN eingeben')!=='LÖSCHEN')return;
+ localStorage.removeItem(STORAGE_KEY);
+ if(typeof LEGACY_STORAGE_KEYS!=='undefined'){
+   LEGACY_STORAGE_KEYS.forEach(k=>localStorage.removeItem(k));
+ }
+ data=normalize({});
+ selectedDay=null;
+ refresh();
+ show('dogs');
+ alert('Alle App-Daten und alte Speicherstände wurden gelöscht.');
+}
 function catClass(c){if(c==='IGP Sonstiges'||c==='IGP')return'cat-IGP';return 'cat-'+String(c||'default').replace(/\s+/g,'-').replace(/[^\wäöüÄÖÜß-]/g,'')}
 function shortCat(c){return c==='Unterordnung'?'UO':(c==='IGP Sonstiges'||c==='IGP')?'IGP':c==='Schutzdienst'?'SD':c}
