@@ -100,32 +100,12 @@ function load(){
  try{
    return normalize(parsed);
  }catch(err){
-   console.error('Training Tracker: Migration/Normalisierung fehlgeschlagen. Daten werden defensiv geladen.', err, parsed);
-   window.__storageLoadError=true;
-   return emergencyNormalize(parsed);
+   console.error('Training Tracker: Migration fehlgeschlagen. Hunde/Einträge werden erhalten, Kategorien werden neu aufgebaut.', err, parsed);
+   window.__migrationError=true;
+   return safeNormalizeWithoutMigration(parsed);
  }
 }
-function normalize(x){
- let d={dogs:[],categories:structuredClone(defaultCategories),profiles:{},entries:[],...x};
- if(!Array.isArray(d.dogs))d.dogs=[];
- d.dogs=d.dogs.filter(Boolean);
- if(!d.profiles || typeof d.profiles!=='object')d.profiles={};
- if(!Array.isArray(d.entries))d.entries=[];
- if(!d.categories || typeof d.categories!=='object')d.categories=structuredClone(defaultCategories);
-
- // Kategorien/Einträge migrieren, aber Hunde/Profile nicht verlieren.
- migrateCategoriesAndEntries(d);
-
- // Falls alte Daten Hundeliste verloren hätten, aus Profilen/Einträgen rekonstruieren.
- const dogSet=new Set(d.dogs);
- Object.keys(d.profiles||{}).forEach(name=>{if(name)dogSet.add(name)});
- (d.entries||[]).forEach(e=>{if(e&&e.dog)dogSet.add(e.dog)});
- d.dogs=[...dogSet];
-
- d.dogs.forEach(dog=>ensureProfileInDataObject(d,dog));
- return d;
-}
-function emergencyNormalize(x){
+function safeNormalizeWithoutMigration(x){
  const d={
    dogs:Array.isArray(x?.dogs)?x.dogs.filter(Boolean):[],
    categories:structuredClone(defaultCategories),
@@ -139,12 +119,32 @@ function emergencyNormalize(x){
  d.dogs.forEach(dog=>ensureProfileInDataObject(d,dog));
  return d;
 }
+
+function normalize(x){
+ let d={dogs:[],categories:structuredClone(defaultCategories),profiles:{},entries:[],...x};
+ if(!Array.isArray(d.dogs))d.dogs=[];
+ if(!d.profiles || typeof d.profiles!=='object')d.profiles={};
+ if(!Array.isArray(d.entries))d.entries=[];
+ if(!d.categories || typeof d.categories!=='object')d.categories=structuredClone(defaultCategories);
+
+ // Kategorien/Einträge migrieren, aber Hunde/Profile nicht verlieren.
+ migrateCategoriesAndEntries(d);
+ const dogSet=new Set(d.dogs);
+ Object.keys(d.profiles||{}).forEach(name=>{if(name)dogSet.add(name)});
+ (d.entries||[]).forEach(e=>{if(e&&e.dog)dogSet.add(e.dog)});
+ d.dogs=[...dogSet];
+
+ // WICHTIG: Beim ersten Laden darf nicht ensureProfile() genutzt werden,
+ // weil die globale Variable data zu diesem Zeitpunkt noch nicht initialisiert ist.
+ d.dogs.forEach(dog=>ensureProfileInDataObject(d,dog));
+ return d;
+}
 function ensureProfileInDataObject(target,dog){
  if(!dog)return;
  if(!target.profiles[dog])target.profiles[dog]={active:{},frequency:{}};
  if(!target.profiles[dog].active)target.profiles[dog].active={};
  if(!target.profiles[dog].frequency)target.profiles[dog].frequency={};
- Object.entries(target.categories).flatMap(([cat,subs])=>subs.map(sub=>({cat,sub}))).forEach(({cat,sub})=>{
+ Object.entries(target.categories).flatMap(([cat,subs])=>(Array.isArray(subs)?subs:[]).map(sub=>({cat,sub}))).forEach(({cat,sub})=>{
    const kk=cat+'||'+sub;
    if(typeof target.profiles[dog].active[kk]!=='boolean')target.profiles[dog].active[kk]=false;
    if(!target.profiles[dog].frequency[kk])target.profiles[dog].frequency[kk]='1w';
@@ -187,7 +187,8 @@ function migrateCategoriesAndEntries(d){
  };
  const allowed=new Set(Object.values(defaultCategories).flat());
  d.entries=(d.entries||[]).map(e=>{
-   e.exercises=(e.exercises||[]).map(ex=>{
+   e.exercises=(Array.isArray(e.exercises)?e.exercises:[]).map(ex=>{
+     if(!ex || typeof ex!=='object')return null;
      let sub=renameSub.hasOwnProperty(ex.subcategory)?renameSub[ex.subcategory]:ex.subcategory;
      if(!sub || !allowed.has(sub))return null;
      let cat=moveCat[sub]||ex.category;
@@ -200,7 +201,7 @@ function migrateCategoriesAndEntries(d){
  const merged=structuredClone(defaultCategories);
  Object.entries(d.categories||{}).forEach(([cat,subs])=>{
    if(cat==='Sonstiges')return;
-   (subs||[]).forEach(sub=>{
+   (Array.isArray(subs)?subs:[]).forEach(sub=>{
      const renamed=renameSub.hasOwnProperty(sub)?renameSub[sub]:sub;
      if(!renamed || !allowed.has(renamed))return;
      const targetCat=moveCat[renamed]||cat;
@@ -221,7 +222,7 @@ function ensureProfile(dog){
    if(!data.profiles[dog].frequency[kk])data.profiles[dog].frequency[kk]='1w';
  });
 }
-function active(dog,cat,sub){if(!dog)return false;ensureProfile(dog); return !!data.profiles[dog]?.active?.[k(cat,sub)]}
+function active(dog,cat,sub){ensureProfile(dog); return !!data.profiles[dog]?.active?.[k(cat,sub)]}
 function setActive(dog,cat,sub,val){ensureProfile(dog); data.profiles[dog].active[k(cat,sub)]=!!val; save()}
 function getFrequency(dog,cat,sub){ensureProfile(dog); return data.profiles[dog].frequency?.[k(cat,sub)]||'1w'}
 function setFrequency(dog,cat,sub,val){ensureProfile(dog); data.profiles[dog].frequency[k(cat,sub)]=val||'1w'; save()}
@@ -229,7 +230,8 @@ function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt
 function attr(s){return esc(s).replace(/'/g,'&#39;')}
 
 document.addEventListener('DOMContentLoaded',()=>{
- if(data.__loadError){setTimeout(()=>alert('Die gespeicherten App-Daten wurden defensiv geladen. Bitte prüfe Hunde und Einträge und exportiere danach ein neues Backup.'),300)}
+ if(window.__migrationError){setTimeout(()=>alert('Ein alter Speicherstand konnte nicht vollständig migriert werden. Hunde und Einträge wurden erhalten, Kategorien wurden neu aufgebaut. Bitte prüfen und Backup exportieren.'),300)}
+ if(data.__loadError){setTimeout(()=>alert('Die gespeicherten App-Daten konnten nicht gelesen werden. Es wurde NICHT absichtlich gelöscht. Bitte Backup importieren oder Screenshot senden.'),300)}
  document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>show(b.dataset.tab));
  entryDate.value=today();
  bind();
@@ -277,7 +279,7 @@ function renderStorageStatus(){
  }
 }
 function fillSelects(){
- ['entryDog','todayDog','balanceDog'].forEach(id=>{let s=document.getElementById(id);if(!s)return;let old=s.value||getUiState()[id];s.innerHTML='';(data.dogs||[]).forEach(d=>s.add(new Option(d,d)));if(old&&(data.dogs||[]).includes(old))s.value=old});
+ ['entryDog','todayDog','balanceDog'].forEach(id=>{let s=document.getElementById(id),old=s.value||getUiState()[id];s.innerHTML='';data.dogs.forEach(d=>s.add(new Option(d,d)));if(old&&data.dogs.includes(old))s.value=old});
  let cal=document.getElementById('calendarDog');
  if(cal){
    let old=cal.value || getUiState().calendarDog || '__all__';
