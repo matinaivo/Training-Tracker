@@ -295,3 +295,11 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
 .icon-btn.delete{background:#fff1f4;color:#d7264d}
 .icon-btn.duplicate{color:#0057d9}
 .icon-btn.edit{color:#0057d9}
+
+
+/* V50 UI Verdichtung */
+.icon-btn{min-width:28px!important;min-height:28px!important;font-size:.9rem!important;opacity:.85}
+.entry-card,.compact-entry{padding:.65rem!important}
+.entry-note{font-size:.9rem!important;color:#6b7280!important}
+.entry-meta{background:none!important;padding:0!important}
+.cat-chip{opacity:.85}
