@@ -419,19 +419,13 @@ function renderDayDetails(){
  dayDetails.classList.remove('hidden');
  let head=`<div class="detail-head"><h2>${new Date(selectedDay+'T12:00').toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'})}</h2><button class="secondary" onclick="closeDay()">Zur Monatsübersicht</button></div><div class="actions"><button type="button" onclick="startNewEntryForDate('${selectedDay}')">Training hinzufügen</button></div>`;
  if(!es.length){dayDetails.innerHTML=head+'<p>Kein Training.</p>';return}
- const calDog=document.getElementById('calendarDog')?.value || '__all__';
- if(calDog==='__all__'){
-   const byDog={};
-   es.forEach(e=>{(byDog[e.dog]||(byDog[e.dog]=[])).push(e)});
-   dayDetails.innerHTML=head+Object.entries(byDog).map(([dog,items])=>{
-     const collapsed=isDogGroupCollapsed(selectedDay,dog);
-     return `<section class="dog-day-group"><button type="button" class="dog-group-head" onclick="toggleDogGroup('${selectedDay}','${attr(dog)}')"><span>🐕 ${esc(dog)}</span><span class="dog-count">${items.length} Eintrag${items.length===1?'':'e'}</span><span>${collapsed?'⌄':'⌃'}</span></button>${collapsed?'':`<div class="dog-group-body">${items.map(renderEntry).join('')}</div>`}</section>`;
-   }).join('');
-   return;
- }
- let groups={};
- es.forEach(e=>{let g=e.category;(groups[g]||(groups[g]=[])).push(e)});
- dayDetails.innerHTML=head+Object.entries(groups).map(([g,items])=>`<h3>${esc(g)}</h3>${items.map(renderEntry).join('')}`).join('');
+ const byDog={};
+ es.forEach(e=>{(byDog[e.dog]||(byDog[e.dog]=[])).push(e)});
+ dayDetails.innerHTML=head+Object.entries(byDog).map(([dog,items])=>{
+   const collapsed=(typeof isDogGroupCollapsed==='function')?isDogGroupCollapsed(selectedDay,dog):false;
+   const body=collapsed?'':`<div class="dog-group-body">${items.map(renderEntry).join('')}</div>`;
+   return `<section class="dog-day-group"><button type="button" class="dog-group-head" onclick="toggleDogGroup('${selectedDay}','${attr(dog)}')"><span>🐕 ${esc(dog)}</span><span class="dog-count">${items.length} Eintrag${items.length===1?'':'e'}</span><span>${collapsed?'⌄':'⌃'}</span></button>${body}</section>`;
+ }).join('');
 }
 window.closeDay=()=>{selectedDay=null;dayDetails.classList.add('hidden');renderCalendar()}
 function renderEntry(e){
