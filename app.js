@@ -313,7 +313,7 @@ function selectedExercisesByCategory(){
 }
 
 window.toggleTreadmill=()=>{let on=[...document.querySelectorAll('.ex:checked')].some(x=>x.dataset.sub==='Laufband'); treadmillBox.classList.toggle('hidden',!on); if(on&&!document.querySelector('.tm-block'))addTmBlock()}
-function addTmBlock(min='',speed=''){let div=document.createElement('div');div.className='row tm-block';div.innerHTML=`<label>Minuten<input class="tm-min" type="number" min="0" step="1" value="${attr(min)}"></label><label>km/h<input class="tm-speed" type="number" min="0" step="0.1" value="${attr(speed)}"></label><button type="button" class="secondary" onclick="this.parentElement.remove()">Entfernen</button>`;treadmillBlocks.appendChild(div)}
+function addTmBlock(min='',speed=''){let div=document.createElement('div');div.className='tm-block';div.innerHTML=`<label>Minuten<input class="tm-min" type="number" min="0" step="1" value="${attr(min)}"></label><label>km/h<input class="tm-speed" type="number" min="0" step="0.1" value="${attr(speed)}"></label><button type="button" class="secondary" onclick="this.parentElement.remove()">Entfernen</button>`;treadmillBlocks.appendChild(div)}
 function saveEntry(ev){
  ev.preventDefault();
  const groups=selectedExercisesByCategory();
@@ -331,7 +331,7 @@ function saveEntry(ev){
      toast('Eintrag aktualisiert.');
      resetForm();
      selectedDay=payload.date;
-     renderToday();renderCalendar();renderBalance();renderDogList();show('calendar');renderDayDetails();
+     renderToday();renderCalendar();renderBalance();renderDogList();show(returnViewAfterEdit||'calendar');if(selectedDay)renderDayDetails();
      return;
    }
  }
@@ -343,7 +343,7 @@ function saveEntry(ev){
  resetForm();
  selectedDay=keepDate;
  renderToday();renderCalendar();renderBalance();renderDogList();
- show('today');
+ show(returnViewAfterEdit||'today');if(selectedDay&&returnViewAfterEdit==='calendar')renderDayDetails();
 }
 function resetForm(){editingId=null;formTitle.textContent='Training eintragen';saveEntryBtn.textContent='Speichern';trainingForm.reset();entryDate.value=today();treadmillBlocks.innerHTML='';treadmillBox.classList.add('hidden');fillSelects();renderExercises()}
 function clearEntryDetailsKeepDogDate(keepDog, keepDate){
@@ -390,6 +390,7 @@ function loadEntry(e,dup=false){
  toggleTreadmill();
 }
 function startNewEntryForDate(dateIso){
+ returnViewAfterEdit=currentActivePanel();
  editingId=null;
  show('add');
  formTitle.textContent='Training hinzufügen';

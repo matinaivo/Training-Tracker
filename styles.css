@@ -364,3 +364,47 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
  background:#e7355f;
  color:#fff;
 }
+
+/* V56: mobile Laufband-Optik */
+.tm-block{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:.65rem;
+ align-items:end;
+ background:#f8fcff;
+ border:1px solid var(--line);
+ border-radius:16px;
+ padding:.75rem;
+ margin:.6rem 0;
+}
+.tm-block label{
+ margin:0;
+}
+.tm-block .secondary,
+.tm-block button{
+ grid-column:1 / -1;
+ width:auto;
+ justify-self:end;
+ min-width:130px;
+ padding:.55rem .8rem;
+}
+#addTreadmillBlock{
+ width:auto;
+ min-width:150px;
+ margin-top:.35rem;
+}
+@media(max-width:650px){
+ .tm-block{
+   grid-template-columns:1fr;
+   gap:.55rem;
+   padding:.7rem;
+ }
+ .tm-block .secondary,
+ .tm-block button{
+   justify-self:stretch;
+   min-width:0;
+ }
+ #addTreadmillBlock{
+   width:100%;
+ }
+}
