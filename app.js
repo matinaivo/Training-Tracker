@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 function bind(){
  addDogBtn.onclick=addDog;
- todayDog.onchange=renderToday; balanceDog.onchange=renderBalance;
+ todayDog.onchange=renderToday; balanceDog.onchange=renderBalance; calendarDog.onchange=()=>{selectedDay=null;renderCalendar()};
  entryDog.onchange=renderExercises; entryCategory.onchange=renderExercises; trainingForm.onsubmit=saveEntry;
  addTreadmillBlock.onclick=()=>addTmBlock(); prevMonth.onclick=()=>{currentMonth.setMonth(currentMonth.getMonth()-1);renderCalendar()}; nextMonth.onclick=()=>{currentMonth.setMonth(currentMonth.getMonth()+1);renderCalendar()};
  addCategoryBtn.onclick=addCategory; addSubcategoryBtn.onclick=addSubcategory; backupBtn.onclick=backup; importFile.onchange=importBackup; clearAllBtn.onclick=clearAll;
@@ -107,6 +107,14 @@ function show(id){document.querySelectorAll('.tab').forEach(b=>b.classList.toggl
 function refresh(){fillSelects();renderDogList();renderProfile();renderExercises();renderToday();renderCalendar();renderBalance();renderSettings()}
 function fillSelects(){
  ['entryDog','todayDog','balanceDog'].forEach(id=>{let s=document.getElementById(id),old=s.value;s.innerHTML='';data.dogs.forEach(d=>s.add(new Option(d,d)));if(old&&data.dogs.includes(old))s.value=old});
+ let cal=document.getElementById('calendarDog');
+ if(cal){
+   let old=cal.value || '__all__';
+   cal.innerHTML='';
+   cal.add(new Option('Alle Hunde','__all__'));
+   data.dogs.forEach(d=>cal.add(new Option(d,d)));
+   if(old==='__all__' || data.dogs.includes(old)) cal.value=old;
+ }
  ['entryCategory','subcategoryCategory'].forEach(id=>{let s=document.getElementById(id),old=s.value;s.innerHTML='';Object.keys(data.categories).forEach(c=>s.add(new Option(c,c)));if(old&&data.categories[old])s.value=old});
 }
 function addDog(){let n=newDogName.value.trim(); if(!n)return; if(data.dogs.includes(n)){alert('Diesen Hund gibt es schon.');return} data.dogs.push(n); ensureProfile(n); newDogName.value=''; save(); refresh(); show('dogs')}
@@ -188,9 +196,9 @@ function loadEntry(e,dup=false){
  show('add');
 }
 
-function renderCalendar(){let y=currentMonth.getFullYear(),m=currentMonth.getMonth();monthLabel.textContent=currentMonth.toLocaleDateString('de-DE',{month:'long',year:'numeric'});calendarGrid.innerHTML='';['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(w=>calendarGrid.insertAdjacentHTML('beforeend',`<div class="weekday">${w}</div>`));let first=new Date(y,m,1),off=(first.getDay()+6)%7,start=new Date(y,m,1-off);for(let i=0;i<42;i++){let d=new Date(start);d.setDate(start.getDate()+i);let iso=isoDate(d),es=data.entries.filter(e=>e.date===iso),cats=[...new Set(es.map(e=>e.category))];let div=document.createElement('div');div.className='day'+(d.getMonth()!==m?' other':'')+(iso===today()?' today':'')+(iso===selectedDay?' selected':'');div.innerHTML=`<div class="day-num">${d.getDate()}</div><div class="calendar-cats">${cats.slice(0,4).map(c=>`<span class="cat-chip ${catClass(c)}">${shortCat(c)}</span>`).join('')}</div>`;div.onclick=()=>{selectedDay=iso;renderCalendar();renderDayDetails()};calendarGrid.appendChild(div)} if(selectedDay)renderDayDetails()}
+function renderCalendar(){let y=currentMonth.getFullYear(),m=currentMonth.getMonth();monthLabel.textContent=currentMonth.toLocaleDateString('de-DE',{month:'long',year:'numeric'});calendarGrid.innerHTML='';['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(w=>calendarGrid.insertAdjacentHTML('beforeend',`<div class="weekday">${w}</div>`));let first=new Date(y,m,1),off=(first.getDay()+6)%7,start=new Date(y,m,1-off);for(let i=0;i<42;i++){let d=new Date(start);d.setDate(start.getDate()+i);let iso=isoDate(d),es=calendarEntries().filter(e=>e.date===iso),cats=[...new Set(es.map(e=>e.category))];let div=document.createElement('div');div.className='day'+(d.getMonth()!==m?' other':'')+(iso===today()?' today':'')+(iso===selectedDay?' selected':'');div.innerHTML=`<div class="day-num">${d.getDate()}</div><div class="calendar-cats">${cats.slice(0,4).map(c=>`<span class="cat-chip ${catClass(c)}">${shortCat(c)}</span>`).join('')}</div>`;div.onclick=()=>{selectedDay=iso;renderCalendar();renderDayDetails()};calendarGrid.appendChild(div)} if(selectedDay)renderDayDetails()}
 function renderDayDetails(){
- let es=data.entries.filter(e=>e.date===selectedDay).sort((a,b)=>(a.dog||'').localeCompare(b.dog||'')||(a.category||'').localeCompare(b.category||''));
+ let es=calendarEntries().filter(e=>e.date===selectedDay).sort((a,b)=>(a.dog||'').localeCompare(b.dog||'')||(a.category||'').localeCompare(b.category||''));
  dayDetails.classList.remove('hidden');
  let head=`<div class="detail-head"><h2>${new Date(selectedDay+'T12:00').toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'})}</h2><button class="secondary" onclick="closeDay()">Zur Monatsübersicht</button></div>`;
  if(!es.length){dayDetails.innerHTML=head+'<p>Kein Training.</p>';return}
@@ -217,6 +225,11 @@ window.deleteCategory=c=>{let cnt=data.entries.filter(e=>e.category===c||e.exerc
 window.deleteSub=(c,s)=>{let cnt=data.entries.filter(e=>e.exercises.some(x=>x.category===c&&x.subcategory===s)).length;if(!confirm(`Unterkategorie "${s}" löschen?${cnt?`\n\n${cnt} Einträge nutzen sie.`:''}`))return;if(cnt&&prompt('Bitte LÖSCHEN eingeben')!=='LÖSCHEN')return;data.categories[c]=data.categories[c].filter(x=>x!==s);Object.values(data.profiles).forEach(p=>delete p.active[k(c,s)]);save();refresh()}
 
 function entries(d){return data.entries.filter(e=>e.dog===d)}
+function calendarEntries(){
+ let selected=document.getElementById('calendarDog')?.value || '__all__';
+ return selected==='__all__' ? data.entries : data.entries.filter(e=>e.dog===selected);
+}
+
 function last(d,sub){return entries(d).filter(e=>e.exercises.some(x=>x.subcategory===sub)).sort((a,b)=>b.date.localeCompare(a.date))[0]}
 function backup(){let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='training-tracker-backup.json';a.click();URL.revokeObjectURL(a.href)}
 function importBackup(ev){let f=ev.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{data=normalize(JSON.parse(r.result));save();refresh();alert('Backup importiert.')}catch{alert('Backup konnte nicht gelesen werden.')}};r.readAsText(f)}
