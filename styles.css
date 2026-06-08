@@ -475,3 +475,63 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
 }
 
 
+
+/* V68 echte einklappbare Hunde */
+.dog-collapse-card{
+ background:#fff;
+ border:1px solid var(--line);
+ border-radius:22px;
+ box-shadow:0 8px 24px rgba(0,80,140,.08);
+ margin:1rem 0;
+ overflow:hidden;
+}
+.dog-collapse-summary{
+ min-height:64px;
+ padding:1rem 1.15rem;
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:.75rem;
+ cursor:pointer;
+ font-weight:900;
+ list-style-position:inside;
+}
+.dog-title{
+ font-size:1.35rem;
+ color:var(--text);
+}
+.dog-count{
+ font-size:.95rem;
+ color:var(--muted);
+ background:#eef7ff;
+ border-radius:999px;
+ padding:.35rem .65rem;
+ white-space:nowrap;
+}
+.dog-collapse-body{
+ padding:0 1rem 1.1rem;
+}
+.dog-actions{
+ display:flex;
+ flex-wrap:wrap;
+ gap:.55rem;
+ margin:.7rem 0 1rem;
+}
+.dog-actions button{
+ min-height:42px;
+}
+@media(max-width:650px){
+ .dog-collapse-summary{
+   min-height:68px;
+   padding:1rem;
+ }
+ .dog-title{
+   font-size:1.25rem;
+ }
+ .dog-collapse-body{
+   padding:0 .8rem 1rem;
+ }
+ .dog-actions button{
+   flex:1 1 100%;
+ }
+}

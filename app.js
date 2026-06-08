@@ -298,7 +298,29 @@ function fillSelects(){
 }
 function addDog(){let n=newDogName.value.trim(); if(!n)return; if(data.dogs.includes(n)){toast('Diesen Hund gibt es schon.','warn');return} data.dogs.push(n); ensureProfile(n); if(!save())return; newDogName.value=''; refresh(); show('dogs'); toast('Hund gespeichert.');renderStorageStatus()}
 function renderDogList(){
- dogList.innerHTML=data.dogs.length?data.dogs.map(d=>`<div class="card"><div class="dog-head"><h2>${esc(d)}</h2><button class="danger" onclick="deleteDog('${attr(d)}')">Löschen</button></div><div class="row"><label>Umbenennen<input id="rename-${attr(d)}" value="${attr(d)}"></label><button class="secondary" onclick="renameDog('${attr(d)}')">Ändern</button></div><p class="small">${entries(d).length} Einträge</p>${renderInlineProfile(d)}</div>`).join(''):'<div class="card"><h2>Noch kein Hund</h2><p>Lege zuerst einen Hund an. Danach erscheint hier automatisch das Trainingsprofil.</p></div>';
+ dogList.innerHTML=data.dogs.length?data.dogs.map(d=>{
+   const count=entries(d).length;
+   return `<details class="dog-collapse-card" id="dog-card-${attr(d)}"><summary class="dog-collapse-summary"><span class="dog-title">🐕 ${esc(d)}</span><span class="dog-count">${count} ${count===1?'Eintrag':'Einträge'}</span></summary><div class="dog-collapse-body"><div class="dog-actions"><button type="button" onclick="startNewEntryForDog('${attr(d)}')">Training hinzufügen</button><button type="button" class="secondary" onclick="closeDogCard('${attr(d)}')">Hund schließen</button><button class="danger" onclick="deleteDog('${attr(d)}')">Löschen</button></div><div class="row"><label>Umbenennen<input id="rename-${attr(d)}" value="${attr(d)}"></label><button class="secondary" onclick="renameDog('${attr(d)}')">Ändern</button></div>${renderInlineProfile(d)}</div></details>`;
+ }).join(''):'<div class="card"><h2>Noch kein Hund</h2><p>Lege zuerst einen Hund an. Danach erscheint hier automatisch das Trainingsprofil.</p></div>';
+}
+function startNewEntryForDog(d){
+ show('add');
+ formTitle.textContent='Training hinzufügen';
+ saveEntryBtn.textContent='Speichern';
+ editingId=null;
+ trainingForm.reset();
+ fillSelects();
+ if(data.dogs.includes(d))entryDog.value=d;
+ setUiState({currentDog:d,entryDog:d,todayDog:d,balanceDog:d,calendarDog:d});
+ entryDate.value=today();
+ treadmillBlocks.innerHTML='';
+ treadmillBox.classList.add('hidden');
+ renderExercises();
+}
+function closeDogCard(d){
+ const el=document.getElementById('dog-card-'+d);
+ if(el)el.open=false;
+ if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function renderInlineProfile(d){
  ensureProfile(d);
@@ -597,7 +619,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V67_backup_training-tracker_${stamp}.json`;
+ a.download=`V68_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }
