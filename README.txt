@@ -1,11 +1,11 @@
-V75:
-- Kategorien-Reiter sicherer gestaltet.
-- Normale Ansicht zeigt keine Löschbuttons mehr.
-- Bearbeiten-Button oben rechts an jeder Kategorie.
-- Löschbuttons nur im Bearbeitungsmodus sichtbar.
-- Unterkategorien werden untereinander angezeigt.
-- Kategorie/Unterkategorie löschen nutzt App-Modal mit Bestätigung.
-- Keine Änderungen an der Kategorienstruktur.
-- Backup-Dateiname mit V75-Prefix.
-- Basis: geprüfte V74.
-- Cache-Busting: app.js/styles.css ?v=75.
+V77:
+- Kategorienstruktur bereinigt.
+- Sonstiges wird entfernt.
+- Sonstiges/Fokus wird zu Trainingsmethoden/Fokus Training Futter migriert.
+- Medical Training/Fokus Training Futter und Objekt werden zu Trainingsmethoden verschoben.
+- Medical Training enthält die Fokus-Unterkategorien nicht mehr.
+- Profile werden von alten Kategorie-Schlüsseln bereinigt.
+- Keine Trainingsdaten gehen durch die Migration verloren.
+- Backup-Dateiname mit V77-Prefix.
+- Basis: geprüfte V76.
+- Cache-Busting: app.js/styles.css ?v=77.

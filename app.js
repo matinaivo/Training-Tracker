@@ -12,12 +12,12 @@ const defaultCategories={
  'Schutzdienst':['Revieren','Verbellen','Helferfokus','Rückentransport','Seitentransport','Kurze Flucht','Lange Flucht','Angriff aus Bewachung','Überfall aus Transport','Aus'],
  'Obedience':['Distanzkontrolle','Box','Richtungsapport','Pylon','Positionswechsel','Identifikation'],
  'Nasenarbeit':['Fährte','Fährte Abgang','Verlorensuche','Anzeige','Geruchsdifferenzierung','Banknotensuche'],
- 'Trainingsmethoden':['Futtertreiben','Clicker-Konditionierung','Nasentarget','Vorderpfotentarget / Vorne','Hinterpfotentarget / Hinten','Ganz drauf','Vier Pfoten'],
+ 'Trainingsmethoden':['Futtertreiben','Clicker-Konditionierung','Nasentarget','Vorderpfotentarget / Vorne','Hinterpfotentarget / Hinten','Ganz drauf','Vier Pfoten','Fokus Training Futter','Fokus Training Objekt'],
  'Fitness':['Laufband','Togo Ball','Wackelbrett','Propriozeptionsbälle','Cavaletti','Slalomstangen','Pylonen','Balancekissen','Balancieren'],
  'Tricks':['Pfote','Pfote links','Pfote rechts','Männchen','Schlafen','Zurück'],
  'Basics':['Sitzen','Liegen','Down','Leg dich hin','Rückruf','Zu mir','Gib\'s mir','Links','Rechts'],
  'Spaziergang':['Besitzerorientierung','Leinenführigkeit kurze Leine','Leinenführigkeit Schleppleine','Raus / Auf den Weg'],
- 'Medical Training':['Kooperationssignal','Fokus Training Futter','Fokus Training Objekt','Maulkorbtraining','Hochheben','Fiebermessen','Krallen schneiden','Tablettengabe','Bürsten','Augentropfen','Ohrensäubern'],
+ 'Medical Training':['Kooperationssignal','Maulkorbtraining','Hochheben','Fiebermessen','Krallen schneiden','Tablettengabe','Bürsten','Augentropfen','Ohrensäubern'],
  'Entspannung':['Ruhetraining','Boxentraining','Deckentraining','Entspannungssignal','Anbinden','Alleine bleiben','Warten']
 };
 
@@ -150,7 +150,21 @@ function normalize(x){
  // WICHTIG: Beim ersten Laden darf nicht ensureProfile() genutzt werden,
  // weil die globale Variable data zu diesem Zeitpunkt noch nicht initialisiert ist.
  d.dogs.forEach(dog=>ensureProfileInDataObject(d,dog));
+ cleanupV77Profiles(d);
  return d;
+}
+
+function cleanupV77Profiles(target){
+ Object.values(target.profiles||{}).forEach(p=>{
+   ['active','frequency'].forEach(bucket=>{
+     if(!p[bucket])return;
+     Object.keys(p[bucket]).forEach(key=>{
+       if(key.startsWith('Sonstiges||')||key==='Medical Training||Fokus Training Futter'||key==='Medical Training||Fokus Training Objekt'){
+         delete p[bucket][key];
+       }
+     });
+   });
+ });
 }
 function ensureProfileInDataObject(target,dog){
  if(!dog)return;
@@ -180,7 +194,9 @@ function migrateCategoriesAndEntries(d){
   'Decke':'Deckentraining',
   'Bett':null,
   'Ruhiges Warten':'Ruhetraining',
-  'Impulskontrolle':'Impulskontrolle im Alltag'
+  'Impulskontrolle':'Impulskontrolle im Alltag',
+  'Focus':'Fokus Training Futter',
+  'Fokus':'Fokus Training Futter'
  };
  const moveCat={
   'Fußarbeit':'BH','180° Kehrtwendung':'BH','Winkel links':'BH','Winkel rechts':'BH','Grundstellung':'BH','Anhalten mit Grundstellung':'BH','Vorsitz':'BH','Abrufen mit Hier':'BH','Sitz':'BH','Platz':'BH','Steh':'BH','Sitz aus der Bewegung':'BH','Platz aus der Bewegung':'BH','Steh aus der Bewegung':'BH','Ablage':'BH','Gruppe':'BH',
@@ -188,12 +204,12 @@ function migrateCategoriesAndEntries(d){
   'Revieren':'Schutzdienst','Verbellen':'Schutzdienst','Helferfokus':'Schutzdienst','Rückentransport':'Schutzdienst','Seitentransport':'Schutzdienst','Kurze Flucht':'Schutzdienst','Lange Flucht':'Schutzdienst','Angriff aus Bewachung':'Schutzdienst','Überfall aus Transport':'Schutzdienst','Aus':'Schutzdienst','Schutzdienst Technik':'Schutzdienst','Schutzdienst aktiv':'Schutzdienst',
   'Distanzkontrolle':'Obedience','Box':'Obedience','Richtungsapport':'Obedience','Pylon':'Obedience','Positionswechsel':'Obedience','Identifikation':'Obedience',
   'Fährte':'Nasenarbeit','Fährte Abgang':'Nasenarbeit','Verlorensuche':'Nasenarbeit','Anzeige':'Nasenarbeit','Geruchsdifferenzierung':'Nasenarbeit','Banknotensuche':'Nasenarbeit',
-  'Futtertreiben':'Trainingsmethoden','Clicker-Konditionierung':'Trainingsmethoden','Nasentarget':'Trainingsmethoden','Vorderpfotentarget / Vorne':'Trainingsmethoden','Hinterpfotentarget / Hinten':'Trainingsmethoden','Ganz drauf':'Trainingsmethoden','Vier Pfoten':'Trainingsmethoden',
+  'Futtertreiben':'Trainingsmethoden','Clicker-Konditionierung':'Trainingsmethoden','Nasentarget':'Trainingsmethoden','Vorderpfotentarget / Vorne':'Trainingsmethoden','Hinterpfotentarget / Hinten':'Trainingsmethoden','Ganz drauf':'Trainingsmethoden','Vier Pfoten':'Trainingsmethoden','Fokus Training Futter':'Trainingsmethoden','Fokus Training Objekt':'Trainingsmethoden','Focus':'Trainingsmethoden','Fokus':'Trainingsmethoden',
   'Laufband':'Fitness','Togo Ball':'Fitness','Wackelbrett':'Fitness','Propriozeptionsbälle':'Fitness','Cavaletti':'Fitness','Slalomstangen':'Fitness','Pylonen':'Fitness','Balancekissen':'Fitness','Balancieren':'Fitness',
   'Pfote':'Tricks','Pfote links':'Tricks','Pfote rechts':'Tricks','Männchen':'Tricks','Schlafen':'Tricks','Zurück':'Tricks',
   'Sitzen':'Basics','Liegen':'Basics','Down':'Basics','Leg dich hin':'Basics','Rückruf':'Basics','Zu mir':'Basics',"Gib's mir":'Basics','Links':'Basics','Rechts':'Basics',
   'Besitzerorientierung':'Spaziergang','Leinenführigkeit kurze Leine':'Spaziergang','Leinenführigkeit Schleppleine':'Spaziergang','Raus / Auf den Weg':'Spaziergang',
-  'Kooperationssignal':'Medical Training','Medical Training':'Medical Training','Fokus Training Futter':'Medical Training','Fokus Training Objekt':'Medical Training','Maulkorbtraining':'Medical Training','Hochheben':'Medical Training','Fiebermessen':'Medical Training','Krallen schneiden':'Medical Training','Tablettengabe':'Medical Training','Bürsten':'Medical Training','Augentropfen':'Medical Training','Ohrensäubern':'Medical Training',
+  'Kooperationssignal':'Medical Training','Medical Training':'Medical Training','Maulkorbtraining':'Medical Training','Hochheben':'Medical Training','Fiebermessen':'Medical Training','Krallen schneiden':'Medical Training','Tablettengabe':'Medical Training','Bürsten':'Medical Training','Augentropfen':'Medical Training','Ohrensäubern':'Medical Training',
   'Ruhetraining':'Entspannung','Boxentraining':'Entspannung','Deckentraining':'Entspannung','Entspannungssignal':'Entspannung','Anbinden':'Entspannung','Alleine bleiben':'Entspannung','Warten':'Entspannung'
  };
  d.entries=(d.entries||[]).map(e=>{
@@ -217,6 +233,15 @@ function migrateCategoriesAndEntries(d){
    });
  });
  d.categories=merged;
+ if(d.categories['Trainingsmethoden']){
+   ['Fokus Training Futter','Fokus Training Objekt'].forEach(sub=>{
+     if(!d.categories['Trainingsmethoden'].includes(sub))d.categories['Trainingsmethoden'].push(sub);
+   });
+ }
+ if(d.categories['Medical Training']){
+   d.categories['Medical Training']=d.categories['Medical Training'].filter(sub=>!['Fokus Training Futter','Fokus Training Objekt'].includes(sub));
+ }
+ delete d.categories['Sonstiges'];
 }
 function save(){
  try{
@@ -813,7 +838,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V76_backup_training-tracker_${stamp}.json`;
+ a.download=`V77_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }
