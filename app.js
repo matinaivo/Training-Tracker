@@ -361,6 +361,7 @@ function startNewEntryForDog(d){
  saveEntryBtn.textContent='Speichern';
  editingId=null;
  trainingForm.reset();
+ const sessionRadio=document.querySelector('input[name="trainingType"][value="session"]'); if(sessionRadio)sessionRadio.checked=true;
  fillSelects();
  if(data.dogs.includes(d))entryDog.value=d;
  setUiState({currentDog:d,entryDog:d,todayDog:d,balanceDog:d,calendarDog:d});
@@ -465,10 +466,10 @@ function saveEntry(ev){
    if(i>=0){
      const originalCat=data.entries[i].category;
      const primaryCat=cats.includes(originalCat)?originalCat:cats[0];
-     let payload={dog:entryDog.value,date:entryDate.value,category:primaryCat,duration:entryDuration.value,club:false,exercises:groups[primaryCat],treadmill:groups[primaryCat].some(x=>x.subcategory==='Laufband')?treadmillData:[],note:entryNote.value.trim()};
+     let payload={dog:entryDog.value,date:entryDate.value,category:primaryCat,duration:entryDuration.value,trainingType:getTrainingType(),club:false,exercises:groups[primaryCat],treadmill:groups[primaryCat].some(x=>x.subcategory==='Laufband')?treadmillData:[],note:entryNote.value.trim()};
      data.entries[i]={...data.entries[i],...payload,updatedAt:new Date().toISOString()};
      cats.filter(cat=>cat!==primaryCat).forEach(cat=>{
-       data.entries.push({id:crypto.randomUUID(),dog:entryDog.value,date:entryDate.value,category:cat,duration:payload.duration,club:false,exercises:groups[cat],treadmill:groups[cat].some(x=>x.subcategory==='Laufband')?treadmillData:[],note:payload.note,createdAt:new Date().toISOString()});
+       data.entries.push({id:crypto.randomUUID(),dog:entryDog.value,date:entryDate.value,category:cat,duration:payload.duration,trainingType:payload.trainingType,club:false,exercises:groups[cat],treadmill:groups[cat].some(x=>x.subcategory==='Laufband')?treadmillData:[],note:payload.note,createdAt:new Date().toISOString()});
      });
      if(!save())return;
      toast(cats.length===1?'Eintrag aktualisiert.':`Eintrag aktualisiert · ${cats.length-1} zusätzliche Kategorie${cats.length-1===1?'':'n'} gespeichert.`);
@@ -479,7 +480,7 @@ function saveEntry(ev){
    }
  }
  cats.forEach(cat=>{
-   data.entries.push({id:crypto.randomUUID(),dog:entryDog.value,date:entryDate.value,category:cat,duration:entryDuration.value,club:false,exercises:groups[cat],treadmill:groups[cat].some(x=>x.subcategory==='Laufband')?treadmillData:[],note:entryNote.value.trim(),createdAt:new Date().toISOString()});
+   data.entries.push({id:crypto.randomUUID(),dog:entryDog.value,date:entryDate.value,category:cat,duration:entryDuration.value,trainingType:getTrainingType(),club:false,exercises:groups[cat],treadmill:groups[cat].some(x=>x.subcategory==='Laufband')?treadmillData:[],note:entryNote.value.trim(),createdAt:new Date().toISOString()});
  });
  if(!save())return;
  toast(cats.length===1?'Einheit gespeichert.':`${cats.length} Kategorien gespeichert.`);
@@ -541,6 +542,11 @@ function loadEntry(e,dup=false){
  entryDate.value=dup?today():e.date;
  entryDuration.value=e.duration||'';
  entryNote.value=e.note||'';
+ const type=e.trainingType||'session';
+ const typeRadio=document.querySelector(`input[name="trainingType"][value="${type}"]`);
+ if(typeRadio)typeRadio.checked=true;
+ const dur=document.getElementById('entryDuration');
+ if(dur)dur.style.display=(type==='walk')?'none':'';
  document.querySelectorAll('.ex').forEach(cb=>{
    cb.checked=(e.exercises||[]).some(x=>x.category===cb.dataset.cat&&x.subcategory===cb.dataset.sub);
    if(cb.checked && typeof openParentDetails==='function') openParentDetails(cb);
@@ -556,6 +562,7 @@ function startNewEntryForDate(dateIso){
  formTitle.textContent='Training hinzufügen';
  saveEntryBtn.textContent='Speichern';
  trainingForm.reset();
+ const sessionRadio=document.querySelector('input[name="trainingType"][value="session"]'); if(sessionRadio)sessionRadio.checked=true;
  fillSelects();
  const calDog=document.getElementById('calendarDog')?.value || '__all__';
  if(calDog && calDog!=='__all__' && data.dogs.includes(calDog)) entryDog.value=calDog;
@@ -615,9 +622,11 @@ window.closeDay=()=>{selectedDay=null;dayDetails.classList.add('hidden');renderC
 function renderEntry(e){
  const typeInfo=e.trainingType==='walk'
    ? '<span class="entry-meta">🚶 Spaziergang</span>'
-   : (e.trainingType==='session'&&e.duration
-      ? `<span class="entry-meta">⏱ ${esc(e.duration)} Min.</span>`
-      : (e.duration?`<span class="entry-meta">⏱ ${esc(e.duration)} Min.</span>`:''));
+   : (e.trainingType==='everyday'
+      ? '<span class="entry-meta">🏠 Im Alltag</span>'
+      : (e.trainingType==='session'&&e.duration
+         ? `<span class="entry-meta">⏱ ${esc(e.duration)} Min.</span>`
+         : (e.duration?`<span class="entry-meta">⏱ ${esc(e.duration)} Min.</span>`:'')));
  const exercises=(e.exercises||[]).map(x=>esc(x.subcategory)).join(' · ');
  const note=e.note?`<div class="entry-note">📝 ${esc(e.note)}</div>`:'';
  const treadmill=e.treadmill?.length?`<div class="entry-note"><b>Laufband:</b> ${e.treadmill.map(b=>`${esc(b.minutes)} Min ${esc(b.speed)} km/h`).join(' · ')}</div>`:'';
@@ -714,7 +723,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V72_backup_training-tracker_${stamp}.json`;
+ a.download=`V73_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }
