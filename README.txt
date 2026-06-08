@@ -1,7 +1,7 @@
-V72:
-- Kalender-Tagesansicht gruppiert jetzt nach Hund -> Oberbereich -> Kategorie.
-- Datenstruktur bleibt unverändert.
-- Kategorie- und Eintragsaktionen bleiben unverändert.
-- Backup-Dateiname mit V72-Prefix.
-- Basis: getestete V71.
-- Cache-Busting: app.js/styles.css ?v=72.
+V73:
+- Neuer Eintragstyp 'Im Alltag' neben Trainingseinheit und Spaziergang.
+- 'Im Alltag' wird gespeichert, beim Bearbeiten wieder vorausgewaehlt und im Kalender angezeigt.
+- Keine Kategorie- oder Datenstrukturmigration.
+- Backup-Dateiname mit V73-Prefix.
+- Basis: getestete V72.
+- Cache-Busting: app.js/styles.css ?v=73.
