@@ -1,7 +1,7 @@
-V63 Clean Stable:
-- Reparaturbereich und eingebettetes Backup aus V62 entfernt.
-- Normaler Export bleibt erhalten.
-- Normaler Import bleibt erhalten und ist robuster validiert.
-- Keine neuen Kategorien- oder Datenstrukturänderungen.
-- Basis: funktionierende V62 nach erfolgreicher Datenwiederherstellung.
-- Cache-Busting: app.js/styles.css ?v=63.
+V64:
+- Fix: Speichern von neuen und bearbeiteten Einträgen funktioniert wieder.
+- Ursache: selectedExercisesByCategory fehlte nach dem Clean-up.
+- Beim Bearbeiten/Dashboard-Prefill werden alle passenden Oberblöcke und Kategorien geöffnet.
+- Keine weiteren Strukturänderungen.
+- Vorgemerkt für später: zusätzliche Trainingsart 'im Alltag'.
+- Cache-Busting: app.js/styles.css ?v=64.

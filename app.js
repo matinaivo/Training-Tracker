@@ -341,6 +341,25 @@ function renderExercises(){
 }
 window.toggleTreadmill=()=>{let on=[...document.querySelectorAll('.ex:checked')].some(x=>x.dataset.sub==='Laufband'); treadmillBox.classList.toggle('hidden',!on); if(on&&!document.querySelector('.tm-block'))addTmBlock()}
 function addTmBlock(min='',speed=''){let div=document.createElement('div');div.className='tm-block';div.innerHTML=`<label>Minuten<input class="tm-min" type="number" min="0" step="1" value="${attr(min)}"></label><label>km/h<input class="tm-speed" type="number" min="0" step="0.1" value="${attr(speed)}"></label><button type="button" class="secondary" onclick="this.parentElement.remove()">Entfernen</button>`;treadmillBlocks.appendChild(div)}
+function selectedExercisesByCategory(){
+ const groups={};
+ document.querySelectorAll('.ex:checked').forEach(cb=>{
+   const cat=cb.dataset.cat;
+   const sub=cb.dataset.sub;
+   if(!cat||!sub)return;
+   (groups[cat]||(groups[cat]=[])).push({category:cat,subcategory:sub});
+ });
+ return groups;
+}
+
+function openParentDetails(el){
+ let node=el;
+ while(node){
+   if(node.tagName && node.tagName.toLowerCase()==='details')node.open=true;
+   node=node.parentElement;
+ }
+}
+
 function saveEntry(ev){
  ev.preventDefault();
  const groups=selectedExercisesByCategory();
@@ -409,8 +428,7 @@ function loadEntry(e,dup=false){
  entryNote.value=e.note||'';
  document.querySelectorAll('.ex').forEach(cb=>{
    cb.checked=(e.exercises||[]).some(x=>x.category===cb.dataset.cat&&x.subcategory===cb.dataset.sub);
-   const details=cb.closest('details');
-   if(cb.checked && details) details.open=true;
+   if(cb.checked && typeof openParentDetails==='function') openParentDetails(cb);
  });
  treadmillBlocks.innerHTML='';
  (e.treadmill||[]).forEach(b=>addTmBlock(b.minutes,b.speed));
@@ -444,8 +462,7 @@ function startNewEntryForExercise(dateIso,dogName,cat,sub){
  }
  document.querySelectorAll('.ex').forEach(cb=>{
    cb.checked=(cb.dataset.cat===cat && cb.dataset.sub===sub);
-   const details=cb.closest('details');
-   if(cb.checked && details) details.open=true;
+   if(cb.checked && typeof openParentDetails==='function') openParentDetails(cb);
  });
  toggleTreadmill();
 }
