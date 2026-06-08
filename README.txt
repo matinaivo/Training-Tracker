@@ -1,8 +1,8 @@
-V69:
+V70:
 - Hundekarten-Buttons dezenter gestaltet.
-- Training hinzufuegen vom Hund kehrt nach Speichern/Abbrechen zur Hundeseite zurueck.
-- Geoeffneter Hund wird nach Rueckkehr wieder geoeffnet.
-- App-eigenes Modal fuer Hund loeschen, Backup importieren und alle Daten loeschen.
-- Backup-Dateiname mit V69-Praefix.
-- Basis: stabile V68.
-- Cache-Busting: app.js/styles.css ?v=69.
+- Button 'Schliessen' heisst nun 'Einklappen'.
+- Zuletzt geoeffneter Hund wird gemerkt und nach Rendern wieder geoeffnet.
+- Rueckkehr nach Training vom Hund oeffnet weiterhin den passenden Hund.
+- Backup-Dateiname mit V70-Praefix.
+- Basis: stabile V69.
+- Cache-Busting: app.js/styles.css ?v=70.

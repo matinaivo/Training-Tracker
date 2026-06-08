@@ -597,3 +597,40 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
 .app-modal-actions button{
  min-height:42px;
 }
+
+/* V70 Hundekarten Feinschliff */
+.compact-actions{
+ gap:.4rem;
+}
+.compact-actions .icon-action{
+ min-height:34px;
+ padding:.38rem .7rem;
+ border-radius:999px;
+ font-size:.92rem;
+ font-weight:800;
+ box-shadow:none;
+}
+.compact-actions .soft-primary{
+ background:#eaf6ff;
+ color:#0062d6;
+}
+.compact-actions .soft-primary:hover,
+.compact-actions .secondary:hover{
+ filter:brightness(.98);
+}
+.dog-collapse-summary{
+ -webkit-tap-highlight-color:transparent;
+}
+@media(max-width:650px){
+ .dog-actions.compact-actions{
+   justify-content:flex-start;
+ }
+ .dog-actions.compact-actions button{
+   flex:0 1 auto;
+   min-width:auto;
+ }
+ .compact-actions .icon-action{
+   min-height:36px;
+   padding:.4rem .72rem;
+ }
+}
