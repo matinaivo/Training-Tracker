@@ -474,25 +474,4 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
  }
 }
 
-/* V62 repair import */
-.repair-panel{
- border:2px solid #b9e0ff;
- background:#f3fbff;
-}
-.repair-panel .actions{
- display:flex;
- flex-wrap:wrap;
- gap:.6rem;
-}
-.repair-panel button{
- min-height:44px;
-}
-.diagnose-output{
- white-space:pre-wrap;
- background:#f7f7f7;
- border:1px solid var(--line);
- border-radius:12px;
- padding:.7rem;
- max-height:260px;
- overflow:auto;
-}
+
