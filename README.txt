@@ -1,8 +1,11 @@
-V74:
-- Radiobuttons fuer Trainingseinheit/Spaziergang/Im Alltag mobil sauber ausgerichtet.
-- Dauerfeld wird nur bei Trainingseinheit angezeigt.
-- Trainingseinheit ohne Dauer zeigt nun '⏱ Trainingseinheit' statt leerer Anzeige.
-- Keine Datenstruktur- oder Kategorienänderungen.
-- Backup-Dateiname mit V74-Prefix.
-- Basis: geprüfte V73.
-- Cache-Busting: app.js/styles.css ?v=74.
+V75:
+- Kategorien-Reiter sicherer gestaltet.
+- Normale Ansicht zeigt keine Löschbuttons mehr.
+- Bearbeiten-Button oben rechts an jeder Kategorie.
+- Löschbuttons nur im Bearbeitungsmodus sichtbar.
+- Unterkategorien werden untereinander angezeigt.
+- Kategorie/Unterkategorie löschen nutzt App-Modal mit Bestätigung.
+- Keine Änderungen an der Kategorienstruktur.
+- Backup-Dateiname mit V75-Prefix.
+- Basis: geprüfte V74.
+- Cache-Busting: app.js/styles.css ?v=75.

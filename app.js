@@ -706,11 +706,88 @@ function sug(x,cls){return `<div class="score-row"><span><b>${esc(x.sub)}</b><br
 function renderBalance(){let d=balanceDog.value||data.dogs[0]; if(!d){balanceContent.innerHTML='<div class="card">Noch kein Hund.</div>';return} let order=[...categoryBlocks.flatMap(b=>b.categories),...Object.keys(data.categories).filter(c=>!categoryBlocks.flatMap(b=>b.categories).includes(c))]; balanceContent.innerHTML=order.filter(c=>data.categories[c]).map(c=>balanceCard(d,c,false)).join('')}
 function balanceCard(d,cat,compact){let subs=(data.categories[cat]||[]).filter(s=>active(d,cat,s));if(!subs.length)return `<div class="card"><h2>${esc(cat)}</h2><p>Keine aktiven Übungen.</p></div>`;let since=new Date();since.setDate(since.getDate()-30);let si=isoDate(since);let rows=subs.map(s=>{let cnt=entries(d).filter(e=>e.date>=si&&e.exercises.some(x=>x.category===cat&&x.subcategory===s)).length,l=last(d,s),days=l?daysBetween(l.date):999;return{sub:s,cnt,days}}).sort((a,b)=>a.cnt-b.cnt||b.days-a.days);let max=Math.max(1,...rows.map(r=>r.cnt));if(compact)rows=rows.slice(0,6);return `<div class="card"><h2>${esc(cat)} <span class="pill">30 Tage</span></h2><div class="score-list">${rows.map(r=>`<div class="score-row"><span style="flex:1"><b>${esc(r.sub)}</b><br><span class="tiny">${r.cnt}× · zuletzt ${r.days===999?'noch nie':'vor '+r.days+' T.'}</span><div class="bar-wrap"><div class="bar" style="width:${Math.max(4,Math.round(r.cnt/max*100))}%"></div></div></span><span class="pill ${r.cnt===0?'red':r.cnt<=1?'yellow':'green'}">${r.cnt}×</span></div>`).join('')}</div></div>`}
 
-function renderSettings(){categoryList.innerHTML=Object.entries(data.categories).map(([cat,subs])=>`<div class="card"><div class="manage-head"><h2>${esc(cat)}</h2><button class="danger" onclick="deleteCategory('${attr(cat)}')">Kategorie löschen</button></div><div class="sub-list">${subs.map(s=>`<span class="pill">${esc(s)}<button class="mini-delete" onclick="deleteSub('${attr(cat)}','${attr(s)}')">×</button></span>`).join('')}</div></div>`).join('')}
-function addCategory(){let c=newCategoryName.value.trim();if(!c)return;if(data.categories[c]){toast('Kategorie existiert bereits.','warn');return}data.categories[c]=[];data.dogs.forEach(ensureProfile);newCategoryName.value='';save();refresh()}
-function addSubcategory(){let c=subcategoryCategory.value,s=newSubcategoryName.value.trim();if(!s)return;if(data.categories[c].includes(s)){toast('Unterkategorie existiert bereits.','warn');return}data.categories[c].push(s);data.dogs.forEach(d=>{ensureProfile(d);data.profiles[d].active[k(c,s)]=false;data.profiles[d].frequency[k(c,s)]='1w'});newSubcategoryName.value='';save();refresh()}
-window.deleteCategory=c=>{let cnt=data.entries.filter(e=>e.category===c||e.exercises.some(x=>x.category===c)).length;if(!confirm(`Kategorie "${c}" löschen?${cnt?`\n\n${cnt} Einträge nutzen sie.`:''}`))return;if(cnt&&prompt('Bitte LÖSCHEN eingeben')!=='LÖSCHEN')return;delete data.categories[c];Object.values(data.profiles).forEach(p=>Object.keys(p.active).forEach(key=>{if(key.startsWith(c+'||'))delete p.active[key]}));save();refresh()}
-window.deleteSub=(c,s)=>{let cnt=data.entries.filter(e=>e.exercises.some(x=>x.category===c&&x.subcategory===s)).length;if(!confirm(`Unterkategorie "${s}" löschen?${cnt?`\n\n${cnt} Einträge nutzen sie.`:''}`))return;if(cnt&&prompt('Bitte LÖSCHEN eingeben')!=='LÖSCHEN')return;data.categories[c]=data.categories[c].filter(x=>x!==s);Object.values(data.profiles).forEach(p=>delete p.active[k(c,s)]);save();refresh()}
+
+let editingCategoryName=null;
+function setEditingCategory(cat){
+ editingCategoryName=cat;
+ renderSettings();
+}
+function clearEditingCategory(){
+ editingCategoryName=null;
+ renderSettings();
+}
+function categoryEntryCount(cat){
+ return data.entries.filter(e=>e.category===cat||(e.exercises||[]).some(x=>x.category===cat)).length;
+}
+function subEntryCount(cat,sub){
+ return data.entries.filter(e=>(e.exercises||[]).some(x=>x.category===cat&&x.subcategory===sub)).length;
+}
+function renderSettings(){
+ categoryList.innerHTML=Object.entries(data.categories).map(([cat,subs])=>{
+   const editing=editingCategoryName===cat;
+   const subList=(Array.isArray(subs)?subs:[]);
+   return `<section class="settings-category-card ${editing?'is-editing':''}">
+     <div class="settings-category-head">
+       <div>
+         <h2>${esc(cat)}</h2>
+         <p class="small">${subList.length} Unterkategorie${subList.length===1?'':'n'}${categoryEntryCount(cat)?` · ${categoryEntryCount(cat)} Eintrag${categoryEntryCount(cat)===1?'':'e'}`:''}</p>
+       </div>
+       <button type="button" class="icon-action ${editing?'secondary':'soft-primary'}" onclick="${editing?`clearEditingCategory()`:`setEditingCategory('${attr(cat)}')`}">${editing?'✅ Fertig':'✏️ Bearbeiten'}</button>
+     </div>
+     <div class="settings-sub-list">
+       ${subList.map(s=>`<div class="settings-sub-row"><span>${esc(s)}</span>${editing?`<button type="button" class="icon-btn delete" title="Unterkategorie löschen" aria-label="Unterkategorie löschen" onclick="deleteSub('${attr(cat)}','${attr(s)}')">🗑️</button>`:''}</div>`).join('')}
+     </div>
+     ${editing?`<div class="settings-danger-zone"><button type="button" class="icon-action danger-soft" onclick="deleteCategory('${attr(cat)}')">🗑 Kategorie löschen</button></div>`:''}
+   </section>`;
+ }).join('');
+}
+function addCategory(){
+ let c=newCategoryName.value.trim();
+ if(!c)return;
+ if(data.categories[c]){toast('Kategorie existiert bereits.','warn');return}
+ data.categories[c]=[];
+ data.dogs.forEach(ensureProfile);
+ newCategoryName.value='';
+ save();
+ refresh();
+}
+function addSubcategory(){
+ let c=subcategoryCategory.value,s=newSubcategoryName.value.trim();
+ if(!s)return;
+ if(data.categories[c].includes(s)){toast('Unterkategorie existiert bereits.','warn');return}
+ data.categories[c].push(s);
+ data.dogs.forEach(d=>{ensureProfile(d);data.profiles[d].active[k(c,s)]=false;data.profiles[d].frequency[k(c,s)]='1w'});
+ newSubcategoryName.value='';
+ save();
+ refresh();
+}
+window.deleteCategory=async(c)=>{
+ const cnt=categoryEntryCount(c);
+ const ok=await appConfirm({title:'Kategorie löschen?',message:`„${c}“ und alle Unterkategorien werden entfernt.${cnt?`\n\n${cnt} ${cnt===1?'Eintrag nutzt':'Einträge nutzen'} diese Kategorie.`:''}`,confirmText:'Kategorie löschen',danger:true});
+ if(!ok)return;
+ delete data.categories[c];
+ Object.values(data.profiles).forEach(p=>{
+   Object.keys(p.active||{}).forEach(key=>{if(key.startsWith(c+'||'))delete p.active[key]});
+   Object.keys(p.frequency||{}).forEach(key=>{if(key.startsWith(c+'||'))delete p.frequency[key]});
+ });
+ if(editingCategoryName===c)editingCategoryName=null;
+ save();
+ refresh();
+ toast('Kategorie gelöscht.');
+}
+window.deleteSub=async(c,s)=>{
+ const cnt=subEntryCount(c,s);
+ const ok=await appConfirm({title:'Unterkategorie löschen?',message:`„${s}“ wird aus „${c}“ entfernt.${cnt?`\n\n${cnt} ${cnt===1?'Eintrag nutzt':'Einträge nutzen'} diese Unterkategorie.`:''}`,confirmText:'Löschen',danger:true});
+ if(!ok)return;
+ data.categories[c]=data.categories[c].filter(x=>x!==s);
+ Object.values(data.profiles).forEach(p=>{
+   if(p.active)delete p.active[k(c,s)];
+   if(p.frequency)delete p.frequency[k(c,s)];
+ });
+ save();
+ refresh();
+ toast('Unterkategorie gelöscht.');
+}
 
 function entries(d){return data.entries.filter(e=>e.dog===d)}
 function calendarEntries(){
@@ -723,7 +800,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V74_backup_training-tracker_${stamp}.json`;
+ a.download=`V75_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }
