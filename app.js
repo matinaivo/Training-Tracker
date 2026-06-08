@@ -361,7 +361,7 @@ function startNewEntryForDog(d){
  saveEntryBtn.textContent='Speichern';
  editingId=null;
  trainingForm.reset();
- const sessionRadio=document.querySelector('input[name="trainingType"][value="session"]'); if(sessionRadio)sessionRadio.checked=true;
+ const sessionRadio=document.querySelector('input[name="trainingType"][value="session"]'); if(sessionRadio)sessionRadio.checked=true; updateDurationVisibility();
  fillSelects();
  if(data.dogs.includes(d))entryDog.value=d;
  setUiState({currentDog:d,entryDog:d,todayDog:d,balanceDog:d,calendarDog:d});
@@ -546,7 +546,7 @@ function loadEntry(e,dup=false){
  const typeRadio=document.querySelector(`input[name="trainingType"][value="${type}"]`);
  if(typeRadio)typeRadio.checked=true;
  const dur=document.getElementById('entryDuration');
- if(dur)dur.style.display=(type==='walk')?'none':'';
+ if(dur)dur.style.display=(type==='session')?'':'none';
  document.querySelectorAll('.ex').forEach(cb=>{
    cb.checked=(e.exercises||[]).some(x=>x.category===cb.dataset.cat&&x.subcategory===cb.dataset.sub);
    if(cb.checked && typeof openParentDetails==='function') openParentDetails(cb);
@@ -562,7 +562,7 @@ function startNewEntryForDate(dateIso){
  formTitle.textContent='Training hinzufügen';
  saveEntryBtn.textContent='Speichern';
  trainingForm.reset();
- const sessionRadio=document.querySelector('input[name="trainingType"][value="session"]'); if(sessionRadio)sessionRadio.checked=true;
+ const sessionRadio=document.querySelector('input[name="trainingType"][value="session"]'); if(sessionRadio)sessionRadio.checked=true; updateDurationVisibility();
  fillSelects();
  const calDog=document.getElementById('calendarDog')?.value || '__all__';
  if(calDog && calDog!=='__all__' && data.dogs.includes(calDog)) entryDog.value=calDog;
@@ -624,8 +624,8 @@ function renderEntry(e){
    ? '<span class="entry-meta">🚶 Spaziergang</span>'
    : (e.trainingType==='everyday'
       ? '<span class="entry-meta">🏠 Im Alltag</span>'
-      : (e.trainingType==='session'&&e.duration
-         ? `<span class="entry-meta">⏱ ${esc(e.duration)} Min.</span>`
+      : (e.trainingType==='session'
+         ? (e.duration?`<span class="entry-meta">⏱ ${esc(e.duration)} Min.</span>`:'<span class="entry-meta">⏱ Trainingseinheit</span>')
          : (e.duration?`<span class="entry-meta">⏱ ${esc(e.duration)} Min.</span>`:'')));
  const exercises=(e.exercises||[]).map(x=>esc(x.subcategory)).join(' · ');
  const note=e.note?`<div class="entry-note">📝 ${esc(e.note)}</div>`:'';
@@ -723,7 +723,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V73_backup_training-tracker_${stamp}.json`;
+ a.download=`V74_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }
@@ -797,16 +797,18 @@ async function clearAll(){
 function catClass(c){if(c==='IGP Sonstiges'||c==='IGP')return'cat-IGP';if(c==='Basics')return'cat-Basics';return 'cat-'+String(c||'default').replace(/\s+/g,'-').replace(/[^\wäöüÄÖÜß-]/g,'')}
 function shortCat(c){return c==='Unterordnung'?'UO':(c==='IGP Sonstiges'||c==='IGP')?'IGP':c}
 
+
+function updateDurationVisibility(){
+ const d=document.getElementById('entryDuration');
+ if(d)d.style.display=(getTrainingType()==='session')?'':'none';
+}
 function getTrainingType(){
  const el=document.querySelector('input[name="trainingType"]:checked');
  return el?el.value:'session';
 }
 document.addEventListener('change',e=>{
  if(e.target&&e.target.name==='trainingType'){
-   const d=document.getElementById('entryDuration');
-   if(d){
-     d.style.display=(getTrainingType()==='walk')?'none':'';
-   }
+   updateDurationVisibility();
  }
 });
 

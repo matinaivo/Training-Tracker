@@ -688,3 +688,43 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
    align-items:flex-start;
  }
 }
+
+/* V74 Eintragstyp-Optik */
+.training-type-box{
+ display:grid;
+ gap:.45rem;
+ margin:.55rem 0 .65rem;
+}
+.training-type-box label{
+ display:grid;
+ grid-template-columns:28px 1fr;
+ align-items:center;
+ column-gap:.45rem;
+ min-height:34px;
+ margin:0;
+ font-weight:800;
+ line-height:1.2;
+}
+.training-type-box input[type="radio"]{
+ width:22px;
+ height:22px;
+ margin:0;
+ justify-self:center;
+}
+.duration-field #entryDuration{
+ margin-top:.35rem;
+}
+@media(max-width:650px){
+ .training-type-box{
+   gap:.35rem;
+ }
+ .training-type-box label{
+   grid-template-columns:26px 1fr;
+   min-height:36px;
+   font-size:1rem;
+ }
+ .training-type-box input[type="radio"]{
+   width:21px;
+   height:21px;
+ }
+}
