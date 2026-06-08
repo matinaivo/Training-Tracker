@@ -48,8 +48,39 @@ function freqLabel(value){return (frequencyOptions.find(f=>f.value===value)||fre
 
 let data=load(), currentMonth=new Date(), selectedDay=null, editingId=null;
 let returnViewAfterEdit='today';
+let returnDogAfterEdit=null;
 let pendingDeleteId=null;
 const UI_STATE_KEY='trainingTrackerV27UiState';
+
+function appConfirm({title,message,confirmText='OK',danger=false}){
+ return new Promise(resolve=>{
+   const modal=document.getElementById('appModal');
+   const titleEl=document.getElementById('appModalTitle');
+   const bodyEl=document.getElementById('appModalBody');
+   const cancelBtn=document.getElementById('appModalCancel');
+   const confirmBtn=document.getElementById('appModalConfirm');
+   if(!modal||!titleEl||!bodyEl||!cancelBtn||!confirmBtn){
+     resolve(confirm((title||'Bestätigen')+'\n\n'+(message||'')));
+     return;
+   }
+   titleEl.textContent=title||'Bestätigen';
+   bodyEl.innerHTML=String(message||'').split('\n').map(line=>`<p>${esc(line)}</p>`).join('');
+   confirmBtn.textContent=confirmText||'OK';
+   confirmBtn.classList.toggle('danger',!!danger);
+   modal.classList.remove('hidden');
+   const cleanup=(val)=>{
+     modal.classList.add('hidden');
+     confirmBtn.onclick=null;
+     cancelBtn.onclick=null;
+     modal.onclick=null;
+     resolve(val);
+   };
+   confirmBtn.onclick=()=>cleanup(true);
+   cancelBtn.onclick=()=>cleanup(false);
+   modal.onclick=(e)=>{if(e.target===modal)cleanup(false)};
+ });
+}
+
 function getUiState(){try{return JSON.parse(localStorage.getItem(UI_STATE_KEY)||'{}')}catch{return {}}}
 function setUiState(patch){const s={...getUiState(),...patch};localStorage.setItem(UI_STATE_KEY,JSON.stringify(s));}
 function rememberSelect(id){const el=document.getElementById(id); if(!el)return; el.addEventListener('change',()=>setUiState({[id]:el.value}));}
@@ -300,10 +331,12 @@ function addDog(){let n=newDogName.value.trim(); if(!n)return; if(data.dogs.incl
 function renderDogList(){
  dogList.innerHTML=data.dogs.length?data.dogs.map(d=>{
    const count=entries(d).length;
-   return `<details class="dog-collapse-card" id="dog-card-${attr(d)}"><summary class="dog-collapse-summary"><span class="dog-title">🐕 ${esc(d)}</span><span class="dog-count">${count} ${count===1?'Eintrag':'Einträge'}</span></summary><div class="dog-collapse-body"><div class="dog-actions"><button type="button" onclick="startNewEntryForDog('${attr(d)}')">Training hinzufügen</button><button type="button" class="secondary" onclick="closeDogCard('${attr(d)}')">Hund schließen</button><button class="danger" onclick="deleteDog('${attr(d)}')">Löschen</button></div><div class="row"><label>Umbenennen<input id="rename-${attr(d)}" value="${attr(d)}"></label><button class="secondary" onclick="renameDog('${attr(d)}')">Ändern</button></div>${renderInlineProfile(d)}</div></details>`;
+   return `<details class="dog-collapse-card" id="dog-card-${attr(d)}"><summary class="dog-collapse-summary"><span class="dog-title">🐕 ${esc(d)}</span><span class="dog-count">${count} ${count===1?'Eintrag':'Einträge'}</span></summary><div class="dog-collapse-body"><div class="dog-actions compact-actions"><button type="button" class="icon-action" onclick="startNewEntryForDog('${attr(d)}')">➕ Training</button><button type="button" class="icon-action secondary" onclick="closeDogCard('${attr(d)}')">↩ Schließen</button><button class="icon-action danger-soft" onclick="deleteDog('${attr(d)}')">🗑 Löschen</button></div><div class="row"><label>Umbenennen<input id="rename-${attr(d)}" value="${attr(d)}"></label><button class="secondary" onclick="renameDog('${attr(d)}')">Ändern</button></div>${renderInlineProfile(d)}</div></details>`;
  }).join(''):'<div class="card"><h2>Noch kein Hund</h2><p>Lege zuerst einen Hund an. Danach erscheint hier automatisch das Trainingsprofil.</p></div>';
 }
 function startNewEntryForDog(d){
+ returnViewAfterEdit='dogs';
+ returnDogAfterEdit=d;
  show('add');
  formTitle.textContent='Training hinzufügen';
  saveEntryBtn.textContent='Speichern';
@@ -328,7 +361,17 @@ function renderInlineProfile(d){
 }
 
 window.renameDog=(old)=>{let neu=document.getElementById('rename-'+old).value.trim(); if(!neu||neu===old)return; if(data.dogs.includes(neu)){toast('Name existiert bereits.','warn');return} data.dogs=data.dogs.map(d=>d===old?neu:d); data.profiles[neu]=data.profiles[old]; delete data.profiles[old]; data.entries.forEach(e=>{if(e.dog===old)e.dog=neu}); save(); refresh()}
-window.deleteDog=(d)=>{let c=entries(d).length;if(!confirm(`Hund "${d}" löschen?${c?`\n\n${c} Einträge werden mit gelöscht.`:''}`))return;if(c&&prompt('Bitte LÖSCHEN eingeben')!=='LÖSCHEN')return;data.dogs=data.dogs.filter(x=>x!==d);delete data.profiles[d];data.entries=data.entries.filter(e=>e.dog!==d);save();refresh()}
+window.deleteDog=async(d)=>{
+ let c=entries(d).length;
+ const ok=await appConfirm({title:'Hund löschen?',message:`${d}\n\n${c?`${c} ${c===1?'Eintrag wird':'Einträge werden'} mit gelöscht.`:'Keine Einträge vorhanden.'}`,confirmText:'Löschen',danger:true});
+ if(!ok)return;
+ data.dogs=data.dogs.filter(x=>x!==d);
+ delete data.profiles[d];
+ data.entries=data.entries.filter(e=>e.dog!==d);
+ save();
+ refresh();
+ toast('Hund gelöscht.');
+}
 
 function renderProfile(){renderDogList()}
 window.toggleProfile=(d,cat,sub,val)=>{
@@ -411,7 +454,7 @@ function saveEntry(ev){
      toast(cats.length===1?'Eintrag aktualisiert.':`Eintrag aktualisiert · ${cats.length-1} zusätzliche Kategorie${cats.length-1===1?'':'n'} gespeichert.`);
      resetForm();
      selectedDay=payload.date;
-     renderToday();renderCalendar();renderBalance();renderDogList();show(returnViewAfterEdit||'calendar');if(selectedDay)renderDayDetails();
+     renderToday();renderCalendar();renderBalance();renderDogList();if(!returnToDogIfNeeded()){show(returnViewAfterEdit||'calendar');if(selectedDay)renderDayDetails();}
      return;
    }
  }
@@ -423,7 +466,24 @@ function saveEntry(ev){
  resetForm();
  selectedDay=keepDate;
  renderToday();renderCalendar();renderBalance();renderDogList();
- show(returnViewAfterEdit||'today');if(selectedDay&&returnViewAfterEdit==='calendar')renderDayDetails();
+ if(!returnToDogIfNeeded()){show(returnViewAfterEdit||'today');if(selectedDay&&returnViewAfterEdit==='calendar')renderDayDetails();}
+}
+
+function returnToDogIfNeeded(){
+ if(returnViewAfterEdit==='dogs' && returnDogAfterEdit){
+   const dog=returnDogAfterEdit;
+   returnDogAfterEdit=null;
+   show('dogs');
+   setTimeout(()=>{
+     const el=document.getElementById('dog-card-'+dog);
+     if(el){
+       el.open=true;
+       el.scrollIntoView({behavior:'smooth',block:'start'});
+     }
+   },0);
+   return true;
+ }
+ return false;
 }
 function resetForm(){editingId=null;formTitle.textContent='Training eintragen';saveEntryBtn.textContent='Speichern';trainingForm.reset();entryDate.value=today();treadmillBlocks.innerHTML='';treadmillBox.classList.add('hidden');fillSelects();renderExercises()}
 function clearEntryDetailsKeepDogDate(keepDog, keepDate){
@@ -619,7 +679,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V68_backup_training-tracker_${stamp}.json`;
+ a.download=`V69_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }
@@ -658,10 +718,10 @@ function importBackup(ev){
  const f=ev.target.files[0];
  if(!f)return;
  const reader=new FileReader();
- reader.onload=()=>{
+ reader.onload=async()=>{
    try{
      const imported=validateImportedData(JSON.parse(reader.result));
-     const ok=confirm(`Backup importieren?\n\nDas aktuelle Training, Hunde, Kategorien und Einstellungen werden überschrieben.\n\nBackup enthält: ${imported.dogs.length} Hunde und ${imported.entries.length} Einträge.`);
+     const ok=await appConfirm({title:'Backup importieren?',message:`Das aktuelle Training, Hunde, Kategorien und Einstellungen werden überschrieben.\n\nBackup enthält: ${imported.dogs.length} Hunde und ${imported.entries.length} Einträge.`,confirmText:'Importieren',danger:false});
      if(!ok)return;
      data=imported;
      if(!save())return;
@@ -677,9 +737,9 @@ function importBackup(ev){
  };
  reader.readAsText(f);
 }
-function clearAll(){
- if(!confirm('Alle Daten löschen?'))return;
- if(prompt('Bitte LÖSCHEN eingeben')!=='LÖSCHEN')return;
+async function clearAll(){
+ const ok=await appConfirm({title:'Alle Daten löschen?',message:'Alle Hunde, Trainingsprofile, Kategorien und Einträge werden gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.',confirmText:'Alles löschen',danger:true});
+ if(!ok)return;
  localStorage.removeItem(STORAGE_KEY);
  if(typeof LEGACY_STORAGE_KEYS!=='undefined'){
    LEGACY_STORAGE_KEYS.forEach(k=>localStorage.removeItem(k));
@@ -721,8 +781,10 @@ window.delEntry=id=>{openDeleteDialog(id)}
 
 function cancelEntry(){
  resetForm();
- show(returnViewAfterEdit||'today');
- if(returnViewAfterEdit==='calendar' && selectedDay)renderDayDetails();
+ if(!returnToDogIfNeeded()){
+   show(returnViewAfterEdit||'today');
+   if(returnViewAfterEdit==='calendar' && selectedDay)renderDayDetails();
+ }
 }
 
 function openDeleteDialog(id){

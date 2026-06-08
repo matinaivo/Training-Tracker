@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Training Tracker</title>
-  <link rel="stylesheet" href="styles.css?v=68">
+  <link rel="stylesheet" href="styles.css?v=69">
 </head>
 <body>
 <header class="app-header">
@@ -147,8 +147,8 @@
 </section>
 </main>
 
-<script src="app.js?v=68"></script>
-<footer class="version-footer">Training Tracker • V68</footer>
+<script src="app.js?v=69"></script>
+<footer class="version-footer">Training Tracker • V69</footer>
 
 <div id="deleteDialog" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="deleteDialogTitle">
   <div class="modal-card delete-dialog-card">
@@ -157,6 +157,18 @@
     <div class="modal-actions">
       <button id="cancelDeleteBtn" type="button" class="secondary">Abbrechen</button>
       <button id="confirmDeleteBtn" type="button" class="danger">Löschen</button>
+    </div>
+  </div>
+</div>
+
+
+<div id="appModal" class="app-modal hidden" role="dialog" aria-modal="true">
+  <div class="app-modal-card">
+    <h2 id="appModalTitle"></h2>
+    <div id="appModalBody" class="app-modal-body"></div>
+    <div class="app-modal-actions">
+      <button id="appModalCancel" type="button" class="secondary">Abbrechen</button>
+      <button id="appModalConfirm" type="button">Bestätigen</button>
     </div>
   </div>
 </div>

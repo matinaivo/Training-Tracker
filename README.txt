@@ -1,8 +1,8 @@
-V68:
-- Hunde in der Hundeuebersicht sind jetzt wirklich standardmaessig eingeklappt.
-- Jede Hundekarte zeigt Name und Anzahl Eintraege.
-- Button Training hinzufuegen direkt beim Hund.
-- Button Hund schliessen innerhalb der geoeffneten Hundekarte.
-- Backup-Dateiname mit V68-Praefix.
-- Basis: V67/V66 stabil.
-- Cache-Busting: app.js/styles.css ?v=68.
+V69:
+- Hundekarten-Buttons dezenter gestaltet.
+- Training hinzufuegen vom Hund kehrt nach Speichern/Abbrechen zur Hundeseite zurueck.
+- Geoeffneter Hund wird nach Rueckkehr wieder geoeffnet.
+- App-eigenes Modal fuer Hund loeschen, Backup importieren und alle Daten loeschen.
+- Backup-Dateiname mit V69-Praefix.
+- Basis: stabile V68.
+- Cache-Busting: app.js/styles.css ?v=69.

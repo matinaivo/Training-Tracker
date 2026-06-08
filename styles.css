@@ -535,3 +535,65 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
    flex:1 1 100%;
  }
 }
+
+/* V69 Komfort: kompakte Hundekarten-Buttons und App-Modal */
+.compact-actions{
+ display:flex;
+ flex-wrap:wrap;
+ gap:.45rem;
+ align-items:center;
+}
+.compact-actions .icon-action{
+ min-height:38px;
+ padding:.45rem .75rem;
+ border-radius:16px;
+ font-size:.95rem;
+ box-shadow:none;
+ flex:0 1 auto;
+}
+.compact-actions .danger-soft{
+ background:#fff1f4;
+ color:#d7264d;
+}
+@media(max-width:650px){
+ .dog-actions.compact-actions button{
+   flex:0 1 auto;
+ }
+}
+.app-modal{
+ position:fixed;
+ inset:0;
+ background:rgba(15,35,55,.45);
+ z-index:9999;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ padding:1rem;
+}
+.app-modal.hidden{display:none}
+.app-modal-card{
+ width:min(92vw,420px);
+ background:#fff;
+ border:1px solid var(--line);
+ border-radius:24px;
+ box-shadow:0 22px 70px rgba(0,40,80,.28);
+ padding:1.2rem;
+}
+.app-modal-card h2{
+ margin:.2rem 0 .8rem;
+ font-size:1.35rem;
+}
+.app-modal-body p{
+ margin:.45rem 0;
+ color:var(--text);
+ line-height:1.35;
+}
+.app-modal-actions{
+ display:flex;
+ justify-content:flex-end;
+ gap:.6rem;
+ margin-top:1.1rem;
+}
+.app-modal-actions button{
+ min-height:42px;
+}
