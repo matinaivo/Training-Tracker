@@ -1,3 +1,4 @@
+if(!window.CSS)window.CSS={};if(!CSS.escape)CSS.escape=s=>String(s).replace(/[^a-zA-Z0-9_-]/g,c=>'\\'+c);
 const STORAGE_KEY='trainingTrackerV14CleanFromV11'; // ab V14/V15 dauerhaft beibehalten
 const LEGACY_STORAGE_KEYS=[
  'trainingTrackerGenericV12',
@@ -127,8 +128,8 @@ function ensureProfileInDataObject(target,dog){
  if(!target.profiles[dog].frequency)target.profiles[dog].frequency={};
  Object.entries(target.categories).flatMap(([cat,subs])=>(Array.isArray(subs)?subs:[]).map(sub=>({cat,sub}))).forEach(({cat,sub})=>{
    const kk=cat+'||'+sub;
-   if(typeof target.profiles[dog].active[kk]!=='boolean')target.profiles[dog].active[kk]=true;
-   if(!target.profiles[dog].frequency[kk])target.profiles[dog].frequency[kk]='daily';
+   if(typeof target.profiles[dog].active[kk]!=='boolean')target.profiles[dog].active[kk]=false;
+   if(!target.profiles[dog].frequency[kk])target.profiles[dog].frequency[kk]='1w';
  });
 }
 function migrateCategoriesAndEntries(d){
@@ -222,14 +223,14 @@ function ensureProfile(dog){
  if(!data.profiles[dog].frequency)data.profiles[dog].frequency={};
  allSubs().forEach(x=>{
    const kk=k(x.cat,x.sub);
-   if(typeof data.profiles[dog].active[kk]!=='boolean')data.profiles[dog].active[kk]=true;
-   if(!data.profiles[dog].frequency[kk])data.profiles[dog].frequency[kk]='daily';
+   if(typeof data.profiles[dog].active[kk]!=='boolean')data.profiles[dog].active[kk]=false;
+   if(!data.profiles[dog].frequency[kk])data.profiles[dog].frequency[kk]='1w';
  });
 }
 function active(dog,cat,sub){ensureProfile(dog); return !!data.profiles[dog]?.active?.[k(cat,sub)]}
 function setActive(dog,cat,sub,val){ensureProfile(dog); data.profiles[dog].active[k(cat,sub)]=!!val; save()}
-function getFrequency(dog,cat,sub){ensureProfile(dog); return data.profiles[dog].frequency?.[k(cat,sub)]||'daily'}
-function setFrequency(dog,cat,sub,val){ensureProfile(dog); data.profiles[dog].frequency[k(cat,sub)]=val||'daily'; save()}
+function getFrequency(dog,cat,sub){ensureProfile(dog); return data.profiles[dog].frequency?.[k(cat,sub)]||'1w'}
+function setFrequency(dog,cat,sub,val){ensureProfile(dog); data.profiles[dog].frequency[k(cat,sub)]=val||'1w'; save()}
 function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function attr(s){return esc(s).replace(/'/g,'&#39;')}
 
@@ -319,8 +320,15 @@ window.changeFrequency=(d,cat,sub,val)=>{
  toast('Trainingshäufigkeit gespeichert.');
 }
 window.toggleCategoryForDog=(d,cat,val)=>{
- (data.categories[cat]||[]).forEach(sub=>setActive(d,cat,sub,val));
- renderDogList();renderExercises();renderToday();renderBalance();
+ const y=window.scrollY;
+ (data.categories[cat]||[]).forEach(sub=>{
+   ensureProfile(d);
+   data.profiles[d].active[k(cat,sub)]=!!val;
+ });
+ save();
+ document.querySelectorAll(`.profile-sub[data-dog="${CSS.escape(d)}"][data-cat="${CSS.escape(cat)}"]`).forEach(cb=>cb.checked=!!val);
+ renderExercises();renderToday();renderBalance();
+ window.scrollTo(0,y);
  toast('Profil automatisch gespeichert.');
 }
 function setAll(val){/* Profile-Reiter entfernt */}
@@ -574,7 +582,7 @@ function balanceCard(d,cat,compact){let subs=(data.categories[cat]||[]).filter(s
 
 function renderSettings(){categoryList.innerHTML=Object.entries(data.categories).map(([cat,subs])=>`<div class="card"><div class="manage-head"><h2>${esc(cat)}</h2><button class="danger" onclick="deleteCategory('${attr(cat)}')">Kategorie löschen</button></div><div class="sub-list">${subs.map(s=>`<span class="pill">${esc(s)}<button class="mini-delete" onclick="deleteSub('${attr(cat)}','${attr(s)}')">×</button></span>`).join('')}</div></div>`).join('')}
 function addCategory(){let c=newCategoryName.value.trim();if(!c)return;if(data.categories[c]){toast('Kategorie existiert bereits.','warn');return}data.categories[c]=[];data.dogs.forEach(ensureProfile);newCategoryName.value='';save();refresh()}
-function addSubcategory(){let c=subcategoryCategory.value,s=newSubcategoryName.value.trim();if(!s)return;if(data.categories[c].includes(s)){toast('Unterkategorie existiert bereits.','warn');return}data.categories[c].push(s);data.dogs.forEach(d=>{ensureProfile(d);data.profiles[d].active[k(c,s)]=true});newSubcategoryName.value='';save();refresh()}
+function addSubcategory(){let c=subcategoryCategory.value,s=newSubcategoryName.value.trim();if(!s)return;if(data.categories[c].includes(s)){toast('Unterkategorie existiert bereits.','warn');return}data.categories[c].push(s);data.dogs.forEach(d=>{ensureProfile(d);data.profiles[d].active[k(c,s)]=false;data.profiles[d].frequency[k(c,s)]='1w'});newSubcategoryName.value='';save();refresh()}
 window.deleteCategory=c=>{let cnt=data.entries.filter(e=>e.category===c||e.exercises.some(x=>x.category===c)).length;if(!confirm(`Kategorie "${c}" löschen?${cnt?`\n\n${cnt} Einträge nutzen sie.`:''}`))return;if(cnt&&prompt('Bitte LÖSCHEN eingeben')!=='LÖSCHEN')return;delete data.categories[c];Object.values(data.profiles).forEach(p=>Object.keys(p.active).forEach(key=>{if(key.startsWith(c+'||'))delete p.active[key]}));save();refresh()}
 window.deleteSub=(c,s)=>{let cnt=data.entries.filter(e=>e.exercises.some(x=>x.category===c&&x.subcategory===s)).length;if(!confirm(`Unterkategorie "${s}" löschen?${cnt?`\n\n${cnt} Einträge nutzen sie.`:''}`))return;if(cnt&&prompt('Bitte LÖSCHEN eingeben')!=='LÖSCHEN')return;data.categories[c]=data.categories[c].filter(x=>x!==s);Object.values(data.profiles).forEach(p=>delete p.active[k(c,s)]);save();refresh()}
 
@@ -631,6 +639,8 @@ function importBackup(ev){
  reader.onload=()=>{
    try{
      const imported=validateImportedData(JSON.parse(reader.result));
+     const ok=confirm(`Backup importieren?\n\nDas aktuelle Training, Hunde, Kategorien und Einstellungen werden überschrieben.\n\nBackup enthält: ${imported.dogs.length} Hunde und ${imported.entries.length} Einträge.`);
+     if(!ok)return;
      data=imported;
      if(!save())return;
      refresh();
