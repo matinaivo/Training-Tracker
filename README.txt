@@ -1,8 +1,7 @@
-V71:
-- Nur ein Hund gleichzeitig geöffnet.
-- Symbole wieder ergänzt: Training, Einklappen, Löschen.
-- Dezente Buttonoptik aus V70 beibehalten.
-- Geöffneten Hund weiterhin merken.
-- Backup-Dateiname mit V71-Prefix.
-- Basis: getestete V70.
-- Cache-Busting: app.js/styles.css ?v=71.
+V72:
+- Kalender-Tagesansicht gruppiert jetzt nach Hund -> Oberbereich -> Kategorie.
+- Datenstruktur bleibt unverändert.
+- Kategorie- und Eintragsaktionen bleiben unverändert.
+- Backup-Dateiname mit V72-Prefix.
+- Basis: getestete V71.
+- Cache-Busting: app.js/styles.css ?v=72.

@@ -643,3 +643,48 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
  background:#eef7ff!important;
  color:#0059c7!important;
 }
+
+/* V72 Kalender gruppiert nach Hund -> Oberbereich -> Kategorie */
+.grouped-day-body{
+ display:grid;
+ gap:.75rem;
+}
+.calendar-block-group{
+ background:#f8fcff;
+ border:1px solid var(--line);
+ border-radius:18px;
+ padding:.7rem;
+}
+.calendar-block-group h3{
+ margin:.1rem 0 .55rem;
+ font-size:1.05rem;
+ color:var(--text);
+}
+.calendar-category-group{
+ margin:.45rem 0 .65rem;
+}
+.calendar-category-group:last-child{
+ margin-bottom:.1rem;
+}
+.calendar-category-title{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:.5rem;
+ margin:0 0 .35rem;
+}
+.calendar-category-title .small{
+ white-space:nowrap;
+}
+.calendar-category-group .entry-card{
+ margin:.45rem 0;
+}
+@media(max-width:650px){
+ .calendar-block-group{
+   padding:.6rem;
+   border-radius:16px;
+ }
+ .calendar-category-title{
+   align-items:flex-start;
+ }
+}
