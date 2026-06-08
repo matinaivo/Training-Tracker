@@ -812,3 +812,13 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
    min-height:36px;
  }
 }
+
+/* V76 einklappbare Kategorien */
+.settings-title-wrap{
+ flex:1;
+ cursor:pointer;
+ user-select:none;
+}
+.settings-title-wrap h2{
+ margin-bottom:.15rem;
+}

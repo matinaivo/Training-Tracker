@@ -707,6 +707,12 @@ function renderBalance(){let d=balanceDog.value||data.dogs[0]; if(!d){balanceCon
 function balanceCard(d,cat,compact){let subs=(data.categories[cat]||[]).filter(s=>active(d,cat,s));if(!subs.length)return `<div class="card"><h2>${esc(cat)}</h2><p>Keine aktiven Übungen.</p></div>`;let since=new Date();since.setDate(since.getDate()-30);let si=isoDate(since);let rows=subs.map(s=>{let cnt=entries(d).filter(e=>e.date>=si&&e.exercises.some(x=>x.category===cat&&x.subcategory===s)).length,l=last(d,s),days=l?daysBetween(l.date):999;return{sub:s,cnt,days}}).sort((a,b)=>a.cnt-b.cnt||b.days-a.days);let max=Math.max(1,...rows.map(r=>r.cnt));if(compact)rows=rows.slice(0,6);return `<div class="card"><h2>${esc(cat)} <span class="pill">30 Tage</span></h2><div class="score-list">${rows.map(r=>`<div class="score-row"><span style="flex:1"><b>${esc(r.sub)}</b><br><span class="tiny">${r.cnt}× · zuletzt ${r.days===999?'noch nie':'vor '+r.days+' T.'}</span><div class="bar-wrap"><div class="bar" style="width:${Math.max(4,Math.round(r.cnt/max*100))}%"></div></div></span><span class="pill ${r.cnt===0?'red':r.cnt<=1?'yellow':'green'}">${r.cnt}×</span></div>`).join('')}</div></div>`}
 
 
+
+let collapsedSettingsCategories={};
+function toggleSettingsCategory(cat){
+ collapsedSettingsCategories[cat]=!collapsedSettingsCategories[cat];
+ renderSettings();
+}
 let editingCategoryName=null;
 function setEditingCategory(cat){
  editingCategoryName=cat;
@@ -723,25 +729,32 @@ function subEntryCount(cat,sub){
  return data.entries.filter(e=>(e.exercises||[]).some(x=>x.category===cat&&x.subcategory===sub)).length;
 }
 function renderSettings(){
+ Object.keys(data.categories||{}).forEach(c=>{
+   if(!(c in collapsedSettingsCategories)) collapsedSettingsCategories[c]=true;
+ });
+
  categoryList.innerHTML=Object.entries(data.categories).map(([cat,subs])=>{
    const editing=editingCategoryName===cat;
+   const open=collapsedSettingsCategories[cat]===true?false:false;
+   const expanded=!collapsedSettingsCategories[cat];
    const subList=(Array.isArray(subs)?subs:[]);
    return `<section class="settings-category-card ${editing?'is-editing':''}">
      <div class="settings-category-head">
-       <div>
-         <h2>${esc(cat)}</h2>
-         <p class="small">${subList.length} Unterkategorie${subList.length===1?'':'n'}${categoryEntryCount(cat)?` · ${categoryEntryCount(cat)} Eintrag${categoryEntryCount(cat)===1?'':'e'}`:''}</p>
+       <div class="settings-title-wrap" onclick="toggleSettingsCategory('${attr(cat)}')">
+         <h2>${expanded?'▼':'▶'} ${esc(cat)}</h2>
+         <p class="small">${subList.length} Unterkategorie${subList.length===1?'':'n'}</p>
        </div>
        <button type="button" class="icon-action ${editing?'secondary':'soft-primary'}" onclick="${editing?`clearEditingCategory()`:`setEditingCategory('${attr(cat)}')`}">${editing?'✅ Fertig':'✏️ Bearbeiten'}</button>
      </div>
+     ${expanded?`
      <div class="settings-sub-list">
-       ${subList.map(s=>`<div class="settings-sub-row"><span>${esc(s)}</span>${editing?`<button type="button" class="icon-btn delete" title="Unterkategorie löschen" aria-label="Unterkategorie löschen" onclick="deleteSub('${attr(cat)}','${attr(s)}')">🗑️</button>`:''}</div>`).join('')}
+       ${subList.map(s=>`<div class="settings-sub-row"><span>${esc(s)}</span>${editing?`<button type="button" class="icon-btn delete" onclick="deleteSub('${attr(cat)}','${attr(s)}')">🗑️</button>`:''}</div>`).join('')}
      </div>
      ${editing?`<div class="settings-danger-zone"><button type="button" class="icon-action danger-soft" onclick="deleteCategory('${attr(cat)}')">🗑 Kategorie löschen</button></div>`:''}
+     `:''}
    </section>`;
  }).join('');
-}
-function addCategory(){
+}function addCategory(){
  let c=newCategoryName.value.trim();
  if(!c)return;
  if(data.categories[c]){toast('Kategorie existiert bereits.','warn');return}
@@ -800,7 +813,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V75_backup_training-tracker_${stamp}.json`;
+ a.download=`V76_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }
