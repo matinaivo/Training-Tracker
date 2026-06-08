@@ -331,8 +331,14 @@ function addDog(){let n=newDogName.value.trim(); if(!n)return; if(data.dogs.incl
 
 function rememberOpenDogCard(d, open){
  const s=getUiState();
- if(open)setUiState({openDogCard:d});
- else if(s.openDogCard===d)setUiState({openDogCard:null});
+ if(open){
+   document.querySelectorAll('.dog-collapse-card').forEach(el=>{
+     if(el.id!=='dog-card-'+d) el.open=false;
+   });
+   setUiState({openDogCard:d});
+ }else if(s.openDogCard===d){
+   setUiState({openDogCard:null});
+ }
 }
 function restoreOpenDogCard(){
  const d=getUiState().openDogCard;
@@ -343,7 +349,7 @@ function restoreOpenDogCard(){
 function renderDogList(){
  dogList.innerHTML=data.dogs.length?data.dogs.map(d=>{
    const count=entries(d).length;
-   return `<details class="dog-collapse-card" id="dog-card-${attr(d)}" ontoggle="rememberOpenDogCard('${attr(d)}',this.open)"><summary class="dog-collapse-summary"><span class="dog-title">🐕 ${esc(d)}</span><span class="dog-count">${count} ${count===1?'Eintrag':'Einträge'}</span></summary><div class="dog-collapse-body"><div class="dog-actions compact-actions"><button type="button" class="icon-action soft-primary" onclick="startNewEntryForDog('${attr(d)}')">Training</button><button type="button" class="icon-action secondary" onclick="closeDogCard('${attr(d)}')">Einklappen</button><button class="icon-action danger-soft" onclick="deleteDog('${attr(d)}')">Löschen</button></div><div class="row"><label>Umbenennen<input id="rename-${attr(d)}" value="${attr(d)}"></label><button class="secondary" onclick="renameDog('${attr(d)}')">Ändern</button></div>${renderInlineProfile(d)}</div></details>`;
+   return `<details class="dog-collapse-card" id="dog-card-${attr(d)}" ontoggle="rememberOpenDogCard('${attr(d)}',this.open)"><summary class="dog-collapse-summary"><span class="dog-title">🐕 ${esc(d)}</span><span class="dog-count">${count} ${count===1?'Eintrag':'Einträge'}</span></summary><div class="dog-collapse-body"><div class="dog-actions compact-actions"><button type="button" class="icon-action soft-primary" onclick="startNewEntryForDog('${attr(d)}')">➕ Training</button><button type="button" class="icon-action secondary" onclick="closeDogCard('${attr(d)}')">▴ Einklappen</button><button class="icon-action danger-soft" onclick="deleteDog('${attr(d)}')">🗑 Löschen</button></div><div class="row"><label>Umbenennen<input id="rename-${attr(d)}" value="${attr(d)}"></label><button class="secondary" onclick="renameDog('${attr(d)}')">Ändern</button></div>${renderInlineProfile(d)}</div></details>`;
  }).join(''):'<div class="card"><h2>Noch kein Hund</h2><p>Lege zuerst einen Hund an. Danach erscheint hier automatisch das Trainingsprofil.</p></div>';
  setTimeout(restoreOpenDogCard,0);
 }
@@ -694,7 +700,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V70_backup_training-tracker_${stamp}.json`;
+ a.download=`V71_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }

@@ -634,3 +634,12 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
    padding:.4rem .72rem;
  }
 }
+
+/* V71 Hundekarten final */
+.compact-actions .icon-action{
+ font-size:.88rem;
+}
+.compact-actions .soft-primary{
+ background:#eef7ff!important;
+ color:#0059c7!important;
+}

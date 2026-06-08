@@ -1,8 +1,8 @@
-V70:
-- Hundekarten-Buttons dezenter gestaltet.
-- Button 'Schliessen' heisst nun 'Einklappen'.
-- Zuletzt geoeffneter Hund wird gemerkt und nach Rendern wieder geoeffnet.
-- Rueckkehr nach Training vom Hund oeffnet weiterhin den passenden Hund.
-- Backup-Dateiname mit V70-Praefix.
-- Basis: stabile V69.
-- Cache-Busting: app.js/styles.css ?v=70.
+V71:
+- Nur ein Hund gleichzeitig geöffnet.
+- Symbole wieder ergänzt: Training, Einklappen, Löschen.
+- Dezente Buttonoptik aus V70 beibehalten.
+- Geöffneten Hund weiterhin merken.
+- Backup-Dateiname mit V71-Prefix.
+- Basis: getestete V70.
+- Cache-Busting: app.js/styles.css ?v=71.
