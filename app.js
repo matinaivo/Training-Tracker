@@ -371,6 +371,19 @@ function fillSelects(){
 }
 function addDog(){let n=newDogName.value.trim(); if(!n)return; if(data.dogs.includes(n)){toast('Diesen Hund gibt es schon.','warn');return} data.dogs.push(n); ensureProfile(n); if(!save())return; newDogName.value=''; refresh(); show('dogs'); toast('Hund gespeichert.');renderStorageStatus()}
 
+
+let editingDogName=null;
+function setEditingDog(d){
+ editingDogName=d;
+ const el=document.getElementById('dog-card-'+d);
+ if(el)el.open=true;
+ rememberOpenDogCard(d,true);
+ renderDogList();
+}
+function clearEditingDog(){
+ editingDogName=null;
+ renderDogList();
+}
 function rememberOpenDogCard(d, open){
  const s=getUiState();
  if(open){
@@ -391,7 +404,24 @@ function restoreOpenDogCard(){
 function renderDogList(){
  dogList.innerHTML=data.dogs.length?data.dogs.map(d=>{
    const count=entries(d).length;
-   return `<details class="dog-collapse-card" id="dog-card-${attr(d)}" ontoggle="rememberOpenDogCard('${attr(d)}',this.open)"><summary class="dog-collapse-summary"><span class="dog-title">🐕 ${esc(d)}</span><span class="dog-count">${count} ${count===1?'Eintrag':'Einträge'}</span></summary><div class="dog-collapse-body"><div class="dog-actions compact-actions"><button type="button" class="icon-action soft-primary" onclick="startNewEntryForDog('${attr(d)}')">➕ Training</button><button type="button" class="icon-action secondary" onclick="closeDogCard('${attr(d)}')">▴ Einklappen</button><button class="icon-action danger-soft" onclick="deleteDog('${attr(d)}')">🗑 Löschen</button></div><div class="row"><label>Umbenennen<input id="rename-${attr(d)}" value="${attr(d)}"></label><button class="secondary" onclick="renameDog('${attr(d)}')">Ändern</button></div>${renderInlineProfile(d)}</div></details>`;
+   const editing=editingDogName===d;
+   return `<details class="dog-collapse-card dog-manage-card ${editing?'is-editing':''}" id="dog-card-${attr(d)}" ontoggle="rememberOpenDogCard('${attr(d)}',this.open)">
+     <summary class="dog-collapse-summary dog-manage-summary">
+       <span class="dog-title">🐕 ${esc(d)}</span>
+       <span class="dog-count">${count} ${count===1?'Eintrag':'Einträge'}</span>
+     </summary>
+     <div class="dog-collapse-body dog-manage-body">
+       <div class="dog-manage-toolbar">
+         <button type="button" class="icon-action soft-primary" onclick="startNewEntryForDog('${attr(d)}')">➕ Training</button>
+         <button type="button" class="icon-action ${editing?'secondary':'soft-primary'}" onclick="${editing?`clearEditingDog()`:`setEditingDog('${attr(d)}')`}">${editing?'✅ Fertig':'✏️ Bearbeiten'}</button>
+       </div>
+       ${editing?`<div class="dog-edit-panel">
+         <label>Name ändern<input id="rename-${attr(d)}" value="${attr(d)}"></label>
+         <div class="dog-edit-actions"><button type="button" class="icon-action soft-primary" onclick="renameDog('${attr(d)}')">✅ Ändern</button><button type="button" class="icon-action danger-soft" onclick="deleteDog('${attr(d)}')">🗑 Hund löschen</button></div>
+       </div>`:''}
+       ${renderInlineProfile(d)}
+     </div>
+   </details>`;
  }).join(''):'<div class="card"><h2>Noch kein Hund</h2><p>Lege zuerst einen Hund an. Danach erscheint hier automatisch das Trainingsprofil.</p></div>';
  setTimeout(restoreOpenDogCard,0);
 }
@@ -423,7 +453,20 @@ function renderInlineProfile(d){
  return `<div class="inline-profile"><h3>Trainingsprofil</h3><p class="small">Öffne einen Oberbereich und aktiviere die Übungen, die für diesen Hund relevant sind.</p>${categoryBlocks.map(block=>`<details class="profile-block"><summary>${esc(block.name)}</summary>${block.categories.filter(cat=>data.categories[cat]).map(cat=>`<details class="profile-details"><summary>${esc(cat)}</summary><div class="profile-category-actions"><button type="button" class="secondary profile-action" onclick="toggleCategoryForDog('${attr(d)}','${attr(cat)}',true)">Alle aktivieren</button><button type="button" class="secondary profile-action" onclick="toggleCategoryForDog('${attr(d)}','${attr(cat)}',false)">Alle deaktivieren</button></div>${(data.categories[cat]||[]).map(sub=>`<div class="profile-row profile-row-frequency"><label><input type="checkbox" class="profile-sub" data-dog="${attr(d)}" data-cat="${attr(cat)}" data-sub="${attr(sub)}" ${active(d,cat,sub)?'checked':''} onchange="toggleProfile('${attr(d)}','${attr(cat)}','${attr(sub)}',this.checked)"> ${esc(sub)}</label><select class="frequency-select" onchange="changeFrequency('${attr(d)}','${attr(cat)}','${attr(sub)}',this.value)">${frequencyOptions.map(f=>`<option value="${f.value}" ${getFrequency(d,cat,sub)===f.value?'selected':''}>${f.label}</option>`).join('')}</select></div>`).join('')}</details>`).join('')}</details>`).join('')}</div>`;
 }
 
-window.renameDog=(old)=>{let neu=document.getElementById('rename-'+old).value.trim(); if(!neu||neu===old)return; if(data.dogs.includes(neu)){toast('Name existiert bereits.','warn');return} data.dogs=data.dogs.map(d=>d===old?neu:d); data.profiles[neu]=data.profiles[old]; delete data.profiles[old]; data.entries.forEach(e=>{if(e.dog===old)e.dog=neu}); save(); refresh()}
+window.renameDog=(old)=>{
+ let neu=document.getElementById('rename-'+old)?.value.trim();
+ if(!neu||neu===old)return;
+ if(data.dogs.includes(neu)){toast('Name existiert bereits.','warn');return}
+ data.dogs=data.dogs.map(d=>d===old?neu:d);
+ data.profiles[neu]=data.profiles[old];
+ delete data.profiles[old];
+ data.entries.forEach(e=>{if(e.dog===old)e.dog=neu});
+ editingDogName=neu;
+ setUiState({openDogCard:neu,currentDog:neu,entryDog:neu,todayDog:neu,balanceDog:neu,calendarDog:neu});
+ save();
+ refresh();
+ toast('Hund umbenannt.');
+}
 window.deleteDog=async(d)=>{
  let c=entries(d).length;
  const ok=await appConfirm({title:'Hund löschen?',message:`${d}\n\n${c?`${c} ${c===1?'Eintrag wird':'Einträge werden'} mit gelöscht.`:'Keine Einträge vorhanden.'}`,confirmText:'Löschen',danger:true});
@@ -431,6 +474,9 @@ window.deleteDog=async(d)=>{
  data.dogs=data.dogs.filter(x=>x!==d);
  delete data.profiles[d];
  data.entries=data.entries.filter(e=>e.dog!==d);
+ if(editingDogName===d)editingDogName=null;
+ const s=getUiState();
+ if(s.openDogCard===d)setUiState({openDogCard:null});
  save();
  refresh();
  toast('Hund gelöscht.');
@@ -855,7 +901,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V78_backup_training-tracker_${stamp}.json`;
+ a.download=`V79_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }

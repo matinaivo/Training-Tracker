@@ -822,3 +822,75 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
 .settings-title-wrap h2{
  margin-bottom:.15rem;
 }
+
+/* V79 Hundekarten kompakt wie Kategorien */
+.dog-manage-card{
+ background:#fff;
+}
+.dog-manage-card.is-editing{
+ border-color:#b9e0ff;
+ background:#f8fcff;
+}
+.dog-manage-summary{
+ min-height:58px;
+}
+.dog-manage-body{
+ padding-top:.15rem;
+}
+.dog-manage-toolbar{
+ display:flex;
+ justify-content:flex-end;
+ gap:.45rem;
+ margin:.2rem 0 .75rem;
+}
+.dog-manage-toolbar .icon-action,
+.dog-edit-actions .icon-action{
+ min-height:34px;
+ padding:.38rem .7rem;
+ border-radius:999px;
+ font-size:.9rem;
+ font-weight:800;
+ box-shadow:none;
+ white-space:nowrap;
+}
+.dog-edit-panel{
+ border:1px solid var(--line);
+ background:#fff;
+ border-radius:18px;
+ padding:.8rem;
+ margin:.55rem 0 .9rem;
+}
+.dog-edit-panel label{
+ margin:0;
+}
+.dog-edit-actions{
+ display:flex;
+ justify-content:flex-end;
+ flex-wrap:wrap;
+ gap:.45rem;
+ margin-top:.65rem;
+}
+.dog-manage-card .soft-primary{
+ background:#eef7ff!important;
+ color:#0059c7!important;
+}
+.dog-manage-card .danger-soft{
+ background:#fff1f4!important;
+ color:#d7264d!important;
+}
+@media(max-width:650px){
+ .dog-manage-summary{
+   min-height:56px;
+ }
+ .dog-manage-toolbar{
+   justify-content:flex-start;
+ }
+ .dog-manage-toolbar .icon-action,
+ .dog-edit-actions .icon-action{
+   min-height:36px;
+   font-size:.9rem;
+ }
+ .dog-edit-actions{
+   justify-content:flex-start;
+ }
+}
