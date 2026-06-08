@@ -370,11 +370,15 @@ function saveEntry(ev){
  if(editingId){
    let i=data.entries.findIndex(e=>e.id===editingId);
    if(i>=0){
-     const cat=cats[0];
-     let payload={dog:entryDog.value,date:entryDate.value,category:cat,duration:entryDuration.value,club:false,exercises:groups[cat],treadmill:treadmillData,note:entryNote.value.trim()};
+     const originalCat=data.entries[i].category;
+     const primaryCat=cats.includes(originalCat)?originalCat:cats[0];
+     let payload={dog:entryDog.value,date:entryDate.value,category:primaryCat,duration:entryDuration.value,club:false,exercises:groups[primaryCat],treadmill:groups[primaryCat].some(x=>x.subcategory==='Laufband')?treadmillData:[],note:entryNote.value.trim()};
      data.entries[i]={...data.entries[i],...payload,updatedAt:new Date().toISOString()};
+     cats.filter(cat=>cat!==primaryCat).forEach(cat=>{
+       data.entries.push({id:crypto.randomUUID(),dog:entryDog.value,date:entryDate.value,category:cat,duration:payload.duration,club:false,exercises:groups[cat],treadmill:groups[cat].some(x=>x.subcategory==='Laufband')?treadmillData:[],note:payload.note,createdAt:new Date().toISOString()});
+     });
      if(!save())return;
-     toast('Eintrag aktualisiert.');
+     toast(cats.length===1?'Eintrag aktualisiert.':`Eintrag aktualisiert · ${cats.length-1} zusätzliche Kategorie${cats.length-1===1?'':'n'} gespeichert.`);
      resetForm();
      selectedDay=payload.date;
      renderToday();renderCalendar();renderBalance();renderDogList();show(returnViewAfterEdit||'calendar');if(selectedDay)renderDayDetails();
