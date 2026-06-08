@@ -1,11 +1,8 @@
-V77:
-- Kategorienstruktur bereinigt.
-- Sonstiges wird entfernt.
-- Sonstiges/Fokus wird zu Trainingsmethoden/Fokus Training Futter migriert.
-- Medical Training/Fokus Training Futter und Objekt werden zu Trainingsmethoden verschoben.
-- Medical Training enthält die Fokus-Unterkategorien nicht mehr.
-- Profile werden von alten Kategorie-Schlüsseln bereinigt.
-- Keine Trainingsdaten gehen durch die Migration verloren.
-- Backup-Dateiname mit V77-Prefix.
-- Basis: geprüfte V76.
-- Cache-Busting: app.js/styles.css ?v=77.
+V78:
+- Bugfix: Basics-Unterkategorie 'Gib\'s mir' wurde zu 'Gib es mir' umbenannt.
+- Bestehende Einträge und Profil-Haken werden automatisch migriert.
+- Dadurch entfallen Probleme durch Apostroph in Inline-Handlern.
+- V77-Kategorienbereinigung bleibt erhalten.
+- Backup-Dateiname mit V78-Prefix.
+- Basis: geprüfte V77.
+- Cache-Busting: app.js/styles.css ?v=78.

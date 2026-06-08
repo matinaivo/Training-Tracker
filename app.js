@@ -15,7 +15,7 @@ const defaultCategories={
  'Trainingsmethoden':['Futtertreiben','Clicker-Konditionierung','Nasentarget','Vorderpfotentarget / Vorne','Hinterpfotentarget / Hinten','Ganz drauf','Vier Pfoten','Fokus Training Futter','Fokus Training Objekt'],
  'Fitness':['Laufband','Togo Ball','Wackelbrett','Propriozeptionsbälle','Cavaletti','Slalomstangen','Pylonen','Balancekissen','Balancieren'],
  'Tricks':['Pfote','Pfote links','Pfote rechts','Männchen','Schlafen','Zurück'],
- 'Basics':['Sitzen','Liegen','Down','Leg dich hin','Rückruf','Zu mir','Gib\'s mir','Links','Rechts'],
+ 'Basics':['Sitzen','Liegen','Down','Leg dich hin','Rückruf','Zu mir','Gib es mir','Links','Rechts'],
  'Spaziergang':['Besitzerorientierung','Leinenführigkeit kurze Leine','Leinenführigkeit Schleppleine','Raus / Auf den Weg'],
  'Medical Training':['Kooperationssignal','Maulkorbtraining','Hochheben','Fiebermessen','Krallen schneiden','Tablettengabe','Bürsten','Augentropfen','Ohrensäubern'],
  'Entspannung':['Ruhetraining','Boxentraining','Deckentraining','Entspannungssignal','Anbinden','Alleine bleiben','Warten']
@@ -150,10 +150,25 @@ function normalize(x){
  // WICHTIG: Beim ersten Laden darf nicht ensureProfile() genutzt werden,
  // weil die globale Variable data zu diesem Zeitpunkt noch nicht initialisiert ist.
  d.dogs.forEach(dog=>ensureProfileInDataObject(d,dog));
+ migrateV78GibEsMirProfiles(d);
  cleanupV77Profiles(d);
  return d;
 }
 
+
+function migrateV78GibEsMirProfiles(target){
+ Object.values(target.profiles||{}).forEach(p=>{
+   ['active','frequency'].forEach(bucket=>{
+     if(!p[bucket])return;
+     const oldKey="Basics||Gib's mir";
+     const newKey="Basics||Gib es mir";
+     if(Object.prototype.hasOwnProperty.call(p[bucket],oldKey)){
+       if(!Object.prototype.hasOwnProperty.call(p[bucket],newKey))p[bucket][newKey]=p[bucket][oldKey];
+       delete p[bucket][oldKey];
+     }
+   });
+ });
+}
 function cleanupV77Profiles(target){
  Object.values(target.profiles||{}).forEach(p=>{
    ['active','frequency'].forEach(bucket=>{
@@ -196,7 +211,9 @@ function migrateCategoriesAndEntries(d){
   'Ruhiges Warten':'Ruhetraining',
   'Impulskontrolle':'Impulskontrolle im Alltag',
   'Focus':'Fokus Training Futter',
-  'Fokus':'Fokus Training Futter'
+  'Fokus':'Fokus Training Futter',
+  "Gib's mir":'Gib es mir',
+  'Gib es mir':'Gib es mir'
  };
  const moveCat={
   'Fußarbeit':'BH','180° Kehrtwendung':'BH','Winkel links':'BH','Winkel rechts':'BH','Grundstellung':'BH','Anhalten mit Grundstellung':'BH','Vorsitz':'BH','Abrufen mit Hier':'BH','Sitz':'BH','Platz':'BH','Steh':'BH','Sitz aus der Bewegung':'BH','Platz aus der Bewegung':'BH','Steh aus der Bewegung':'BH','Ablage':'BH','Gruppe':'BH',
@@ -207,7 +224,7 @@ function migrateCategoriesAndEntries(d){
   'Futtertreiben':'Trainingsmethoden','Clicker-Konditionierung':'Trainingsmethoden','Nasentarget':'Trainingsmethoden','Vorderpfotentarget / Vorne':'Trainingsmethoden','Hinterpfotentarget / Hinten':'Trainingsmethoden','Ganz drauf':'Trainingsmethoden','Vier Pfoten':'Trainingsmethoden','Fokus Training Futter':'Trainingsmethoden','Fokus Training Objekt':'Trainingsmethoden','Focus':'Trainingsmethoden','Fokus':'Trainingsmethoden',
   'Laufband':'Fitness','Togo Ball':'Fitness','Wackelbrett':'Fitness','Propriozeptionsbälle':'Fitness','Cavaletti':'Fitness','Slalomstangen':'Fitness','Pylonen':'Fitness','Balancekissen':'Fitness','Balancieren':'Fitness',
   'Pfote':'Tricks','Pfote links':'Tricks','Pfote rechts':'Tricks','Männchen':'Tricks','Schlafen':'Tricks','Zurück':'Tricks',
-  'Sitzen':'Basics','Liegen':'Basics','Down':'Basics','Leg dich hin':'Basics','Rückruf':'Basics','Zu mir':'Basics',"Gib's mir":'Basics','Links':'Basics','Rechts':'Basics',
+  'Sitzen':'Basics','Liegen':'Basics','Down':'Basics','Leg dich hin':'Basics','Rückruf':'Basics','Zu mir':'Basics',"Gib es mir":'Basics','Links':'Basics','Rechts':'Basics',
   'Besitzerorientierung':'Spaziergang','Leinenführigkeit kurze Leine':'Spaziergang','Leinenführigkeit Schleppleine':'Spaziergang','Raus / Auf den Weg':'Spaziergang',
   'Kooperationssignal':'Medical Training','Medical Training':'Medical Training','Maulkorbtraining':'Medical Training','Hochheben':'Medical Training','Fiebermessen':'Medical Training','Krallen schneiden':'Medical Training','Tablettengabe':'Medical Training','Bürsten':'Medical Training','Augentropfen':'Medical Training','Ohrensäubern':'Medical Training',
   'Ruhetraining':'Entspannung','Boxentraining':'Entspannung','Deckentraining':'Entspannung','Entspannungssignal':'Entspannung','Anbinden':'Entspannung','Alleine bleiben':'Entspannung','Warten':'Entspannung'
@@ -838,7 +855,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V77_backup_training-tracker_${stamp}.json`;
+ a.download=`V78_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }
