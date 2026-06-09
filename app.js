@@ -433,15 +433,13 @@ function renderDogList(){
    const editing=editingDogName===d;
    return `<details class="dog-collapse-card dog-manage-card settings-category-card compact-settings-card ${editing?'is-editing':''}" id="dog-card-${attr(d)}" ontoggle="rememberOpenDogCard('${attr(d)}',this.open)">
      <summary class="dog-collapse-summary dog-manage-summary settings-category-head compact-settings-head compact-dog-head">
-       <span class="dog-title"><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> 🐕 ${esc(d)}</span>
-       <span class="dog-count">${count}</span>
+       <div class="dog-title settings-title-wrap compact-settings-title"><h2><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> 🐕 ${esc(d)}</h2></div>
+       <span class="dog-count settings-count-badge">${count}</span>
+       ${editing
+         ? `<button type="button" class="icon-btn edit compact-edit-btn" aria-label="Schließen" onclick="clearEditingDog();event.stopPropagation();">❌</button>`
+         : `<button type="button" class="icon-btn edit compact-edit-btn" aria-label="Training hinzufügen" onclick="startNewEntryForDog('${attr(d)}');event.stopPropagation();">➕</button><button type="button" class="icon-btn edit compact-edit-btn" aria-label="Bearbeiten" onclick="setEditingDog('${attr(d)}');event.stopPropagation();">✏️</button>`}
      </summary>
      <div class="dog-collapse-body dog-manage-body">
-       <div class="dog-manage-toolbar">
-         ${editing
-           ? ``
-           : `<button type="button" class="icon-action soft-primary" onclick="startNewEntryForDog('${attr(d)}')">➕ Training</button><button type="button" class="icon-action soft-primary" onclick="setEditingDog('${attr(d)}')">✏️ Bearbeiten</button>`}
-       </div>
        ${editing?`<div class="dog-edit-panel compact-dog-edit">
          <input id="rename-${attr(d)}" value="${attr(d)}" aria-label="Hundename">
          <div class="dog-edit-actions"><button type="button" class="icon-action soft-primary" onclick="renameDog('${attr(d)}')">💾 Speichern</button><button type="button" class="icon-action danger-soft" onclick="deleteDog('${attr(d)}')">🗑 Löschen</button><button type="button" class="icon-action secondary" onclick="clearEditingDog()">❌ Schließen</button></div>
@@ -926,7 +924,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V87_backup_training-tracker_${stamp}.json`;
+ a.download=`V89_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }

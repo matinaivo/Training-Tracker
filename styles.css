@@ -1409,3 +1409,33 @@ details[open] > summary .arrow-open{
    min-height:36px!important;
  }
 }
+
+/* V89 Hundekopfzeile: Name | Badge | Training | Bearbeiten wie Kategorien */
+.compact-dog-head{
+ grid-template-columns:1fr auto auto auto!important;
+}
+.compact-dog-head .dog-title h2{
+ margin:0!important;
+ font-size:1rem!important;
+ font-weight:900!important;
+ line-height:1.2!important;
+ display:flex;
+ align-items:center;
+ gap:.35rem;
+}
+.compact-dog-head .compact-edit-btn{
+ width:36px!important;
+ height:36px!important;
+ min-height:36px!important;
+ padding:0!important;
+ display:inline-flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+ border-radius:12px!important;
+}
+.compact-dog-head .dog-count{
+ margin:0!important;
+}
+.dog-manage-body{
+ padding:.65rem 0 0!important;
+}

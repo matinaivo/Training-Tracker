@@ -1,7 +1,7 @@
-V87:
-- Basis: V85.
-- Hundeuebersicht nutzt dieselben Klassen/Werte wie Hauptkategorien im Kategorien-Reiter.
-- Trainingsprofil-Oberbereiche nutzen dieselbe Optik wie Hauptkategorien im Kategorien-Reiter.
-- Trainingsprofil-Unterkategorien nutzen dieselbe Optik wie Unterkategorien im Kategorien-Reiter.
-- Keine globalen Karten-Overrides wie in V86.
-- Cache-Busting: app.js/styles.css ?v=87.
+V89:
+- Basis: V87.
+- Hundekopfzeile strukturell an Kategorien angeglichen: Name, Badge, Training-Icon, Bearbeiten-Icon.
+- Separate Normalmodus-Toolbar fuer Training/Bearbeiten entfernt.
+- Im Bearbeitungsmodus steht oben ein kompaktes Schliessen-Icon.
+- Kein globaler Karten-Override.
+- Cache-Busting: app.js/styles.css ?v=89.
