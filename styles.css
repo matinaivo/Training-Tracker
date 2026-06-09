@@ -1439,3 +1439,16 @@ details[open] > summary .arrow-open{
 .dog-manage-body{
  padding:.65rem 0 0!important;
 }
+
+/* V90 single-row dog header */
+.compact-dog-head{
+display:grid!important;
+grid-template-columns:minmax(0,1fr) auto auto auto!important;
+align-items:center!important;
+}
+.compact-dog-head > *{
+grid-row:1!important;
+}
+.compact-dog-head .dog-title{
+min-width:0!important;
+}
