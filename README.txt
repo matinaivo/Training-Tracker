@@ -1,7 +1,7 @@
-V86:
-- Einheitliche Kartenkomponente fuer Hunde, Kategorien und Trainingsprofil.
-- Gemeinsame Werte fuer Hoehe, Rundung, Abstand, Innenabstand und Badge-Groesse.
-- Kategorienansicht bleibt Referenz fuer die Optik.
-- V85 kompakte Trainingsprofil-Listen bleiben erhalten.
+V87:
 - Basis: V85.
-- Cache-Busting: app.js/styles.css ?v=86.
+- Hundeuebersicht nutzt dieselben Klassen/Werte wie Hauptkategorien im Kategorien-Reiter.
+- Trainingsprofil-Oberbereiche nutzen dieselbe Optik wie Hauptkategorien im Kategorien-Reiter.
+- Trainingsprofil-Unterkategorien nutzen dieselbe Optik wie Unterkategorien im Kategorien-Reiter.
+- Keine globalen Karten-Overrides wie in V86.
+- Cache-Busting: app.js/styles.css ?v=87.

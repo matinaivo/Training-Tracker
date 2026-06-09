@@ -418,12 +418,12 @@ function renderDogProfileOverview(d){
  ensureProfile(d);
  return `<div class="inline-profile compact-profile"><h3>Trainingsprofil</h3>${categoryBlocks.map(block=>{
    const blockCount=activeCountForBlock(d,block);
-   return `<details class="profile-block dog-profile-block"><summary><span class="profile-title"><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${blockIcon(block.name)} ${esc(block.name)}</span><span class="count-badge">${blockCount}</span></summary>${block.categories.filter(cat=>data.categories[cat]).map(cat=>{
+   return `<details class="profile-block dog-profile-block settings-category-card compact-settings-card"><summary class="settings-category-head compact-settings-head compact-profile-head"><div class="settings-title-wrap compact-settings-title"><h2><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${blockIcon(block.name)} ${esc(block.name)}</h2></div><span class="count-badge settings-count-badge">${blockCount}</span></summary>${block.categories.filter(cat=>data.categories[cat]).map(cat=>{
      const catCount=activeCountForCategory(d,cat);
      const subs=(data.categories[cat]||[]);
      const activeCount=subs.filter(sub=>active(d,cat,sub)).length;
      const allChecked=subs.length>0&&activeCount===subs.length;
-     return `<details class="profile-details dog-profile-category"><summary><span class="profile-title"><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${esc(cat)}</span><span class="count-badge">${catCount}</span></summary><div class="profile-select-all-row"><label><input type="checkbox" ${allChecked?'checked':''} onchange="toggleCategoryForDog('${attr(d)}','${attr(cat)}',this.checked)"> Alle auswählen</label></div><div class="compact-profile-list">${subs.map(sub=>`<div class="profile-row profile-row-frequency compact-profile-row"><label class="profile-check-label"><input type="checkbox" class="profile-sub" data-dog="${attr(d)}" data-cat="${attr(cat)}" data-sub="${attr(sub)}" ${active(d,cat,sub)?'checked':''} onchange="toggleProfile('${attr(d)}','${attr(cat)}','${attr(sub)}',this.checked)"> <span>${esc(sub)}</span></label><select class="frequency-select compact-frequency-select" onchange="changeFrequency('${attr(d)}','${attr(cat)}','${attr(sub)}',this.value)">${frequencyOptions.map(f=>`<option value="${f.value}" ${getFrequency(d,cat,sub)===f.value?'selected':''}>${f.label}</option>`).join('')}</select></div>`).join('')}</div></details>`;
+     return `<details class="profile-details dog-profile-category compact-profile-subcategory"><summary class="settings-sub-row compact-settings-sub-row compact-profile-sub-head"><span><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${esc(cat)}</span><span class="count-badge settings-count-badge">${catCount}</span></summary><div class="profile-select-all-row"><label><input type="checkbox" ${allChecked?'checked':''} onchange="toggleCategoryForDog('${attr(d)}','${attr(cat)}',this.checked)"> Alle auswählen</label></div><div class="compact-profile-list">${subs.map(sub=>`<div class="profile-row profile-row-frequency compact-profile-row"><label class="profile-check-label"><input type="checkbox" class="profile-sub" data-dog="${attr(d)}" data-cat="${attr(cat)}" data-sub="${attr(sub)}" ${active(d,cat,sub)?'checked':''} onchange="toggleProfile('${attr(d)}','${attr(cat)}','${attr(sub)}',this.checked)"> <span>${esc(sub)}</span></label><select class="frequency-select compact-frequency-select" onchange="changeFrequency('${attr(d)}','${attr(cat)}','${attr(sub)}',this.value)">${frequencyOptions.map(f=>`<option value="${f.value}" ${getFrequency(d,cat,sub)===f.value?'selected':''}>${f.label}</option>`).join('')}</select></div>`).join('')}</div></details>`;
    }).join('')}</details>`;
  }).join('')}</div>`;
 }
@@ -431,8 +431,8 @@ function renderDogList(){
  dogList.innerHTML=data.dogs.length?data.dogs.map(d=>{
    const count=entries(d).length;
    const editing=editingDogName===d;
-   return `<details class="dog-collapse-card dog-manage-card ${editing?'is-editing':''}" id="dog-card-${attr(d)}" ontoggle="rememberOpenDogCard('${attr(d)}',this.open)">
-     <summary class="dog-collapse-summary dog-manage-summary">
+   return `<details class="dog-collapse-card dog-manage-card settings-category-card compact-settings-card ${editing?'is-editing':''}" id="dog-card-${attr(d)}" ontoggle="rememberOpenDogCard('${attr(d)}',this.open)">
+     <summary class="dog-collapse-summary dog-manage-summary settings-category-head compact-settings-head compact-dog-head">
        <span class="dog-title"><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> 🐕 ${esc(d)}</span>
        <span class="dog-count">${count}</span>
      </summary>
@@ -926,7 +926,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V86_backup_training-tracker_${stamp}.json`;
+ a.download=`V87_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }
