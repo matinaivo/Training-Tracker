@@ -894,3 +894,54 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
    justify-content:flex-start;
  }
 }
+
+/* V80 Hundekarten final: kompakt, Bearbeiten klar getrennt, Zahlen-Badges */
+.dog-manage-summary .dog-count{
+ min-width:34px;
+ text-align:center;
+}
+.dog-manage-toolbar{
+ margin:.15rem 0 .7rem;
+}
+.compact-profile h3{
+ margin:.25rem 0 .6rem;
+}
+.dog-profile-block > summary,
+.dog-profile-category > summary{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:.65rem;
+}
+.count-badge{
+ display:inline-flex;
+ align-items:center;
+ justify-content:center;
+ min-width:28px;
+ height:24px;
+ padding:0 .45rem;
+ border-radius:999px;
+ background:#eef3f8;
+ color:#557086;
+ font-weight:900;
+ font-size:.88rem;
+}
+.compact-dog-edit{
+ margin:.35rem 0 .45rem;
+}
+.compact-dog-edit input{
+ margin:0 0 .55rem;
+}
+.compact-dog-edit .dog-edit-actions{
+ margin-top:.25rem;
+}
+@media(max-width:650px){
+ .dog-manage-toolbar{
+   gap:.4rem;
+ }
+ .count-badge{
+   min-width:26px;
+   height:22px;
+   font-size:.84rem;
+ }
+}
