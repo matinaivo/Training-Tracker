@@ -1,9 +1,9 @@
-V84:
-- Kompakte Hunde-Anlage: Eingabefeld mit Plus-Button und Beispiel 'Bello'.
-- Kompakte Kategorien-Anlage: Plus-Button direkt am Feld.
-- Unterkategorie-Anlage in einer Zeile mit Kategorieauswahl, Eingabe und Plus.
-- Kategorienkarten deutlich flacher: Pfeil, Name, Zahlen-Badge und Bearbeiten-Icon in einer Zeile.
-- Schriftgroessen von Hundename, Profilbereichen und Kategorien harmonisiert.
-- Badges kompakter vereinheitlicht.
-- Basis: geprüfte V83.
-- Cache-Busting: app.js/styles.css ?v=84.
+V85:
+- Basis: geprüfte V84.
+- Abstände zwischen Hundekarten reduziert.
+- Hundekarten, Kategorienkarten und Profilkarten auf einheitlichere Rundungen gebracht.
+- Trainingsprofil-Bereiche und Unterkategorien kompakter.
+- In geöffneten Trainingsprofil-Unterkategorien stehen Checkbox, Übungsname und Frequenz in einer Zeile.
+- Lange Übungsnamen dürfen umbrechen; Frequenz bleibt rechts ausgerichtet.
+- Alle aktivieren/deaktivieren ersetzt durch eine Checkbox 'Alle auswählen'.
+- Cache-Busting: app.js/styles.css ?v=85.

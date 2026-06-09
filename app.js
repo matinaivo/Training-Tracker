@@ -420,7 +420,10 @@ function renderDogProfileOverview(d){
    const blockCount=activeCountForBlock(d,block);
    return `<details class="profile-block dog-profile-block"><summary><span class="profile-title"><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${blockIcon(block.name)} ${esc(block.name)}</span><span class="count-badge">${blockCount}</span></summary>${block.categories.filter(cat=>data.categories[cat]).map(cat=>{
      const catCount=activeCountForCategory(d,cat);
-     return `<details class="profile-details dog-profile-category"><summary><span class="profile-title"><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${esc(cat)}</span><span class="count-badge">${catCount}</span></summary><div class="profile-category-actions"><button type="button" class="secondary profile-action" onclick="toggleCategoryForDog('${attr(d)}','${attr(cat)}',true)">Alle aktivieren</button><button type="button" class="secondary profile-action" onclick="toggleCategoryForDog('${attr(d)}','${attr(cat)}',false)">Alle deaktivieren</button></div>${(data.categories[cat]||[]).map(sub=>`<div class="profile-row profile-row-frequency"><label><input type="checkbox" class="profile-sub" data-dog="${attr(d)}" data-cat="${attr(cat)}" data-sub="${attr(sub)}" ${active(d,cat,sub)?'checked':''} onchange="toggleProfile('${attr(d)}','${attr(cat)}','${attr(sub)}',this.checked)"> ${esc(sub)}</label><select class="frequency-select" onchange="changeFrequency('${attr(d)}','${attr(cat)}','${attr(sub)}',this.value)">${frequencyOptions.map(f=>`<option value="${f.value}" ${getFrequency(d,cat,sub)===f.value?'selected':''}>${f.label}</option>`).join('')}</select></div>`).join('')}</details>`;
+     const subs=(data.categories[cat]||[]);
+     const activeCount=subs.filter(sub=>active(d,cat,sub)).length;
+     const allChecked=subs.length>0&&activeCount===subs.length;
+     return `<details class="profile-details dog-profile-category"><summary><span class="profile-title"><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${esc(cat)}</span><span class="count-badge">${catCount}</span></summary><div class="profile-select-all-row"><label><input type="checkbox" ${allChecked?'checked':''} onchange="toggleCategoryForDog('${attr(d)}','${attr(cat)}',this.checked)"> Alle auswählen</label></div><div class="compact-profile-list">${subs.map(sub=>`<div class="profile-row profile-row-frequency compact-profile-row"><label class="profile-check-label"><input type="checkbox" class="profile-sub" data-dog="${attr(d)}" data-cat="${attr(cat)}" data-sub="${attr(sub)}" ${active(d,cat,sub)?'checked':''} onchange="toggleProfile('${attr(d)}','${attr(cat)}','${attr(sub)}',this.checked)"> <span>${esc(sub)}</span></label><select class="frequency-select compact-frequency-select" onchange="changeFrequency('${attr(d)}','${attr(cat)}','${attr(sub)}',this.value)">${frequencyOptions.map(f=>`<option value="${f.value}" ${getFrequency(d,cat,sub)===f.value?'selected':''}>${f.label}</option>`).join('')}</select></div>`).join('')}</div></details>`;
    }).join('')}</details>`;
  }).join('')}</div>`;
 }
@@ -923,7 +926,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V84_backup_training-tracker_${stamp}.json`;
+ a.download=`V85_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }

@@ -1139,3 +1139,140 @@ details[open] > summary .arrow-open{
    min-height:36px!important;
  }
 }
+
+/* V85 kompaktere Hundekarten, Profilkarten und Trainingsprofil-Listen */
+#dogList.grid{
+ gap:.55rem!important;
+}
+.dog-collapse-card,
+.dog-manage-card{
+ margin:.55rem 0!important;
+ border-radius:18px!important;
+}
+.dog-manage-summary{
+ min-height:48px!important;
+ padding:.55rem .8rem!important;
+}
+.dog-collapse-body{
+ padding:.65rem .8rem .8rem!important;
+}
+.dog-manage-toolbar{
+ margin:.1rem 0 .55rem!important;
+}
+.inline-profile h3{
+ margin:.3rem 0 .45rem!important;
+}
+.dog-profile-block,
+.profile-block{
+ margin:.55rem 0!important;
+ border-radius:18px!important;
+}
+.dog-profile-block > summary,
+.profile-block > summary{
+ min-height:46px!important;
+ padding:.55rem .75rem!important;
+ border-radius:16px!important;
+}
+.dog-profile-category,
+.profile-details{
+ margin:.45rem 0!important;
+ border-radius:16px!important;
+}
+.dog-profile-category > summary,
+.profile-details > summary{
+ min-height:42px!important;
+ padding:.5rem .65rem!important;
+ border-radius:14px!important;
+}
+.compact-profile-list{
+ display:grid;
+ gap:0;
+ border:1px solid var(--line);
+ border-radius:14px;
+ overflow:hidden;
+ background:#fff;
+}
+.compact-profile-row{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) minmax(112px,34%);
+ align-items:center;
+ gap:.55rem;
+ min-height:44px!important;
+ padding:.35rem .5rem!important;
+ border-bottom:1px solid var(--line);
+}
+.compact-profile-row:last-child{
+ border-bottom:0;
+}
+.profile-check-label{
+ display:grid!important;
+ grid-template-columns:26px minmax(0,1fr);
+ align-items:center;
+ gap:.35rem;
+ margin:0!important;
+ line-height:1.2!important;
+}
+.profile-check-label span{
+ min-width:0;
+ white-space:normal;
+ overflow-wrap:anywhere;
+}
+.compact-frequency-select{
+ min-height:34px!important;
+ height:34px!important;
+ padding:.25rem .55rem!important;
+ font-size:.92rem!important;
+ border-radius:11px!important;
+}
+.profile-select-all-row{
+ padding:.45rem .55rem!important;
+ margin:.25rem 0 .45rem!important;
+ background:#f7fbff;
+ border:1px solid var(--line);
+ border-radius:12px;
+}
+.profile-select-all-row label{
+ display:flex!important;
+ align-items:center;
+ gap:.45rem;
+ margin:0!important;
+ font-weight:900;
+}
+.profile-select-all-row input{
+ width:20px;
+ height:20px;
+}
+.settings-category-card,
+.compact-settings-card{
+ border-radius:18px!important;
+}
+.card{
+ border-radius:18px!important;
+}
+@media(max-width:650px){
+ #dogList.grid{
+   gap:.45rem!important;
+ }
+ .dog-collapse-card,
+ .dog-manage-card{
+   margin:.45rem 0!important;
+ }
+ .compact-profile-row{
+   grid-template-columns:minmax(0,1fr) 112px;
+   min-height:42px!important;
+   gap:.45rem;
+ }
+ .compact-frequency-select{
+   min-height:32px!important;
+   height:32px!important;
+   font-size:.9rem!important;
+ }
+ .dog-profile-block > summary,
+ .profile-block > summary{
+   min-height:44px!important;
+ }
+ .dog-profile-category > summary,
+ .profile-details > summary{
+   min-height:40px!important;
+ }
+}
