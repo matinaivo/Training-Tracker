@@ -418,9 +418,9 @@ function renderDogProfileOverview(d){
  ensureProfile(d);
  return `<div class="inline-profile compact-profile"><h3>Trainingsprofil</h3>${categoryBlocks.map(block=>{
    const blockCount=activeCountForBlock(d,block);
-   return `<details class="profile-block dog-profile-block"><summary><span>${blockIcon(block.name)} ${esc(block.name)}</span><span class="count-badge">${blockCount}</span></summary>${block.categories.filter(cat=>data.categories[cat]).map(cat=>{
+   return `<details class="profile-block dog-profile-block"><summary><span class="profile-title"><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${blockIcon(block.name)} ${esc(block.name)}</span><span class="count-badge">${blockCount}</span></summary>${block.categories.filter(cat=>data.categories[cat]).map(cat=>{
      const catCount=activeCountForCategory(d,cat);
-     return `<details class="profile-details dog-profile-category"><summary><span>${esc(cat)}</span><span class="count-badge">${catCount}</span></summary><div class="profile-category-actions"><button type="button" class="secondary profile-action" onclick="toggleCategoryForDog('${attr(d)}','${attr(cat)}',true)">Alle aktivieren</button><button type="button" class="secondary profile-action" onclick="toggleCategoryForDog('${attr(d)}','${attr(cat)}',false)">Alle deaktivieren</button></div>${(data.categories[cat]||[]).map(sub=>`<div class="profile-row profile-row-frequency"><label><input type="checkbox" class="profile-sub" data-dog="${attr(d)}" data-cat="${attr(cat)}" data-sub="${attr(sub)}" ${active(d,cat,sub)?'checked':''} onchange="toggleProfile('${attr(d)}','${attr(cat)}','${attr(sub)}',this.checked)"> ${esc(sub)}</label><select class="frequency-select" onchange="changeFrequency('${attr(d)}','${attr(cat)}','${attr(sub)}',this.value)">${frequencyOptions.map(f=>`<option value="${f.value}" ${getFrequency(d,cat,sub)===f.value?'selected':''}>${f.label}</option>`).join('')}</select></div>`).join('')}</details>`;
+     return `<details class="profile-details dog-profile-category"><summary><span class="profile-title"><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${esc(cat)}</span><span class="count-badge">${catCount}</span></summary><div class="profile-category-actions"><button type="button" class="secondary profile-action" onclick="toggleCategoryForDog('${attr(d)}','${attr(cat)}',true)">Alle aktivieren</button><button type="button" class="secondary profile-action" onclick="toggleCategoryForDog('${attr(d)}','${attr(cat)}',false)">Alle deaktivieren</button></div>${(data.categories[cat]||[]).map(sub=>`<div class="profile-row profile-row-frequency"><label><input type="checkbox" class="profile-sub" data-dog="${attr(d)}" data-cat="${attr(cat)}" data-sub="${attr(sub)}" ${active(d,cat,sub)?'checked':''} onchange="toggleProfile('${attr(d)}','${attr(cat)}','${attr(sub)}',this.checked)"> ${esc(sub)}</label><select class="frequency-select" onchange="changeFrequency('${attr(d)}','${attr(cat)}','${attr(sub)}',this.value)">${frequencyOptions.map(f=>`<option value="${f.value}" ${getFrequency(d,cat,sub)===f.value?'selected':''}>${f.label}</option>`).join('')}</select></div>`).join('')}</details>`;
    }).join('')}</details>`;
  }).join('')}</div>`;
 }
@@ -430,7 +430,7 @@ function renderDogList(){
    const editing=editingDogName===d;
    return `<details class="dog-collapse-card dog-manage-card ${editing?'is-editing':''}" id="dog-card-${attr(d)}" ontoggle="rememberOpenDogCard('${attr(d)}',this.open)">
      <summary class="dog-collapse-summary dog-manage-summary">
-       <span class="dog-title">🐕 ${esc(d)}</span>
+       <span class="dog-title"><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> 🐕 ${esc(d)}</span>
        <span class="dog-count">${count}</span>
      </summary>
      <div class="dog-collapse-body dog-manage-body">
@@ -924,7 +924,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V81_backup_training-tracker_${stamp}.json`;
+ a.download=`V83_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }

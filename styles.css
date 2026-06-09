@@ -945,3 +945,43 @@ textarea{resize:vertical}.checkline{margin:.75rem 0}.checkline input,input[type=
    font-size:.84rem;
  }
 }
+
+/* V83 Pfeile wie Kategorien, Icons bleiben wie V81 */
+.dog-collapse-summary,
+.dog-profile-block > summary,
+.dog-profile-category > summary{
+ list-style:none;
+}
+.dog-collapse-summary::-webkit-details-marker,
+.dog-profile-block > summary::-webkit-details-marker,
+.dog-profile-category > summary::-webkit-details-marker{
+ display:none;
+}
+.dog-collapse-summary::marker,
+.dog-profile-block > summary::marker,
+.dog-profile-category > summary::marker{
+ content:'';
+}
+.arrow-open{
+ display:none;
+}
+details[open] > summary .arrow-closed{
+ display:none;
+}
+details[open] > summary .arrow-open{
+ display:inline;
+}
+.toggle-arrow,
+.arrow-closed,
+.arrow-open{
+ font-weight:900;
+ color:#10243a;
+ margin-right:.35rem;
+ font-size:1em;
+ line-height:1;
+}
+.profile-title{
+ display:inline-flex;
+ align-items:center;
+ gap:.25rem;
+}
