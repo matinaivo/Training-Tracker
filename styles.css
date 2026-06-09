@@ -1276,3 +1276,149 @@ details[open] > summary .arrow-open{
    min-height:40px!important;
  }
 }
+
+/* V86 gemeinsame Kartenkomponente: Hunde, Kategorien, Trainingsprofil */
+:root{
+ --tt-card-radius:18px;
+ --tt-card-gap:.55rem;
+ --tt-card-padding-y:.55rem;
+ --tt-card-padding-x:.75rem;
+ --tt-card-min-height:44px;
+ --tt-card-border:1px solid var(--line);
+ --tt-card-shadow:0 8px 24px rgba(0,80,140,.08);
+ --tt-badge-height:24px;
+ --tt-badge-min-width:28px;
+}
+
+/* Aussenkarten identisch */
+.dog-collapse-card,
+.dog-manage-card,
+.settings-category-card,
+.compact-settings-card,
+.dog-profile-block,
+.profile-block,
+.dog-profile-category,
+.profile-details{
+ border:var(--tt-card-border)!important;
+ border-radius:var(--tt-card-radius)!important;
+ box-shadow:var(--tt-card-shadow)!important;
+ margin:var(--tt-card-gap) 0!important;
+ overflow:hidden!important;
+}
+
+/* Zusammenfassungs-/Kopfzeilen identisch */
+.dog-collapse-summary,
+.dog-manage-summary,
+.compact-settings-head,
+.dog-profile-block > summary,
+.profile-block > summary,
+.dog-profile-category > summary,
+.profile-details > summary{
+ min-height:var(--tt-card-min-height)!important;
+ padding:var(--tt-card-padding-y) var(--tt-card-padding-x)!important;
+ display:flex!important;
+ align-items:center!important;
+ gap:.55rem!important;
+ margin:0!important;
+ box-sizing:border-box!important;
+}
+
+/* Kategorienkopf bleibt dreispaltig, aber mit gleicher Hoehe/Padding */
+.compact-settings-head{
+ display:grid!important;
+ grid-template-columns:1fr auto auto!important;
+}
+
+/* Trainingsprofil-Zeilen und Kategoriezeilen harmonisieren */
+.compact-settings-sub-row,
+.settings-sub-row{
+ min-height:var(--tt-card-min-height)!important;
+ padding:.45rem var(--tt-card-padding-x)!important;
+ border-radius:calc(var(--tt-card-radius) - 4px)!important;
+}
+
+/* Listenabstaende vereinheitlichen */
+#dogList.grid,
+#categoryList,
+.settings-sub-list,
+.compact-settings-sub-list{
+ gap:var(--tt-card-gap)!important;
+}
+
+.dog-collapse-body,
+.dog-manage-body{
+ padding:.6rem .75rem .75rem!important;
+}
+
+.inline-profile h3,
+.compact-profile h3{
+ margin:.25rem 0 .5rem!important;
+}
+
+/* Typografie vereinheitlichen */
+.dog-title,
+.profile-title,
+.compact-settings-title h2,
+.dog-profile-block > summary,
+.profile-block > summary,
+.dog-profile-category > summary,
+.profile-details > summary{
+ font-size:1rem!important;
+ font-weight:900!important;
+ line-height:1.2!important;
+}
+
+/* Badges einheitlich */
+.count-badge,
+.dog-count,
+.settings-count-badge{
+ min-width:var(--tt-badge-min-width)!important;
+ height:var(--tt-badge-height)!important;
+ padding:0 .42rem!important;
+ border-radius:999px!important;
+ font-size:.86rem!important;
+ font-weight:900!important;
+ line-height:1!important;
+ display:inline-flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+ background:#eef3f8!important;
+ color:#557086!important;
+ white-space:nowrap!important;
+}
+
+/* Profil-Unterlisten kompakt, aber lesbar */
+.compact-profile-list{
+ border-radius:calc(var(--tt-card-radius) - 4px)!important;
+}
+.compact-profile-row{
+ min-height:42px!important;
+ padding:.35rem .5rem!important;
+}
+
+/* Buttons in Kategorienkopf auf Kartenhoehe abstimmen */
+.compact-edit-btn{
+ width:36px!important;
+ height:36px!important;
+ min-height:36px!important;
+ border-radius:12px!important;
+}
+
+/* Mobile Feinkorrektur */
+@media(max-width:650px){
+ :root{
+  --tt-card-gap:.45rem;
+  --tt-card-padding-y:.5rem;
+  --tt-card-padding-x:.7rem;
+  --tt-card-min-height:42px;
+  --tt-badge-height:22px;
+  --tt-badge-min-width:26px;
+ }
+ .dog-collapse-body,
+ .dog-manage-body{
+  padding:.55rem .7rem .7rem!important;
+ }
+ .compact-profile-row{
+  min-height:40px!important;
+ }
+}
