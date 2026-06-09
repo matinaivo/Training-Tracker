@@ -985,3 +985,157 @@ details[open] > summary .arrow-open{
  align-items:center;
  gap:.25rem;
 }
+
+/* V84 kompakte Verwaltung und einheitliche Typografie */
+.compact-manage-card{
+ padding:1rem!important;
+}
+.compact-manage-card h2{
+ margin:0 0 .65rem!important;
+}
+.compact-add-row{
+ display:grid;
+ grid-template-columns:1fr 46px;
+ gap:.55rem;
+ align-items:center;
+}
+.compact-sub-row{
+ display:grid;
+ grid-template-columns:minmax(92px,.38fr) 1fr 46px;
+ gap:.5rem;
+ align-items:center;
+}
+.plus-button{
+ min-height:46px!important;
+ width:46px;
+ padding:0!important;
+ border-radius:12px!important;
+ font-size:1.55rem!important;
+ font-weight:900!important;
+ line-height:1!important;
+ display:inline-flex!important;
+ align-items:center;
+ justify-content:center;
+}
+.compact-label{
+ margin:0 0 .35rem!important;
+ font-weight:900;
+}
+.compact-form-block{
+ margin:.15rem 0 .7rem;
+}
+.compact-separator{
+ height:1px;
+ background:var(--line);
+ margin:.75rem 0;
+}
+.compact-help{
+ margin:.35rem 0 0!important;
+}
+.compact-manage-card input,
+.compact-manage-card select{
+ min-height:46px!important;
+ padding:.45rem .75rem!important;
+}
+
+/* Hundekarten und Profilüberschriften typografisch angleichen */
+.dog-title,
+.profile-title,
+.dog-profile-category > summary .profile-title,
+.dog-profile-block > summary .profile-title,
+.compact-settings-title h2{
+ font-size:1rem!important;
+ font-weight:900!important;
+ line-height:1.2!important;
+}
+.profile-details > summary,
+.profile-block > summary{
+ font-size:1rem!important;
+ font-weight:900!important;
+ line-height:1.2!important;
+}
+.count-badge,
+.dog-count{
+ min-width:28px!important;
+ height:24px!important;
+ padding:0 .42rem!important;
+ border-radius:999px!important;
+ font-size:.86rem!important;
+ line-height:1!important;
+ display:inline-flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+}
+
+/* Kompakte Kategorienkarten */
+.compact-settings-card{
+ padding:.72rem .85rem!important;
+ margin:.72rem 0!important;
+ border-radius:18px!important;
+}
+.compact-settings-head{
+ display:grid!important;
+ grid-template-columns:1fr auto auto;
+ align-items:center!important;
+ gap:.55rem!important;
+ margin-bottom:0!important;
+}
+.compact-settings-title h2{
+ margin:0!important;
+ display:flex;
+ align-items:center;
+ gap:.35rem;
+}
+.compact-settings-sub-list{
+ margin-top:.65rem;
+ gap:.35rem!important;
+}
+.compact-settings-sub-row{
+ min-height:38px!important;
+ border-radius:12px!important;
+ padding:.35rem .45rem .35rem .65rem!important;
+}
+.compact-edit-btn{
+ width:36px!important;
+ height:36px!important;
+ min-height:36px!important;
+ border-radius:12px!important;
+ background:#eef7ff!important;
+ color:#0059c7!important;
+}
+.compact-danger-zone{
+ margin-top:.65rem!important;
+ padding-top:.6rem!important;
+}
+.settings-count-badge{
+ background:#eef3f8!important;
+ color:#557086!important;
+}
+
+@media(max-width:650px){
+ .compact-manage-card{
+   padding:.85rem!important;
+ }
+ .compact-add-row{
+   grid-template-columns:1fr 44px;
+   gap:.45rem;
+ }
+ .compact-sub-row{
+   grid-template-columns:minmax(82px,.42fr) 1fr 44px;
+   gap:.4rem;
+ }
+ .plus-button{
+   width:44px;
+   min-height:44px!important;
+ }
+ .compact-manage-card input,
+ .compact-manage-card select{
+   min-height:44px!important;
+ }
+ .compact-settings-card{
+   padding:.65rem .75rem!important;
+ }
+ .compact-settings-sub-row{
+   min-height:36px!important;
+ }
+}

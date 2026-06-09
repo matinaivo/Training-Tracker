@@ -1,7 +1,9 @@
-V83:
-- Basis: stabile V81.
-- Keine Icon-Aenderungen gegenueber V81.
-- Sichtbare Pfeile wie bei Kategorien fuer Hundekarten und Trainingsprofil-Bereiche.
-- Native Summary-Marker werden fuer diese Bereiche ausgeblendet.
-- Backup-Dateiname mit V83-Prefix.
-- Cache-Busting: app.js/styles.css ?v=83.
+V84:
+- Kompakte Hunde-Anlage: Eingabefeld mit Plus-Button und Beispiel 'Bello'.
+- Kompakte Kategorien-Anlage: Plus-Button direkt am Feld.
+- Unterkategorie-Anlage in einer Zeile mit Kategorieauswahl, Eingabe und Plus.
+- Kategorienkarten deutlich flacher: Pfeil, Name, Zahlen-Badge und Bearbeiten-Icon in einer Zeile.
+- Schriftgroessen von Hundename, Profilbereichen und Kategorien harmonisiert.
+- Badges kompakter vereinheitlicht.
+- Basis: geprüfte V83.
+- Cache-Busting: app.js/styles.css ?v=84.

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Training Tracker</title>
-  <link rel="stylesheet" href="styles.css?v=83">
+  <link rel="stylesheet" href="styles.css?v=84">
 </head>
 <body>
 <header class="app-header">
@@ -34,15 +34,13 @@
   </section>
 
   <section id="dogs" class="panel">
-    <div class="card">
+    <div class="card compact-manage-card">
       <h2>Hunde verwalten</h2>
-      <p>Lege hier deine Hunde an. Jeder Hund bekommt ein eigenes Trainingsprofil.</p>
-      <div class="row">
-        <label>Hundename
-          <input id="newDogName" type="text" placeholder="z. B. Rookie">
-        </label>
-        <button id="addDogBtn" type="button">Hund hinzufügen</button>
+      <div class="compact-add-row">
+        <input id="newDogName" type="text" placeholder="z. B. Bello" aria-label="Hundename">
+        <button id="addDogBtn" class="plus-button" type="button" aria-label="Hund hinzufügen">+</button>
       </div>
+      <p class="small compact-help">Hund hinzufügen</p>
     </div>
     <div id="dogList" class="grid"></div>
   </section>
@@ -110,24 +108,23 @@
   </section>
 
   <section id="settings" class="panel">
-    <div class="card">
+    <div class="card compact-manage-card">
       <h2>Kategorien verwalten</h2>
-      <p>Neue Unterkategorien werden bei allen Hunden automatisch aktiviert und können im Profil pro Hund deaktiviert werden.</p>
-      <div class="row">
-        <label>Neue Kategorie
-          <input id="newCategoryName" type="text" placeholder="z. B. Reha">
-        </label>
-        <button id="addCategoryBtn" type="button">Kategorie hinzufügen</button>
+      <div class="compact-form-block">
+        <label class="compact-label">Neue Kategorie</label>
+        <div class="compact-add-row">
+          <input id="newCategoryName" type="text" placeholder="z. B. Reha" aria-label="Neue Kategorie">
+          <button id="addCategoryBtn" class="plus-button" type="button" aria-label="Kategorie hinzufügen">+</button>
+        </div>
       </div>
-      <hr>
-      <div class="row">
-        <label>Kategorie
-          <select id="subcategoryCategory"></select>
-        </label>
-        <label>Neue Unterkategorie
-          <input id="newSubcategoryName" type="text" placeholder="z. B. Targettraining">
-        </label>
-        <button id="addSubcategoryBtn" type="button">Unterkategorie hinzufügen</button>
+      <div class="compact-separator"></div>
+      <div class="compact-form-block">
+        <label class="compact-label">Neue Unterkategorie</label>
+        <div class="compact-sub-row">
+          <select id="subcategoryCategory" aria-label="Kategorie"></select>
+          <input id="newSubcategoryName" type="text" placeholder="z. B. Targettraining" aria-label="Neue Unterkategorie">
+          <button id="addSubcategoryBtn" class="plus-button" type="button" aria-label="Unterkategorie hinzufügen">+</button>
+        </div>
       </div>
     </div>
     <div id="categoryList"></div>
@@ -147,8 +144,8 @@
 </section>
 </main>
 
-<script src="app.js?v=83"></script>
-<footer class="version-footer">Training Tracker • V83</footer>
+<script src="app.js?v=84"></script>
+<footer class="version-footer">Training Tracker • V84</footer>
 
 <div id="deleteDialog" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="deleteDialogTitle">
   <div class="modal-card delete-dialog-card">

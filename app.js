@@ -843,29 +843,28 @@ function renderSettings(){
  Object.keys(data.categories||{}).forEach(c=>{
    if(!(c in collapsedSettingsCategories)) collapsedSettingsCategories[c]=true;
  });
-
  categoryList.innerHTML=Object.entries(data.categories).map(([cat,subs])=>{
    const editing=editingCategoryName===cat;
-   const open=collapsedSettingsCategories[cat]===true?false:false;
    const expanded=!collapsedSettingsCategories[cat];
    const subList=(Array.isArray(subs)?subs:[]);
-   return `<section class="settings-category-card ${editing?'is-editing':''}">
-     <div class="settings-category-head">
-       <div class="settings-title-wrap" onclick="toggleSettingsCategory('${attr(cat)}')">
-         <h2>${expanded?'▼':'▶'} ${esc(cat)}</h2>
-         <p class="small">${subList.length} Unterkategorie${subList.length===1?'':'n'}</p>
+   return `<section class="settings-category-card compact-settings-card ${editing?'is-editing':''}">
+     <div class="settings-category-head compact-settings-head">
+       <div class="settings-title-wrap compact-settings-title" onclick="toggleSettingsCategory('${attr(cat)}')">
+         <h2><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${esc(cat)}</h2>
        </div>
-       <button type="button" class="icon-action ${editing?'secondary':'soft-primary'}" onclick="${editing?`clearEditingCategory()`:`setEditingCategory('${attr(cat)}')`}">${editing?'✅ Fertig':'✏️ Bearbeiten'}</button>
+       <span class="count-badge settings-count-badge">${subList.length}</span>
+       <button type="button" class="icon-btn edit compact-edit-btn" aria-label="${editing?'Schließen':'Bearbeiten'}" onclick="${editing?`clearEditingCategory()`:`setEditingCategory('${attr(cat)}')`}">${editing?'❌':'✏️'}</button>
      </div>
      ${expanded?`
-     <div class="settings-sub-list">
-       ${subList.map(s=>`<div class="settings-sub-row"><span>${esc(s)}</span>${editing?`<button type="button" class="icon-btn delete" onclick="deleteSub('${attr(cat)}','${attr(s)}')">🗑️</button>`:''}</div>`).join('')}
+     <div class="settings-sub-list compact-settings-sub-list">
+       ${subList.map(s=>`<div class="settings-sub-row compact-settings-sub-row"><span>${esc(s)}</span>${editing?`<button type="button" class="icon-btn delete" title="Unterkategorie löschen" aria-label="Unterkategorie löschen" onclick="deleteSub('${attr(cat)}','${attr(s)}')">🗑️</button>`:''}</div>`).join('')}
      </div>
-     ${editing?`<div class="settings-danger-zone"><button type="button" class="icon-action danger-soft" onclick="deleteCategory('${attr(cat)}')">🗑 Kategorie löschen</button></div>`:''}
+     ${editing?`<div class="settings-danger-zone compact-danger-zone"><button type="button" class="icon-action danger-soft" onclick="deleteCategory('${attr(cat)}')">🗑 Kategorie löschen</button></div>`:''}
      `:''}
    </section>`;
  }).join('');
-}function addCategory(){
+}
+function addCategory(){
  let c=newCategoryName.value.trim();
  if(!c)return;
  if(data.categories[c]){toast('Kategorie existiert bereits.','warn');return}
@@ -924,7 +923,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V83_backup_training-tracker_${stamp}.json`;
+ a.download=`V84_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }
