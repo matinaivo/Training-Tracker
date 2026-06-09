@@ -436,12 +436,12 @@ function renderDogList(){
      <div class="dog-collapse-body dog-manage-body">
        <div class="dog-manage-toolbar">
          ${editing
-           ? `<button type="button" class="icon-action secondary" onclick="clearEditingDog()">❌ Schließen</button>`
+           ? ``
            : `<button type="button" class="icon-action soft-primary" onclick="startNewEntryForDog('${attr(d)}')">➕ Training</button><button type="button" class="icon-action soft-primary" onclick="setEditingDog('${attr(d)}')">✏️ Bearbeiten</button>`}
        </div>
        ${editing?`<div class="dog-edit-panel compact-dog-edit">
          <input id="rename-${attr(d)}" value="${attr(d)}" aria-label="Hundename">
-         <div class="dog-edit-actions"><button type="button" class="icon-action soft-primary" onclick="renameDog('${attr(d)}')">💾 Speichern</button><button type="button" class="icon-action danger-soft" onclick="deleteDog('${attr(d)}')">🗑 Löschen</button></div>
+         <div class="dog-edit-actions"><button type="button" class="icon-action soft-primary" onclick="renameDog('${attr(d)}')">💾 Speichern</button><button type="button" class="icon-action danger-soft" onclick="deleteDog('${attr(d)}')">🗑 Löschen</button><button type="button" class="icon-action secondary" onclick="clearEditingDog()">❌ Schließen</button></div>
        </div>`:renderDogProfileOverview(d)}
      </div>
    </details>`;
@@ -924,7 +924,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V80_backup_training-tracker_${stamp}.json`;
+ a.download=`V81_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }
