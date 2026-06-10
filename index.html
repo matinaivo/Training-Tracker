@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Training Tracker</title>
-  <link rel="stylesheet" href="styles.css?v=90">
+  <link rel="stylesheet" href="styles.css?v=91">
 </head>
 <body>
 <header class="app-header">
@@ -46,9 +46,16 @@
   </section>
 
   <section id="add" class="panel">
-    <form id="trainingForm" class="card">
-      <h2 id="formTitle">Training hinzufügen</h2>
-      <div class="row">
+    <form id="trainingForm" class="card training-form-card">
+      <div class="training-form-title-row">
+        <h2 id="formTitle">Training hinzufügen</h2>
+        <div class="training-form-actions top-actions">
+          <button id="cancelEntryBtn" type="button" class="icon-action secondary">❌ Abbrechen</button>
+          <button id="saveEntryBtn" type="submit" class="icon-action soft-primary">💾 Speichern</button>
+        </div>
+      </div>
+
+      <div class="training-compact-controls">
         <label>Hund
           <select id="entryDog" required></select>
         </label>
@@ -56,31 +63,40 @@
           <input id="entryDate" type="date" required>
         </label>
         <label class="hidden">Kategorie<select id="entryCategory"></select></label>
-        <label id="durationField" class="duration-field">Dauer gesamt (Min., optional)
-          <div class="training-type-box"><label><input type="radio" name="trainingType" value="session" checked> ⏱ Trainingseinheit</label><label><input type="radio" name="trainingType" value="walk"> 🚶 Während Spaziergang</label><label><input type="radio" name="trainingType" value="everyday"> 🏠 Im Alltag</label></div><input id="entryDuration" type="number" min="0" step="1">
+      </div>
+
+      <div id="durationField" class="training-type-card">
+        <div class="training-type-box">
+          <label><input type="radio" name="trainingType" value="session" checked> ⏱ Trainingseinheit</label>
+          <label><input type="radio" name="trainingType" value="walk"> 🚶 Spaziergang</label>
+          <label><input type="radio" name="trainingType" value="everyday"> 🏠 Im Alltag</label>
+        </div>
+        <label id="durationMinutesWrap" class="duration-minutes-wrap">Dauer
+          <span class="duration-input-inline"><input id="entryDuration" type="number" min="0" step="1" inputmode="numeric" placeholder="15"><span>Min.</span></span>
         </label>
       </div>
 
-      <div class="card inner">
+      <div class="card inner training-exercise-card">
         <h3>Übungen nach Kategorie</h3>
-        <p class="small">Alle aktiven Kategorien sind eingeklappt. Öffne die Kategorien und hake an, was trainiert wurde.</p>
+        <p class="small">Öffne eine Kategorie und hake an, was trainiert wurde.</p>
         <div id="exerciseList"></div>
       </div>
 
       <div id="treadmillBox" class="card inner hidden">
         <h3>Laufband-Blöcke</h3>
         <div id="treadmillBlocks"></div>
-        <button id="addTreadmillBlock" type="button" class="secondary">Block hinzufügen</button>
+        <button id="addTreadmillBlock" type="button" class="secondary">➕ Block hinzufügen</button>
       </div>
 
-      <label>Notiz / Fortschritt für alle gespeicherten Kategorien
-        <textarea id="entryNote" rows="4" placeholder="Kurze Notiz, Fortschritt oder Besonderheit"></textarea>
+      <label class="training-note-label">Notiz / Fortschritt
+        <textarea id="entryNote" rows="3" placeholder="Kurze Notiz, Fortschritt oder Besonderheit"></textarea>
       </label>
 
-      <div class="actions">
-        <button id="saveEntryBtn" type="submit">Speichern</button>
+      <div class="training-form-actions bottom-actions">
+        <button type="button" class="icon-action secondary" onclick="cancelEntry()">❌ Abbrechen</button>
+        <button type="submit" class="icon-action soft-primary">💾 Speichern</button>
       </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button id="cancelEntryBtn" type="button" class="secondary">Abbrechen</button></div></form>
+    </form>
   </section>
 
   <section id="calendar" class="panel">
@@ -144,8 +160,8 @@
 </section>
 </main>
 
-<script src="app.js?v=90"></script>
-<footer class="version-footer">Training Tracker • V90</footer>
+<script src="app.js?v=91"></script>
+<footer class="version-footer">Training Tracker • V91</footer>
 
 <div id="deleteDialog" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="deleteDialogTitle">
   <div class="modal-card delete-dialog-card">

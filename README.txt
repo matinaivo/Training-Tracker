@@ -1,7 +1,9 @@
-V89:
-- Basis: V87.
-- Hundekopfzeile strukturell an Kategorien angeglichen: Name, Badge, Training-Icon, Bearbeiten-Icon.
-- Separate Normalmodus-Toolbar fuer Training/Bearbeiten entfernt.
-- Im Bearbeitungsmodus steht oben ein kompaktes Schliessen-Icon.
-- Kein globaler Karten-Override.
-- Cache-Busting: app.js/styles.css ?v=89.
+V91:
+- Training hinzufuegen optisch ueberarbeitet.
+- Kopfbereich Hund/Datum kompakter.
+- Dauerfeld als [15] Min. umgesetzt und nur bei Trainingseinheit sichtbar.
+- Kategorien und Unterkategorien an App-Kartenoptik angepasst.
+- Speichern/Abbrechen mit Symbolen und sticky Aktionsleiste.
+- Separate alte Inline-Abbrechen-Zeile entfernt.
+- Basis: V90.
+- Cache-Busting: app.js/styles.css ?v=91.

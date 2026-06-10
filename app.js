@@ -537,9 +537,9 @@ function renderExercises(){
  const blocks=categoryBlocks.map(block=>{
    const cats=block.categories.filter(cat=>(data.categories[cat]||[]).some(s=>active(d,cat,s)));
    if(!cats.length)return '';
-   return `<details class="entry-block"><summary>${esc(block.name)}</summary>${cats.map(cat=>{
+   return `<details class="entry-block settings-category-card compact-settings-card compact-entry-block"><summary class="settings-category-head compact-settings-head compact-entry-head"><div class="settings-title-wrap compact-settings-title"><h2><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${blockIcon(block.name)} ${esc(block.name)}</h2></div><span class="count-badge settings-count-badge">${cats.length}</span></summary>${cats.map(cat=>{
      const subs=(data.categories[cat]||[]).filter(s=>active(d,cat,s));
-     return `<details class="entry-category"><summary>${esc(cat)}</summary>${subs.map(s=>`<label class="exercise-row"><input type="checkbox" class="ex" data-cat="${attr(cat)}" data-sub="${attr(s)}" onchange="toggleTreadmill()"> ${esc(s)}</label>`).join('')}</details>`;
+     return `<details class="entry-category compact-entry-category"><summary class="settings-sub-row compact-settings-sub-row compact-entry-sub-head"><span><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${esc(cat)}</span><span class="count-badge settings-count-badge">${subs.length}</span></summary><div class="compact-exercise-list">${subs.map(s=>`<label class="exercise-row compact-exercise-row"><input type="checkbox" class="ex" data-cat="${attr(cat)}" data-sub="${attr(s)}" onchange="toggleTreadmill()"> <span>${esc(s)}</span></label>`).join('')}</div></details>`;
    }).join('')}</details>`;
  }).filter(Boolean);
  exerciseList.innerHTML=blocks.length?blocks.join(''):'<p>Für diesen Hund sind keine Übungen aktiv.</p>';
@@ -924,7 +924,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V90_backup_training-tracker_${stamp}.json`;
+ a.download=`V91_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }
@@ -1000,8 +1000,10 @@ function shortCat(c){return c==='Unterordnung'?'UO':(c==='IGP Sonstiges'||c==='I
 
 
 function updateDurationVisibility(){
+ const wrap=document.getElementById('durationMinutesWrap');
+ if(wrap)wrap.style.display=(getTrainingType()==='session')?'':'none';
  const d=document.getElementById('entryDuration');
- if(d)d.style.display=(getTrainingType()==='session')?'':'none';
+ if(d && getTrainingType()!=='session')d.value='';
 }
 function getTrainingType(){
  const el=document.querySelector('input[name="trainingType"]:checked');
@@ -1033,6 +1035,8 @@ function cancelEntry(){
    if(returnViewAfterEdit==='calendar' && selectedDay)renderDayDetails();
  }
 }
+
+window.cancelEntry=cancelEntry;
 
 function openDeleteDialog(id){
  pendingDeleteId=id;
