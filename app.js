@@ -195,6 +195,7 @@ function ensureProfileInDataObject(target,dog){
  });
 }
 function migrateCategoriesAndEntries(d){
+ const removedSubs=new Set(['Schutzdienst Technik','Schutzdienst aktiv','Schutzdiensttechnik']);
  const renameSub={
   'Abrufen / Rückruf':'Rückruf',
   'Hier':'Abrufen mit Hier',
@@ -234,7 +235,7 @@ function migrateCategoriesAndEntries(d){
  d.entries=(d.entries||[]).map(e=>{
    e.exercises=(e.exercises||[]).map(ex=>{
      let sub=renameSub.hasOwnProperty(ex.subcategory)?renameSub[ex.subcategory]:ex.subcategory;
-     if(!sub)return null;
+     if(!sub||removedSubs.has(sub))return null;
      let cat=moveCat[sub]||ex.category;
      return {...ex,category:cat,subcategory:sub};
    }).filter(Boolean);
@@ -245,7 +246,7 @@ function migrateCategoriesAndEntries(d){
  Object.entries(d.categories||{}).forEach(([cat,subs])=>{
    (subs||[]).forEach(sub=>{
      const renamed=renameSub.hasOwnProperty(sub)?renameSub[sub]:sub;
-     if(!renamed)return;
+     if(!renamed||removedSubs.has(renamed))return;
      const targetCat=moveCat[renamed]||cat;
      if(!merged[targetCat])merged[targetCat]=[];
      if(!merged[targetCat].includes(renamed))merged[targetCat].push(renamed);
@@ -261,7 +262,6 @@ function migrateCategoriesAndEntries(d){
    d.categories['Medical Training']=d.categories['Medical Training'].filter(sub=>!['Fokus Training Futter','Fokus Training Objekt'].includes(sub));
  }
 
- const removedSubs=new Set(['Schutzdienst Technik','Schutzdienst aktiv','Schutzdiensttechnik']);
  d.entries=(d.entries||[]).map(e=>{
    e.exercises=(e.exercises||[]).filter(ex=>!removedSubs.has(ex.subcategory));
    if(e.exercises.length)e.category=e.exercises[0].category;
@@ -273,6 +273,9 @@ function migrateCategoriesAndEntries(d){
        if([...removedSubs].some(sub=>key.endsWith('||'+sub)))delete p[bucket][key];
      });
    });
+ });
+ Object.keys(d.categories||{}).forEach(cat=>{
+   d.categories[cat]=(d.categories[cat]||[]).filter(sub=>!removedSubs.has(sub));
  });
  delete d.categories['Sonstiges'];
 }
@@ -1089,7 +1092,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V95_backup_training-tracker_${stamp}.json`;
+ a.download=`V96_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }
