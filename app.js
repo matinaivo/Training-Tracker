@@ -868,7 +868,7 @@ function renderToday(){
  if(todayDog && d && todayDog.value!==d && data.dogs.includes(d)) todayDog.value=d; 
  if(!d){todayContent.innerHTML='<div class="card"><h2>Noch kein Hund</h2><p>Bitte lege zuerst einen Hund an.</p></div>';return}
  const due={}, notDue={}, paused={};
- allSubs().filter(x=>active(d,x.cat,x.sub)&&!mastered(d,x.cat,x.sub)&&!clubSubs.has(x.sub)).forEach(x=>{
+ allSubs().filter(x=>active(d,x.cat,x.sub)&&!mastered(d,x.cat,x.sub)).forEach(x=>{
    const freq=getFrequency(d,x.cat,x.sub);
    if(freq==='paused'){
      (paused[x.cat]||(paused[x.cat]=[])).push({...x,freq});
@@ -1113,7 +1113,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V99_backup_training-tracker_${stamp}.json`;
+ a.download=`V100_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }
