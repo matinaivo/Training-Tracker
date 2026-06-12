@@ -1916,3 +1916,57 @@ min-width:0!important;
    grid-column:auto!important;
  }
 }
+
+/* V98 Heute: Name ist Text, Aktionen über ✏️ und ➕ */
+.today-training-row{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) auto!important;
+ align-items:center!important;
+ gap:.45rem!important;
+}
+.today-training-main{
+ min-width:0;
+ display:flex;
+ flex-direction:column;
+ gap:.12rem;
+}
+.today-exercise-name{
+ font-weight:900;
+ color:var(--text);
+ min-width:0;
+ overflow-wrap:anywhere;
+ line-height:1.2;
+}
+.today-row-actions{
+ display:inline-flex;
+ align-items:center;
+ gap:.35rem;
+}
+.today-edit-btn,
+.today-add-btn{
+ width:34px!important;
+ height:34px!important;
+ min-height:34px!important;
+ border-radius:12px!important;
+ padding:0!important;
+ display:inline-flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+ box-shadow:none!important;
+ background:#eef7ff!important;
+ color:var(--blue)!important;
+ border:1px solid var(--line)!important;
+ font-size:1rem!important;
+}
+.today-edit-btn:hover,
+.today-add-btn:hover{
+ filter:brightness(.98);
+}
+@media(max-width:650px){
+ .today-training-row{
+   grid-template-columns:minmax(0,1fr) auto!important;
+ }
+ .today-row-actions{
+   gap:.28rem;
+ }
+}

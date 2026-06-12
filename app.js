@@ -906,10 +906,13 @@ function todayDashboardRow(x,mode){
    : `in ${x.dueIn} Tag${x.dueIn===1?'':'en'}`;
  return `<div class="score-row today-training-row">
    <div class="today-training-main">
-     <button type="button" class="today-profile-link" onclick="openDogProfileAt('${attr(x.cat)}','${attr(x.sub)}')" title="Im Trainingsprofil öffnen">${esc(x.sub)}</button>
+     <span class="today-exercise-name">${esc(x.sub)}</span>
      <span class="small today-training-info">${last} · ${freq} · ${info}</span>
    </div>
-   <button type="button" class="today-add-btn" onclick="startNewEntryFromTodayExercise('${attr(x.cat)}','${attr(x.sub)}')" title="Training eintragen" aria-label="Training eintragen">➕</button>
+   <div class="today-row-actions">
+     <button type="button" class="today-edit-btn" onclick="openDogProfileAt('${attr(x.cat)}','${attr(x.sub)}')" title="Im Trainingsprofil bearbeiten" aria-label="Im Trainingsprofil bearbeiten">✏️</button>
+     <button type="button" class="today-add-btn" onclick="startNewEntryFromTodayExercise('${attr(x.cat)}','${attr(x.sub)}')" title="Training eintragen" aria-label="Training eintragen">➕</button>
+   </div>
  </div>`;
 }
 function startNewEntryFromTodayExercise(cat,sub){
@@ -1110,7 +1113,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V97_backup_training-tracker_${stamp}.json`;
+ a.download=`V98_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }

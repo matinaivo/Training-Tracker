@@ -1,7 +1,8 @@
-V97:
-- Basis: V96.
-- Heute-Ansicht korrigiert: Statusinfo wie 'neu', 'in x Tagen', 'x Tage ueberfaellig' bleibt sichtbar.
-- Uebungsname bleibt Link ins Hundeprofil.
-- Plus ist nur zusaetzlicher dezenter Button fuer Training eintragen.
-- Abbrechen nach Plus aus Heute fuehrt wieder zur Heute-Ansicht statt zur Hundeuebersicht.
-- Cache-Busting: app.js/styles.css ?v=97.
+V98:
+- Basis: V97.
+- Heute-Ansicht: Uebungsname ist wieder normaler Text.
+- ✏️ oeffnet die passende Stelle im Trainingsprofil.
+- ➕ legt einen Trainingseintrag an.
+- Statusinfo bleibt erhalten.
+- Abbrechen nach ➕ aus Heute fuehrt weiter zur Heute-Ansicht.
+- Cache-Busting: app.js/styles.css ?v=98.
