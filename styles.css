@@ -1806,3 +1806,47 @@ min-width:0!important;
    grid-template-columns:minmax(0,1fr) auto auto auto!important;
  }
 }
+
+/* V95 Heute: Übung öffnet Profil, Plus legt Training an */
+.today-training-row{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) auto 36px;
+ align-items:center;
+ gap:.45rem!important;
+}
+.today-profile-link{
+ border:0;
+ background:transparent;
+ box-shadow:none;
+ padding:0;
+ margin:0;
+ text-align:left;
+ font:inherit;
+ font-weight:900;
+ color:var(--text);
+ cursor:pointer;
+ min-width:0;
+ overflow-wrap:anywhere;
+}
+.today-profile-link:hover{text-decoration:underline}
+.today-add-btn{
+ width:34px;
+ height:34px;
+ min-height:34px;
+ border-radius:12px;
+ padding:0;
+ display:inline-flex;
+ align-items:center;
+ justify-content:center;
+ box-shadow:none;
+}
+.profile-jump-highlight{
+ outline:3px solid rgba(0,166,255,.35);
+ background:#eef9ff!important;
+ transition:.2s ease;
+}
+@media(max-width:650px){
+ .today-training-row{grid-template-columns:minmax(0,1fr) 34px}
+ .today-training-row .small{grid-column:1 / 2;font-size:.82rem}
+ .today-add-btn{grid-row:1 / span 2;grid-column:2}
+}

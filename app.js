@@ -584,12 +584,18 @@ function collectOpenProfileState(dog){
 }
 function restoreOpenProfileState(state){
  if(!state)return;
- requestAnimationFrame(()=>{
+ const apply=()=>{
    (state.openKeys||[]).forEach(key=>{
      const el=document.querySelector(`details[data-profile-open-key="${CSS.escape(key)}"]`);
      if(el)el.open=true;
    });
    if(typeof state.scrollY==='number')window.scrollTo(0,state.scrollY);
+ };
+ requestAnimationFrame(()=>{
+   apply();
+   requestAnimationFrame(apply);
+   setTimeout(apply,40);
+   setTimeout(apply,120);
  });
 }
 function renderDogListPreservingProfileState(dog){
@@ -891,15 +897,52 @@ function renderTodayGroups(groups,catOrder,mode,emptyText){
 }
 function todayDashboardRow(x,mode){
  const last=x.days===999?'noch nie':`vor ${x.days} Tag${x.days===1?'':'en'}`;
- let chip='', detail='';
- if(mode==='due'){
-   chip=x.days===999?'neu':(x.overdue>0?`+${x.overdue} T.`:'fällig');
-   detail=`${last} · Wunsch: ${esc(freqLabel(x.freq))}`;
-   return `<button type="button" class="score-row clickable-row" onclick="startNewEntryForExercise(today(),todayDog.value,'${attr(x.cat)}','${attr(x.sub)}')"><span><b>${esc(x.sub)}</b><br><span class="tiny">${detail}</span></span><span class="pill green">${chip}</span></button>`;
- }
- const dueText=x.dueIn===1?'morgen':`in ${x.dueIn} Tagen`;
- detail=`${last} · Wunsch: ${esc(freqLabel(x.freq))}`;
- return `<button type="button" class="score-row clickable-row" onclick="startNewEntryForExercise(today(),todayDog.value,'${attr(x.cat)}','${attr(x.sub)}')"><span><b>${esc(x.sub)}</b><br><span class="tiny">${detail}</span></span><span class="pill blue">fällig ${dueText}</span></button>`;
+ const freq=freqLabel(x.freq);
+ const info=mode==='due'
+   ? (x.days===999?'neu':`${Math.max(0,x.overdue)} Tag${Math.max(0,x.overdue)===1?'':'e'} überfällig`)
+   : `in ${x.dueIn} Tag${x.dueIn===1?'':'en'}`;
+ return `<div class="score-row today-training-row">
+   <button type="button" class="today-profile-link" onclick="openDogProfileAt('${attr(x.cat)}','${attr(x.sub)}')" title="Im Trainingsprofil öffnen">${esc(x.sub)}</button>
+   <span class="small">${last} · ${freq} · ${info}</span>
+   <button type="button" class="today-add-btn" onclick="startNewEntryForTodayExercise('${attr(x.cat)}','${attr(x.sub)}')" title="Training eintragen" aria-label="Training eintragen">➕</button>
+ </div>`;
+}
+function startNewEntryForTodayExercise(cat,sub){
+ const d=todayDog.value||getUiState().currentDog||data.dogs[0];
+ if(!d)return;
+ startNewEntryForDog(d);
+ setTimeout(()=>{
+   document.querySelectorAll('.ex').forEach(cb=>{
+     cb.checked=(cb.dataset.cat===cat && cb.dataset.sub===sub);
+   });
+   toggleTreadmill();
+ },0);
+}
+function openDogProfileAt(cat,sub){
+ const d=todayDog.value||getUiState().currentDog||data.dogs[0];
+ if(!d)return;
+ setUiState({currentDog:d,entryDog:d,todayDog:d,balanceDog:d,calendarDog:d,openDogCard:d});
+ show('dogs');
+ setTimeout(()=>{
+   const dogEl=document.getElementById('dog-card-'+d);
+   if(dogEl)dogEl.open=true;
+   const block=blockForCategory(cat);
+   const blockKey=`${d}||block||${block}`;
+   const catKey=`${d}||cat||${cat}`;
+   [blockKey,catKey].forEach(key=>{
+     const el=document.querySelector(`details[data-profile-open-key="${CSS.escape(key)}"]`);
+     if(el)el.open=true;
+   });
+   const target=document.querySelector(`.profile-sub[data-dog="${CSS.escape(d)}"][data-cat="${CSS.escape(cat)}"][data-sub="${CSS.escape(sub)}"]`);
+   const row=target?target.closest('.compact-profile-row'):null;
+   if(row){
+     row.classList.add('profile-jump-highlight');
+     row.scrollIntoView({behavior:'smooth',block:'center'});
+     setTimeout(()=>row.classList.remove('profile-jump-highlight'),1800);
+   }else if(dogEl){
+     dogEl.scrollIntoView({behavior:'smooth',block:'start'});
+   }
+ },0);
 }
 function renderPausedGroups(groups,catOrder,emptyText){
  const cats=catOrder.filter(cat=>groups[cat]&&groups[cat].length);
@@ -1046,7 +1089,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V94_backup_training-tracker_${stamp}.json`;
+ a.download=`V95_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }
