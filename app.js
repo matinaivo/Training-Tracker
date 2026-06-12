@@ -896,7 +896,7 @@ function countGrouped(groups){
 function renderTodayGroups(groups,catOrder,mode,emptyText){
  const cats=catOrder.filter(cat=>groups[cat]&&groups[cat].length);
  if(!cats.length)return `<p>${emptyText}</p>`;
- return cats.map(cat=>`<div class="today-group"><h3><span class="cat-chip ${catClass(cat)}">${esc(cat)}</span></h3><div class="score-list">${groups[cat].slice(0,6).map(x=>todayDashboardRow(x,mode)).join('')}</div></div>`).join('');
+ return cats.map(cat=>`<div class="today-group"><h3><span class="cat-chip ${catClass(cat)}">${esc(cat)}</span></h3><div class="score-list">${groups[cat].map(x=>todayDashboardRow(x,mode)).join('')}</div></div>`).join('');
 }
 function todayDashboardRow(x,mode){
  const last=x.days===999?'noch nie':`vor ${x.days} Tag${x.days===1?'':'en'}`;
@@ -1113,7 +1113,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V98_backup_training-tracker_${stamp}.json`;
+ a.download=`V99_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }

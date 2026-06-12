@@ -1,8 +1,6 @@
-V98:
-- Basis: V97.
-- Heute-Ansicht: Uebungsname ist wieder normaler Text.
-- ✏️ oeffnet die passende Stelle im Trainingsprofil.
-- ➕ legt einen Trainingseintrag an.
-- Statusinfo bleibt erhalten.
-- Abbrechen nach ➕ aus Heute fuehrt weiter zur Heute-Ansicht.
-- Cache-Busting: app.js/styles.css ?v=98.
+V99:
+- Basis: V98.
+- Bugfix Heute: Pro Kategorie werden nun alle faelligen/nicht faelligen Uebungen angezeigt.
+- Ursache war eine Begrenzung auf die ersten 6 Uebungen pro Kategorie.
+- Dadurch konnten z. B. Platz aus der Bewegung und Steh aus der Bewegung fehlen.
+- Cache-Busting: app.js/styles.css ?v=99.
