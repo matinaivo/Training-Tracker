@@ -477,12 +477,12 @@ function renderDogProfileOverview(d){
  ensureProfile(d);
  return `<div class="inline-profile compact-profile"><h3>Trainingsprofil</h3><div class="status-legend"><span>🔄 aktiv im Training</span><span>⏸ pausiert</span><span>✅ beherrscht</span></div>${categoryBlocks.map(block=>{
    const blockCounts=statusCountsForBlock(d,block);
-   return `<details class="profile-block dog-profile-block settings-category-card compact-settings-card"><summary class="settings-category-head compact-settings-head compact-profile-head"><div class="settings-title-wrap compact-settings-title"><h2><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${blockIcon(block.name)} ${esc(block.name)}</h2></div>${statusBadgeHTML(blockCounts)}</summary>${block.categories.filter(cat=>data.categories[cat]).map(cat=>{
+   return `<details class="profile-block dog-profile-block settings-category-card compact-settings-card" data-profile-open-key="${attr(d)}||block||${attr(block.name)}"><summary class="settings-category-head compact-settings-head compact-profile-head"><div class="settings-title-wrap compact-settings-title"><h2><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${blockIcon(block.name)} ${esc(block.name)}</h2></div>${statusBadgeHTML(blockCounts)}</summary>${block.categories.filter(cat=>data.categories[cat]).map(cat=>{
      const catCounts=statusCountsForCategory(d,cat);
      const subs=(data.categories[cat]||[]);
      const activeCount=subs.filter(sub=>active(d,cat,sub)).length;
      const allChecked=subs.length>0&&activeCount===subs.length;
-     return `<details class="profile-details dog-profile-category compact-profile-subcategory"><summary class="settings-sub-row compact-settings-sub-row compact-profile-sub-head"><span><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${esc(cat)}</span>${statusBadgeHTML(catCounts)}</summary><div class="profile-select-all-row"><label><input type="checkbox" ${allChecked?'checked':''} onchange="toggleCategoryForDog('${attr(d)}','${attr(cat)}',this.checked)"> Alle auswählen</label></div><div class="compact-profile-list">${subs.map(sub=>{
+     return `<details class="profile-details dog-profile-category compact-profile-subcategory" data-profile-open-key="${attr(d)}||cat||${attr(cat)}"><summary class="settings-sub-row compact-settings-sub-row compact-profile-sub-head"><span><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${esc(cat)}</span>${statusBadgeHTML(catCounts)}</summary><div class="profile-select-all-row"><label><input type="checkbox" ${allChecked?'checked':''} onchange="toggleCategoryForDog('${attr(d)}','${attr(cat)}',this.checked)"> Alle auswählen</label></div><div class="compact-profile-list">${subs.map(sub=>{
        const st=trainingStatus(d,cat,sub);
        return `<div class="profile-row profile-row-frequency compact-profile-row status-${st}"><label class="profile-check-label"><input type="checkbox" class="profile-sub" data-dog="${attr(d)}" data-cat="${attr(cat)}" data-sub="${attr(sub)}" ${active(d,cat,sub)?'checked':''} onchange="toggleProfile('${attr(d)}','${attr(cat)}','${attr(sub)}',this.checked)"> <span>${statusIcon(st)} ${esc(sub)}</span></label><select class="frequency-select compact-frequency-select" onchange="changeFrequency('${attr(d)}','${attr(cat)}','${attr(sub)}',this.value)">${frequencyOptions.map(f=>`<option value="${f.value}" ${getFrequency(d,cat,sub)===f.value?'selected':''}>${f.label}</option>`).join('')}</select><button type="button" class="mastered-toggle ${mastered(d,cat,sub)?'is-mastered':''}" title="Beherrscht" aria-label="Beherrscht" onclick="toggleMastered('${attr(d)}','${attr(cat)}','${attr(sub)}')">✅</button></div>`;
      }).join('')}</div></details>`;
@@ -574,26 +574,47 @@ window.deleteDog=async(d)=>{
  toast('Hund gelöscht.');
 }
 
+
+function collectOpenProfileState(dog){
+ const root=document.getElementById('dog-card-'+dog);
+ return {
+   scrollY:window.scrollY,
+   openKeys:root?[...root.querySelectorAll('details[data-profile-open-key][open]')].map(el=>el.dataset.profileOpenKey):[]
+ };
+}
+function restoreOpenProfileState(state){
+ if(!state)return;
+ requestAnimationFrame(()=>{
+   (state.openKeys||[]).forEach(key=>{
+     const el=document.querySelector(`details[data-profile-open-key="${CSS.escape(key)}"]`);
+     if(el)el.open=true;
+   });
+   if(typeof state.scrollY==='number')window.scrollTo(0,state.scrollY);
+ });
+}
+function renderDogListPreservingProfileState(dog){
+ const state=collectOpenProfileState(dog);
+ renderDogList();
+ restoreOpenProfileState(state);
+}
+
 function renderProfile(){renderDogList()}
 window.toggleProfile=(d,cat,sub,val)=>{
  setActive(d,cat,sub,val);
- renderDogList();renderExercises();renderToday();renderBalance();
+ renderDogListPreservingProfileState(d);renderExercises();renderToday();renderBalance();
  toast('Profil automatisch gespeichert.');
 }
 window.changeFrequency=(d,cat,sub,val)=>{
  setFrequency(d,cat,sub,val);
- renderDogList();renderToday();renderBalance();
+ renderDogListPreservingProfileState(d);renderToday();renderBalance();
  toast('Trainingshäufigkeit gespeichert.');
 }
 window.toggleMastered=(d,cat,sub)=>{
- const y=window.scrollY;
  setMastered(d,cat,sub,!mastered(d,cat,sub));
- renderDogList();renderExercises();renderToday();renderBalance();
- window.scrollTo(0,y);
+ renderDogListPreservingProfileState(d);renderExercises();renderToday();renderBalance();
  toast(mastered(d,cat,sub)?'Als beherrscht markiert.':'Beherrscht-Markierung entfernt.');
 }
 window.toggleCategoryForDog=(d,cat,val)=>{
- const y=window.scrollY;
  (data.categories[cat]||[]).forEach(sub=>{
    ensureProfile(d);
    const kk=k(cat,sub);
@@ -601,9 +622,7 @@ window.toggleCategoryForDog=(d,cat,val)=>{
    if(!val)data.profiles[d].mastered[kk]=false;
  });
  save();
- document.querySelectorAll(`.profile-sub[data-dog="${CSS.escape(d)}"][data-cat="${CSS.escape(cat)}"]`).forEach(cb=>cb.checked=!!val);
- renderDogList();renderExercises();renderToday();renderBalance();
- window.scrollTo(0,y);
+ renderDogListPreservingProfileState(d);renderExercises();renderToday();renderBalance();
  toast('Profil automatisch gespeichert.');
 }
 function setAll(val){/* Profile-Reiter entfernt */}
@@ -1027,7 +1046,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V93_backup_training-tracker_${stamp}.json`;
+ a.download=`V94_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }
