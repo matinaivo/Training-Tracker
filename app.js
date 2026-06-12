@@ -905,15 +905,33 @@ function todayDashboardRow(x,mode){
    ? (x.days===999?'neu':`${Math.max(0,x.overdue)} Tag${Math.max(0,x.overdue)===1?'':'e'} überfällig`)
    : `in ${x.dueIn} Tag${x.dueIn===1?'':'en'}`;
  return `<div class="score-row today-training-row">
-   <button type="button" class="today-profile-link" onclick="openDogProfileAt('${attr(x.cat)}','${attr(x.sub)}')" title="Im Trainingsprofil öffnen">${esc(x.sub)}</button>
-   <span class="small">${last} · ${freq} · ${info}</span>
-   <button type="button" class="today-add-btn" onclick="startNewEntryForTodayExercise('${attr(x.cat)}','${attr(x.sub)}')" title="Training eintragen" aria-label="Training eintragen">➕</button>
+   <div class="today-training-main">
+     <button type="button" class="today-profile-link" onclick="openDogProfileAt('${attr(x.cat)}','${attr(x.sub)}')" title="Im Trainingsprofil öffnen">${esc(x.sub)}</button>
+     <span class="small today-training-info">${last} · ${freq} · ${info}</span>
+   </div>
+   <button type="button" class="today-add-btn" onclick="startNewEntryFromTodayExercise('${attr(x.cat)}','${attr(x.sub)}')" title="Training eintragen" aria-label="Training eintragen">➕</button>
  </div>`;
 }
-function startNewEntryForTodayExercise(cat,sub){
+function startNewEntryFromTodayExercise(cat,sub){
  const d=todayDog.value||getUiState().currentDog||data.dogs[0];
  if(!d)return;
- startNewEntryForDog(d);
+ returnViewAfterEdit='today';
+ returnDogAfterEdit=null;
+ show('add');
+ formTitle.textContent='Training hinzufügen';
+ saveEntryBtn.textContent='Speichern';
+ editingId=null;
+ trainingForm.reset();
+ const sessionRadio=document.querySelector('input[name="trainingType"][value="session"]');
+ if(sessionRadio)sessionRadio.checked=true;
+ updateDurationVisibility();
+ fillSelects();
+ if(data.dogs.includes(d))entryDog.value=d;
+ setUiState({currentDog:d,entryDog:d,todayDog:d,balanceDog:d,calendarDog:d});
+ entryDate.value=today();
+ treadmillBlocks.innerHTML='';
+ treadmillBox.classList.add('hidden');
+ renderExercises();
  setTimeout(()=>{
    document.querySelectorAll('.ex').forEach(cb=>{
      cb.checked=(cb.dataset.cat===cat && cb.dataset.sub===sub);
@@ -1092,7 +1110,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V96_backup_training-tracker_${stamp}.json`;
+ a.download=`V97_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }
