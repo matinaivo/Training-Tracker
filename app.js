@@ -23,16 +23,16 @@ const defaultCategories={
 
 const categoryBlocks=[
  {name:'Hundesport',categories:['BH','IGP','Schutzdienst','Obedience','Nasenarbeit']},
- {name:'Training & Aufbau',categories:['Trainingsmethoden','Fitness','Tricks']},
- {name:'Alltag & Management',categories:['Basics','Spaziergang','Medical Training','Entspannung']}
+ {name:'Training & Aufbau',categories:['Trainingsmethoden','Fitness','Tricks','Basics']},
+ {name:'Alltag & Management',categories:['Spaziergang','Medical Training','Entspannung']}
 ];
 function blockForCategory(cat){
  const b=categoryBlocks.find(x=>x.categories.includes(cat));
  return b?b.name:'Weitere';
 }
 
-const rules={'Laufband':1,'Togo Ball':2,'Wackelbrett':1,'Propriozeptionsbälle':1,'Balancekissen':1,'Cavaletti':1,'Slalomstangen':1,'Pylonen':1,'Fährte':1,'Fährte Abgang':1,'Verloren Suche':1,'Anzeige':1,'Geruchsdifferenzierung':1,'Banknotensuche':1,'Schutzdienst aktiv':2,'Hürde':1,'Schrägwand':2};
-const clubSubs=new Set(['Schutzdienst Technik','Schutzdienst aktiv','Revieren','Hürde','Schrägwand','Verbellen']);
+const rules={'Laufband':1,'Togo Ball':2,'Wackelbrett':1,'Propriozeptionsbälle':1,'Balancekissen':1,'Cavaletti':1,'Slalomstangen':1,'Pylonen':1,'Fährte':1,'Fährte Abgang':1,'Verloren Suche':1,'Anzeige':1,'Geruchsdifferenzierung':1,'Banknotensuche':1,'Hürde':1,'Schrägwand':2};
+const clubSubs=new Set(['Revieren','Hürde','Schrägwand','Verbellen']);
 const frequencyOptions=[
  {value:'daily',label:'täglich',days:1},
  {value:'paused',label:'pausiert',days:999999},
@@ -158,7 +158,7 @@ function normalize(x){
 
 function migrateV78GibEsMirProfiles(target){
  Object.values(target.profiles||{}).forEach(p=>{
-   ['active','frequency'].forEach(bucket=>{
+   ['active','frequency','mastered'].forEach(bucket=>{
      if(!p[bucket])return;
      const oldKey="Basics||Gib's mir";
      const newKey="Basics||Gib es mir";
@@ -171,7 +171,7 @@ function migrateV78GibEsMirProfiles(target){
 }
 function cleanupV77Profiles(target){
  Object.values(target.profiles||{}).forEach(p=>{
-   ['active','frequency'].forEach(bucket=>{
+   ['active','frequency','mastered'].forEach(bucket=>{
      if(!p[bucket])return;
      Object.keys(p[bucket]).forEach(key=>{
        if(key.startsWith('Sonstiges||')||key==='Medical Training||Fokus Training Futter'||key==='Medical Training||Fokus Training Objekt'){
@@ -183,13 +183,15 @@ function cleanupV77Profiles(target){
 }
 function ensureProfileInDataObject(target,dog){
  if(!dog)return;
- if(!target.profiles[dog])target.profiles[dog]={active:{},frequency:{}};
+ if(!target.profiles[dog])target.profiles[dog]={active:{},frequency:{},mastered:{}};
  if(!target.profiles[dog].active)target.profiles[dog].active={};
  if(!target.profiles[dog].frequency)target.profiles[dog].frequency={};
+ if(!target.profiles[dog].mastered)target.profiles[dog].mastered={};
  Object.entries(target.categories).flatMap(([cat,subs])=>(Array.isArray(subs)?subs:[]).map(sub=>({cat,sub}))).forEach(({cat,sub})=>{
    const kk=cat+'||'+sub;
    if(typeof target.profiles[dog].active[kk]!=='boolean')target.profiles[dog].active[kk]=false;
    if(!target.profiles[dog].frequency[kk])target.profiles[dog].frequency[kk]='1w';
+   if(typeof target.profiles[dog].mastered[kk]!=='boolean')target.profiles[dog].mastered[kk]=false;
  });
 }
 function migrateCategoriesAndEntries(d){
@@ -202,8 +204,8 @@ function migrateCategoriesAndEntries(d){
   'Apport ebenerdig':'Apport ebenerdig',
   'Gegenstandssuche':'Verlorensuche',
   'Verloren Suche':'Verlorensuche',
-  'Technik':'Schutzdienst Technik',
-  'Aktiver Schutzdienst':'Schutzdienst aktiv',
+  'Technik':null,
+  'Aktiver Schutzdienst':null,
   'Dehnen / Mobilisation':null,
   'Box':'Boxentraining',
   'Decke':'Deckentraining',
@@ -218,7 +220,7 @@ function migrateCategoriesAndEntries(d){
  const moveCat={
   'Fußarbeit':'BH','180° Kehrtwendung':'BH','Winkel links':'BH','Winkel rechts':'BH','Grundstellung':'BH','Anhalten mit Grundstellung':'BH','Vorsitz':'BH','Abrufen mit Hier':'BH','Sitz':'BH','Platz':'BH','Steh':'BH','Sitz aus der Bewegung':'BH','Platz aus der Bewegung':'BH','Steh aus der Bewegung':'BH','Ablage':'BH','Gruppe':'BH',
   'Voraus':'IGP','Apport ebenerdig':'IGP','Apport Sprung':'IGP','Apport Kletterwand':'IGP','Hürde':'IGP','Schrägwand':'IGP',
-  'Revieren':'Schutzdienst','Verbellen':'Schutzdienst','Helferfokus':'Schutzdienst','Rückentransport':'Schutzdienst','Seitentransport':'Schutzdienst','Kurze Flucht':'Schutzdienst','Lange Flucht':'Schutzdienst','Angriff aus Bewachung':'Schutzdienst','Überfall aus Transport':'Schutzdienst','Aus':'Schutzdienst','Schutzdienst Technik':'Schutzdienst','Schutzdienst aktiv':'Schutzdienst',
+  'Revieren':'Schutzdienst','Verbellen':'Schutzdienst','Helferfokus':'Schutzdienst','Rückentransport':'Schutzdienst','Seitentransport':'Schutzdienst','Kurze Flucht':'Schutzdienst','Lange Flucht':'Schutzdienst','Angriff aus Bewachung':'Schutzdienst','Überfall aus Transport':'Schutzdienst','Aus':'Schutzdienst',
   'Distanzkontrolle':'Obedience','Box':'Obedience','Richtungsapport':'Obedience','Pylon':'Obedience','Positionswechsel':'Obedience','Identifikation':'Obedience',
   'Fährte':'Nasenarbeit','Fährte Abgang':'Nasenarbeit','Verlorensuche':'Nasenarbeit','Anzeige':'Nasenarbeit','Geruchsdifferenzierung':'Nasenarbeit','Banknotensuche':'Nasenarbeit',
   'Futtertreiben':'Trainingsmethoden','Clicker-Konditionierung':'Trainingsmethoden','Nasentarget':'Trainingsmethoden','Vorderpfotentarget / Vorne':'Trainingsmethoden','Hinterpfotentarget / Hinten':'Trainingsmethoden','Ganz drauf':'Trainingsmethoden','Vier Pfoten':'Trainingsmethoden','Fokus Training Futter':'Trainingsmethoden','Fokus Training Objekt':'Trainingsmethoden','Focus':'Trainingsmethoden','Fokus':'Trainingsmethoden',
@@ -258,6 +260,20 @@ function migrateCategoriesAndEntries(d){
  if(d.categories['Medical Training']){
    d.categories['Medical Training']=d.categories['Medical Training'].filter(sub=>!['Fokus Training Futter','Fokus Training Objekt'].includes(sub));
  }
+
+ const removedSubs=new Set(['Schutzdienst Technik','Schutzdienst aktiv','Schutzdiensttechnik']);
+ d.entries=(d.entries||[]).map(e=>{
+   e.exercises=(e.exercises||[]).filter(ex=>!removedSubs.has(ex.subcategory));
+   if(e.exercises.length)e.category=e.exercises[0].category;
+   return e;
+ }).filter(e=>e.exercises&&e.exercises.length);
+ Object.values(d.profiles||{}).forEach(p=>{
+   ['active','frequency','mastered'].forEach(bucket=>{
+     Object.keys(p[bucket]||{}).forEach(key=>{
+       if([...removedSubs].some(sub=>key.endsWith('||'+sub)))delete p[bucket][key];
+     });
+   });
+ });
  delete d.categories['Sonstiges'];
 }
 function save(){
@@ -291,19 +307,60 @@ function allSubs(){return Object.entries(data.categories).flatMap(([cat,subs])=>
 function k(cat,sub){return cat+'||'+sub}
 function ensureProfile(dog){
  if(!dog)return;
- if(!data.profiles[dog])data.profiles[dog]={active:{},frequency:{}};
+ if(!data.profiles[dog])data.profiles[dog]={active:{},frequency:{},mastered:{}};
  if(!data.profiles[dog].active)data.profiles[dog].active={};
  if(!data.profiles[dog].frequency)data.profiles[dog].frequency={};
+ if(!data.profiles[dog].mastered)data.profiles[dog].mastered={};
  allSubs().forEach(x=>{
    const kk=k(x.cat,x.sub);
    if(typeof data.profiles[dog].active[kk]!=='boolean')data.profiles[dog].active[kk]=false;
    if(!data.profiles[dog].frequency[kk])data.profiles[dog].frequency[kk]='1w';
+   if(typeof data.profiles[dog].mastered[kk]!=='boolean')data.profiles[dog].mastered[kk]=false;
  });
 }
 function active(dog,cat,sub){ensureProfile(dog); return !!data.profiles[dog]?.active?.[k(cat,sub)]}
-function setActive(dog,cat,sub,val){ensureProfile(dog); data.profiles[dog].active[k(cat,sub)]=!!val; save()}
+function mastered(dog,cat,sub){ensureProfile(dog); return !!data.profiles[dog]?.mastered?.[k(cat,sub)]}
+function setActive(dog,cat,sub,val){
+ ensureProfile(dog);
+ const kk=k(cat,sub);
+ data.profiles[dog].active[kk]=!!val;
+ if(!val)data.profiles[dog].mastered[kk]=false;
+ save();
+}
+function setMastered(dog,cat,sub,val){
+ ensureProfile(dog);
+ const kk=k(cat,sub);
+ data.profiles[dog].mastered[kk]=!!val;
+ if(val)data.profiles[dog].active[kk]=true;
+ save();
+}
 function getFrequency(dog,cat,sub){ensureProfile(dog); return data.profiles[dog].frequency?.[k(cat,sub)]||'1w'}
 function setFrequency(dog,cat,sub,val){ensureProfile(dog); data.profiles[dog].frequency[k(cat,sub)]=val||'1w'; save()}
+function trainingStatus(dog,cat,sub){
+ if(!active(dog,cat,sub))return'inactive';
+ if(mastered(dog,cat,sub))return'mastered';
+ if(getFrequency(dog,cat,sub)==='paused')return'paused';
+ return'active';
+}
+function statusCountsForCategory(dog,cat){
+ return (data.categories[cat]||[]).reduce((acc,sub)=>{
+   const st=trainingStatus(dog,cat,sub);
+   if(st==='active')acc.active++;
+   else if(st==='paused')acc.paused++;
+   else if(st==='mastered')acc.mastered++;
+   return acc;
+ },{active:0,paused:0,mastered:0});
+}
+function addCounts(a,b){a.active+=b.active;a.paused+=b.paused;a.mastered+=b.mastered;return a}
+function statusCountsForBlock(dog,block){
+ return block.categories.reduce((acc,cat)=>addCounts(acc,statusCountsForCategory(dog,cat)),{active:0,paused:0,mastered:0});
+}
+function statusCountsForDog(dog){
+ return Object.keys(data.categories||{}).reduce((acc,cat)=>addCounts(acc,statusCountsForCategory(dog,cat)),{active:0,paused:0,mastered:0});
+}
+function statusBadgeHTML(counts){
+ return `<span class="status-badges" title="🔄 aktiv im Training · ⏸ pausiert · ✅ beherrscht"><span>🔄${counts.active}</span><span>⏸${counts.paused}</span><span>✅${counts.mastered}</span></span>`;
+}
 function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function attr(s){return esc(s).replace(/'/g,'&#39;')}
 
@@ -403,10 +460,12 @@ function restoreOpenDogCard(){
 }
 
 function activeCountForCategory(d,cat){
- return (data.categories[cat]||[]).filter(sub=>active(d,cat,sub)).length;
+ const c=statusCountsForCategory(d,cat);
+ return c.active+c.paused+c.mastered;
 }
 function activeCountForBlock(d,block){
- return block.categories.reduce((sum,cat)=>sum+activeCountForCategory(d,cat),0);
+ const c=statusCountsForBlock(d,block);
+ return c.active+c.paused+c.mastered;
 }
 function blockIcon(name){
  if(name==='Hundesport')return '🏃';
@@ -416,25 +475,34 @@ function blockIcon(name){
 }
 function renderDogProfileOverview(d){
  ensureProfile(d);
- return `<div class="inline-profile compact-profile"><h3>Trainingsprofil</h3>${categoryBlocks.map(block=>{
-   const blockCount=activeCountForBlock(d,block);
-   return `<details class="profile-block dog-profile-block settings-category-card compact-settings-card"><summary class="settings-category-head compact-settings-head compact-profile-head"><div class="settings-title-wrap compact-settings-title"><h2><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${blockIcon(block.name)} ${esc(block.name)}</h2></div><span class="count-badge settings-count-badge">${blockCount}</span></summary>${block.categories.filter(cat=>data.categories[cat]).map(cat=>{
-     const catCount=activeCountForCategory(d,cat);
+ return `<div class="inline-profile compact-profile"><h3>Trainingsprofil</h3><div class="status-legend"><span>🔄 aktiv im Training</span><span>⏸ pausiert</span><span>✅ beherrscht</span></div>${categoryBlocks.map(block=>{
+   const blockCounts=statusCountsForBlock(d,block);
+   return `<details class="profile-block dog-profile-block settings-category-card compact-settings-card"><summary class="settings-category-head compact-settings-head compact-profile-head"><div class="settings-title-wrap compact-settings-title"><h2><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${blockIcon(block.name)} ${esc(block.name)}</h2></div>${statusBadgeHTML(blockCounts)}</summary>${block.categories.filter(cat=>data.categories[cat]).map(cat=>{
+     const catCounts=statusCountsForCategory(d,cat);
      const subs=(data.categories[cat]||[]);
      const activeCount=subs.filter(sub=>active(d,cat,sub)).length;
      const allChecked=subs.length>0&&activeCount===subs.length;
-     return `<details class="profile-details dog-profile-category compact-profile-subcategory"><summary class="settings-sub-row compact-settings-sub-row compact-profile-sub-head"><span><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${esc(cat)}</span><span class="count-badge settings-count-badge">${catCount}</span></summary><div class="profile-select-all-row"><label><input type="checkbox" ${allChecked?'checked':''} onchange="toggleCategoryForDog('${attr(d)}','${attr(cat)}',this.checked)"> Alle auswählen</label></div><div class="compact-profile-list">${subs.map(sub=>`<div class="profile-row profile-row-frequency compact-profile-row"><label class="profile-check-label"><input type="checkbox" class="profile-sub" data-dog="${attr(d)}" data-cat="${attr(cat)}" data-sub="${attr(sub)}" ${active(d,cat,sub)?'checked':''} onchange="toggleProfile('${attr(d)}','${attr(cat)}','${attr(sub)}',this.checked)"> <span>${esc(sub)}</span></label><select class="frequency-select compact-frequency-select" onchange="changeFrequency('${attr(d)}','${attr(cat)}','${attr(sub)}',this.value)">${frequencyOptions.map(f=>`<option value="${f.value}" ${getFrequency(d,cat,sub)===f.value?'selected':''}>${f.label}</option>`).join('')}</select></div>`).join('')}</div></details>`;
+     return `<details class="profile-details dog-profile-category compact-profile-subcategory"><summary class="settings-sub-row compact-settings-sub-row compact-profile-sub-head"><span><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${esc(cat)}</span>${statusBadgeHTML(catCounts)}</summary><div class="profile-select-all-row"><label><input type="checkbox" ${allChecked?'checked':''} onchange="toggleCategoryForDog('${attr(d)}','${attr(cat)}',this.checked)"> Alle auswählen</label></div><div class="compact-profile-list">${subs.map(sub=>{
+       const st=trainingStatus(d,cat,sub);
+       return `<div class="profile-row profile-row-frequency compact-profile-row status-${st}"><label class="profile-check-label"><input type="checkbox" class="profile-sub" data-dog="${attr(d)}" data-cat="${attr(cat)}" data-sub="${attr(sub)}" ${active(d,cat,sub)?'checked':''} onchange="toggleProfile('${attr(d)}','${attr(cat)}','${attr(sub)}',this.checked)"> <span>${statusIcon(st)} ${esc(sub)}</span></label><select class="frequency-select compact-frequency-select" onchange="changeFrequency('${attr(d)}','${attr(cat)}','${attr(sub)}',this.value)">${frequencyOptions.map(f=>`<option value="${f.value}" ${getFrequency(d,cat,sub)===f.value?'selected':''}>${f.label}</option>`).join('')}</select><button type="button" class="mastered-toggle ${mastered(d,cat,sub)?'is-mastered':''}" title="Beherrscht" aria-label="Beherrscht" onclick="toggleMastered('${attr(d)}','${attr(cat)}','${attr(sub)}')">✅</button></div>`;
+     }).join('')}</div></details>`;
    }).join('')}</details>`;
  }).join('')}</div>`;
 }
+function statusIcon(st){
+ if(st==='mastered')return'✅';
+ if(st==='paused')return'⏸';
+ if(st==='active')return'🔄';
+ return'❌';
+}
 function renderDogList(){
  dogList.innerHTML=data.dogs.length?data.dogs.map(d=>{
-   const count=entries(d).length;
+   const counts=statusCountsForDog(d);
    const editing=editingDogName===d;
    return `<details class="dog-collapse-card dog-manage-card settings-category-card compact-settings-card ${editing?'is-editing':''}" id="dog-card-${attr(d)}" ontoggle="rememberOpenDogCard('${attr(d)}',this.open)">
      <summary class="dog-collapse-summary dog-manage-summary settings-category-head compact-settings-head compact-dog-head">
        <div class="dog-title settings-title-wrap compact-settings-title"><h2><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> 🐕 ${esc(d)}</h2></div>
-       <span class="dog-count settings-count-badge">${count}</span>
+       ${statusBadgeHTML(counts)}
        ${editing
          ? `<button type="button" class="icon-btn edit compact-edit-btn" aria-label="Schließen" onclick="clearEditingDog();event.stopPropagation();">❌</button>`
          : `<button type="button" class="icon-btn edit compact-edit-btn" aria-label="Training hinzufügen" onclick="startNewEntryForDog('${attr(d)}');event.stopPropagation();">➕</button><button type="button" class="icon-btn edit compact-edit-btn" aria-label="Bearbeiten" onclick="setEditingDog('${attr(d)}');event.stopPropagation();">✏️</button>`}
@@ -509,23 +577,32 @@ window.deleteDog=async(d)=>{
 function renderProfile(){renderDogList()}
 window.toggleProfile=(d,cat,sub,val)=>{
  setActive(d,cat,sub,val);
- renderExercises();renderToday();renderBalance();
+ renderDogList();renderExercises();renderToday();renderBalance();
  toast('Profil automatisch gespeichert.');
 }
 window.changeFrequency=(d,cat,sub,val)=>{
  setFrequency(d,cat,sub,val);
- renderToday();renderBalance();
+ renderDogList();renderToday();renderBalance();
  toast('Trainingshäufigkeit gespeichert.');
+}
+window.toggleMastered=(d,cat,sub)=>{
+ const y=window.scrollY;
+ setMastered(d,cat,sub,!mastered(d,cat,sub));
+ renderDogList();renderExercises();renderToday();renderBalance();
+ window.scrollTo(0,y);
+ toast(mastered(d,cat,sub)?'Als beherrscht markiert.':'Beherrscht-Markierung entfernt.');
 }
 window.toggleCategoryForDog=(d,cat,val)=>{
  const y=window.scrollY;
  (data.categories[cat]||[]).forEach(sub=>{
    ensureProfile(d);
-   data.profiles[d].active[k(cat,sub)]=!!val;
+   const kk=k(cat,sub);
+   data.profiles[d].active[kk]=!!val;
+   if(!val)data.profiles[d].mastered[kk]=false;
  });
  save();
  document.querySelectorAll(`.profile-sub[data-dog="${CSS.escape(d)}"][data-cat="${CSS.escape(cat)}"]`).forEach(cb=>cb.checked=!!val);
- renderExercises();renderToday();renderBalance();
+ renderDogList();renderExercises();renderToday();renderBalance();
  window.scrollTo(0,y);
  toast('Profil automatisch gespeichert.');
 }
@@ -763,7 +840,7 @@ function renderToday(){
  if(todayDog && d && todayDog.value!==d && data.dogs.includes(d)) todayDog.value=d; 
  if(!d){todayContent.innerHTML='<div class="card"><h2>Noch kein Hund</h2><p>Bitte lege zuerst einen Hund an.</p></div>';return}
  const due={}, notDue={}, paused={};
- allSubs().filter(x=>active(d,x.cat,x.sub)&&!clubSubs.has(x.sub)).forEach(x=>{
+ allSubs().filter(x=>active(d,x.cat,x.sub)&&!mastered(d,x.cat,x.sub)&&!clubSubs.has(x.sub)).forEach(x=>{
    const freq=getFrequency(d,x.cat,x.sub);
    if(freq==='paused'){
      (paused[x.cat]||(paused[x.cat]=[])).push({...x,freq});
@@ -820,7 +897,12 @@ function balanceCard(d,cat,compact){let subs=(data.categories[cat]||[]).filter(s
 
 
 
+let collapsedSettingsBlocks={};
 let collapsedSettingsCategories={};
+function toggleSettingsBlock(block){
+ collapsedSettingsBlocks[block]=!collapsedSettingsBlocks[block];
+ renderSettings();
+}
 function toggleSettingsCategory(cat){
  collapsedSettingsCategories[cat]=!collapsedSettingsCategories[cat];
  renderSettings();
@@ -844,24 +926,45 @@ function renderSettings(){
  Object.keys(data.categories||{}).forEach(c=>{
    if(!(c in collapsedSettingsCategories)) collapsedSettingsCategories[c]=true;
  });
- categoryList.innerHTML=Object.entries(data.categories).map(([cat,subs])=>{
-   const editing=editingCategoryName===cat;
-   const expanded=!collapsedSettingsCategories[cat];
-   const subList=(Array.isArray(subs)?subs:[]);
-   return `<section class="settings-category-card compact-settings-card ${editing?'is-editing':''}">
-     <div class="settings-category-head compact-settings-head">
-       <div class="settings-title-wrap compact-settings-title" onclick="toggleSettingsCategory('${attr(cat)}')">
-         <h2><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${esc(cat)}</h2>
+ const knownCats=new Set(categoryBlocks.flatMap(b=>b.categories));
+ const blocks=categoryBlocks.map(block=>({
+   name:block.name,
+   categories:block.categories.filter(cat=>data.categories[cat])
+ }));
+ const customCats=Object.keys(data.categories||{}).filter(cat=>!knownCats.has(cat));
+ if(customCats.length)blocks.push({name:'Weitere',categories:customCats});
+ categoryList.innerHTML=blocks.map(block=>{
+   if(!(block.name in collapsedSettingsBlocks))collapsedSettingsBlocks[block.name]=true;
+   const blockExpanded=!collapsedSettingsBlocks[block.name];
+   const catCount=block.categories.length;
+   return `<section class="settings-block-card compact-settings-card">
+     <div class="settings-category-head compact-settings-head settings-block-head">
+       <div class="settings-title-wrap compact-settings-title" onclick="toggleSettingsBlock('${attr(block.name)}')">
+         <h2><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${blockIcon(block.name)} ${esc(block.name)}</h2>
        </div>
-       <span class="count-badge settings-count-badge">${subList.length}</span>
-       <button type="button" class="icon-btn edit compact-edit-btn" aria-label="${editing?'Schließen':'Bearbeiten'}" onclick="${editing?`clearEditingCategory()`:`setEditingCategory('${attr(cat)}')`}">${editing?'❌':'✏️'}</button>
+       <span class="count-badge settings-count-badge">${catCount}</span>
      </div>
-     ${expanded?`
-     <div class="settings-sub-list compact-settings-sub-list">
-       ${subList.map(s=>`<div class="settings-sub-row compact-settings-sub-row"><span>${esc(s)}</span>${editing?`<button type="button" class="icon-btn delete" title="Unterkategorie löschen" aria-label="Unterkategorie löschen" onclick="deleteSub('${attr(cat)}','${attr(s)}')">🗑️</button>`:''}</div>`).join('')}
-     </div>
-     ${editing?`<div class="settings-danger-zone compact-danger-zone"><button type="button" class="icon-action danger-soft" onclick="deleteCategory('${attr(cat)}')">🗑 Kategorie löschen</button></div>`:''}
-     `:''}
+     ${blockExpanded?`<div class="settings-block-body">${block.categories.map(cat=>{
+       const subs=data.categories[cat]||[];
+       const editing=editingCategoryName===cat;
+       const expanded=!collapsedSettingsCategories[cat];
+       const subList=(Array.isArray(subs)?subs:[]);
+       return `<section class="settings-category-card compact-settings-card ${editing?'is-editing':''}">
+         <div class="settings-category-head compact-settings-head">
+           <div class="settings-title-wrap compact-settings-title" onclick="toggleSettingsCategory('${attr(cat)}')">
+             <h2><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${esc(cat)}</h2>
+           </div>
+           <span class="count-badge settings-count-badge">${subList.length}</span>
+           <button type="button" class="icon-btn edit compact-edit-btn" aria-label="${editing?'Schließen':'Bearbeiten'}" onclick="${editing?`clearEditingCategory()`:`setEditingCategory('${attr(cat)}')`}">${editing?'❌':'✏️'}</button>
+         </div>
+         ${expanded?`
+         <div class="settings-sub-list compact-settings-sub-list">
+           ${subList.map(s=>`<div class="settings-sub-row compact-settings-sub-row"><span>${esc(s)}</span>${editing?`<button type="button" class="icon-btn delete" title="Unterkategorie löschen" aria-label="Unterkategorie löschen" onclick="deleteSub('${attr(cat)}','${attr(s)}')">🗑️</button>`:''}</div>`).join('')}
+         </div>
+         ${editing?`<div class="settings-danger-zone compact-danger-zone"><button type="button" class="icon-action danger-soft" onclick="deleteCategory('${attr(cat)}')">🗑 Kategorie löschen</button></div>`:''}
+         `:''}
+       </section>`;
+     }).join('')}</div>`:''}
    </section>`;
  }).join('');
 }
@@ -924,7 +1027,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V91_backup_training-tracker_${stamp}.json`;
+ a.download=`V93_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }
@@ -995,7 +1098,12 @@ async function clearAll(){
  show('dogs');
  toast('Alle App-Daten gelöscht.');
 }
-function catClass(c){if(c==='IGP Sonstiges'||c==='IGP')return'cat-IGP';if(c==='Basics')return'cat-Basics';return 'cat-'+String(c||'default').replace(/\s+/g,'-').replace(/[^\wäöüÄÖÜß-]/g,'')}
+const predefinedCategoryColors=new Set(['BH','IGP','Schutzdienst','Obedience','Nasenarbeit','Trainingsmethoden','Fitness','Tricks','Basics','Spaziergang','Medical Training','Entspannung']);
+function safeCatClassName(c){return 'cat-'+String(c||'default').replace(/\s+/g,'-').replace(/[^\wäöüÄÖÜß-]/g,'')}
+function catClass(c){
+ if(c==='IGP Sonstiges'||c==='IGP')return'cat-IGP';
+ return predefinedCategoryColors.has(c)?safeCatClassName(c):'cat-user';
+}
 function shortCat(c){return c==='Unterordnung'?'UO':(c==='IGP Sonstiges'||c==='IGP')?'IGP':c}
 
 

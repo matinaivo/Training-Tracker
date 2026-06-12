@@ -1,9 +1,9 @@
-V91:
-- Training hinzufuegen optisch ueberarbeitet.
-- Kopfbereich Hund/Datum kompakter.
-- Dauerfeld als [15] Min. umgesetzt und nur bei Trainingseinheit sichtbar.
-- Kategorien und Unterkategorien an App-Kartenoptik angepasst.
-- Speichern/Abbrechen mit Symbolen und sticky Aktionsleiste.
-- Separate alte Inline-Abbrechen-Zeile entfernt.
-- Basis: V90.
-- Cache-Busting: app.js/styles.css ?v=91.
+V93:
+- Neuer Status 'beherrscht' pro Hund/Uebung.
+- Kompakte Statuszaehlung: 🔄 aktiv im Training, ⏸ pausiert, ✅ beherrscht.
+- Hundekarten, Oberbereiche und Kategorien zeigen Statuszahlen statt einfacher Gesamtzahl.
+- Beherrschte Uebungen bleiben im Profil und beim Training-Anlegen sichtbar.
+- Beherrschte Uebungen erscheinen nicht mehr in Heute/Faelligkeiten.
+- Pausiert bleibt ueber die bestehende Frequenz 'pausiert' definiert.
+- Basis: V92.
+- Cache-Busting: app.js/styles.css ?v=93.
