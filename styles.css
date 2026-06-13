@@ -1970,3 +1970,33 @@ min-width:0!important;
    gap:.28rem;
  }
 }
+
+/* V101 Doppeleintrag-Hinweis */
+.duplicate-today-chip{
+ justify-self:end;
+ align-self:center;
+ display:inline-flex;
+ align-items:center;
+ justify-content:center;
+ min-height:24px;
+ padding:.12rem .42rem;
+ border-radius:999px;
+ background:#fff0c4;
+ color:#8a5a00;
+ border:1px solid #f4d987;
+ font-size:.78rem;
+ font-weight:900;
+ white-space:nowrap;
+}
+.compact-exercise-row{
+ grid-template-columns:26px minmax(0,1fr) auto!important;
+}
+@media(max-width:650px){
+ .duplicate-today-chip{
+   font-size:.72rem;
+   padding:.1rem .34rem;
+ }
+ .compact-exercise-row{
+   grid-template-columns:24px minmax(0,1fr) auto!important;
+ }
+}

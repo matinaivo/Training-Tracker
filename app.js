@@ -383,7 +383,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 function bind(){
  addDogBtn.onclick=addDog;
  todayDog.onchange=()=>syncDogSelection('todayDog'); balanceDog.onchange=()=>syncDogSelection('balanceDog'); calendarDog.onchange=()=>{ if(calendarDog.value==='__all__'){setUiState({calendarDog:'__all__'}); renderCalendar(); if(selectedDay)renderDayDetails();} else {syncDogSelection('calendarDog'); if(selectedDay)renderDayDetails();} };
- entryDog.onchange=()=>syncDogSelection('entryDog'); entryCategory.onchange=renderExercises; trainingForm.onsubmit=saveEntry;
+ entryDog.onchange=()=>syncDogSelection('entryDog'); entryDate.onchange=renderExercises; entryCategory.onchange=renderExercises; trainingForm.onsubmit=saveEntry;
  addTreadmillBlock.onclick=()=>addTmBlock(); prevMonth.onclick=()=>{currentMonth.setMonth(currentMonth.getMonth()-1);renderCalendar()}; nextMonth.onclick=()=>{currentMonth.setMonth(currentMonth.getMonth()+1);renderCalendar()};
  addCategoryBtn.onclick=addCategory; addSubcategoryBtn.onclick=addSubcategory; backupBtn.onclick=backup; importFile.onchange=importBackup; clearAllBtn.onclick=clearAll;
 }
@@ -636,6 +636,10 @@ window.toggleCategoryForDog=(d,cat,val)=>{
 }
 function setAll(val){/* Profile-Reiter entfernt */}
 
+function duplicateChipForExercise(dog,cat,sub){
+ const count=todaysExerciseCounts(dog,entryDate.value||today())[k(cat,sub)]||0;
+ return count?`<span class="duplicate-today-chip" title="Heute bereits ${count}× eingetragen">${count}× heute</span>`:'';
+}
 function renderExercises(){
  let d=entryDog.value||data.dogs[0];
  if(!d){exerciseList.innerHTML='<p>Bitte zuerst Hund anlegen.</p>';return}
@@ -644,7 +648,7 @@ function renderExercises(){
    if(!cats.length)return '';
    return `<details class="entry-block settings-category-card compact-settings-card compact-entry-block"><summary class="settings-category-head compact-settings-head compact-entry-head"><div class="settings-title-wrap compact-settings-title"><h2><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${blockIcon(block.name)} ${esc(block.name)}</h2></div><span class="count-badge settings-count-badge">${cats.length}</span></summary>${cats.map(cat=>{
      const subs=(data.categories[cat]||[]).filter(s=>active(d,cat,s));
-     return `<details class="entry-category compact-entry-category"><summary class="settings-sub-row compact-settings-sub-row compact-entry-sub-head"><span><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${esc(cat)}</span><span class="count-badge settings-count-badge">${subs.length}</span></summary><div class="compact-exercise-list">${subs.map(s=>`<label class="exercise-row compact-exercise-row"><input type="checkbox" class="ex" data-cat="${attr(cat)}" data-sub="${attr(s)}" onchange="toggleTreadmill()"> <span>${esc(s)}</span></label>`).join('')}</div></details>`;
+     return `<details class="entry-category compact-entry-category"><summary class="settings-sub-row compact-settings-sub-row compact-entry-sub-head"><span><span class="arrow-closed">▶</span><span class="arrow-open">▼</span> ${esc(cat)}</span><span class="count-badge settings-count-badge">${subs.length}</span></summary><div class="compact-exercise-list">${subs.map(s=>`<label class="exercise-row compact-exercise-row"><input type="checkbox" class="ex" data-cat="${attr(cat)}" data-sub="${attr(s)}" onchange="toggleTreadmill()"> <span>${esc(s)}</span>${duplicateChipForExercise(d,cat,s)}</label>`).join('')}</div></details>`;
    }).join('')}</details>`;
  }).filter(Boolean);
  exerciseList.innerHTML=blocks.length?blocks.join(''):'<p>Für diesen Hund sind keine Übungen aktiv.</p>';
@@ -662,6 +666,36 @@ function selectedExercisesByCategory(){
  });
  return groups;
 }
+function todaysExerciseCounts(dog,date){
+ const counts={};
+ (data.entries||[]).filter(e=>e.dog===dog&&e.date===date&&(!editingId||e.id!==editingId)).forEach(e=>{
+   (e.exercises||[]).forEach(ex=>{
+     const key=k(ex.category,ex.subcategory);
+     counts[key]=(counts[key]||0)+1;
+   });
+ });
+ return counts;
+}
+function duplicateSelectedExercises(groups,dog,date){
+ const counts=todaysExerciseCounts(dog,date);
+ const duplicates=[];
+ Object.values(groups).flat().forEach(ex=>{
+   const count=counts[k(ex.category,ex.subcategory)]||0;
+   if(count>0)duplicates.push({...ex,count});
+ });
+ return duplicates;
+}
+async function confirmDuplicateExercisesIfNeeded(groups){
+ const duplicates=duplicateSelectedExercises(groups,entryDog.value,entryDate.value);
+ if(!duplicates.length)return true;
+ const list=duplicates.map(x=>`${x.subcategory} (${x.count}× heute bereits eingetragen)`).join('\n');
+ return appConfirm({
+   title:'Übung heute schon eingetragen',
+   message:`Diese Übung${duplicates.length===1?' wurde':'en wurden'} für ${entryDog.value} heute bereits gespeichert:\n\n${list}\n\nTrotzdem zusätzlich speichern?`,
+   confirmText:'Trotzdem speichern',
+   danger:false
+ });
+}
 
 function openParentDetails(el){
  let node=el;
@@ -671,11 +705,12 @@ function openParentDetails(el){
  }
 }
 
-function saveEntry(ev){
+async function saveEntry(ev){
  ev.preventDefault();
  const groups=selectedExercisesByCategory();
  const cats=Object.keys(groups);
  if(!cats.length){toast('Bitte Übung auswählen.','warn');return}
+ if(!await confirmDuplicateExercisesIfNeeded(groups))return;
  let keepDate=entryDate.value;
  const treadmillData=[...document.querySelectorAll('.tm-block')].map(b=>({minutes:b.querySelector('.tm-min').value,speed:b.querySelector('.tm-speed').value})).filter(x=>x.minutes||x.speed);
  if(editingId){
@@ -1113,7 +1148,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V100_backup_training-tracker_${stamp}.json`;
+ a.download=`V101_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }
