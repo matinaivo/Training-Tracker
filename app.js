@@ -868,9 +868,9 @@ function renderCalendar(){
    let iso=isoDate(d);
    let es=calendarEntries().filter(e=>e.date===iso);
    let counts=calendarDayBlockCounts(es);
-   let rows=categoryBlocks.map(b=>counts[b.name]?`<span class="calendar-block-count ${safeCatClassName(b.name)}"><span>${blockShortIcon(b.name)}</span><b>${counts[b.name]}</b></span>`:'').join('');
+   let rows=categoryBlocks.map(b=>counts[b.name]?`<span class="calendar-block-count ${safeCatClassName(b.name)}"><b>${counts[b.name]}</b></span>`:'').join('');
    const extra=Object.keys(counts).filter(k=>!categoryBlocks.some(b=>b.name===k)).reduce((sum,k)=>sum+counts[k],0);
-   if(extra)rows+=`<span class="calendar-block-count cat-user"><span>⬜</span><b>${extra}</b></span>`;
+   if(extra)rows+=`<span class="calendar-block-count cat-user"><b>${extra}</b></span>`;
    let div=document.createElement('div');
    div.className='day compact-calendar-day'+(d.getMonth()!==m?' other':'')+(iso===today()?' today':'')+(iso===selectedDay?' selected':'');
    div.innerHTML=`<div class="day-num">${d.getDate()}${iso===today()?'<span class="today-dot">Heute</span>':''}</div><div class="calendar-block-counts">${rows}</div>`;
@@ -900,7 +900,7 @@ function renderDayDetails(){
      const byCat={};
      blockItems.forEach(e=>{(byCat[e.category]||(byCat[e.category]=[])).push(e)});
      const blockTotal=blockItems.reduce((sum,e)=>sum+(e.exercises?.length||1),0);
-     return `<section class="calendar-block-group compact-calendar-block-group"><h3>${blockShortIcon(block)} ${esc(block)} <span class="small">${blockTotal} Übungen</span></h3>${Object.entries(byCat).map(([cat,catItems])=>`<div class="calendar-category-group"><div class="calendar-category-title"><span class="cat-chip ${catClass(cat)}">${esc(cat)}</span><span class="small">${catItems.reduce((sum,e)=>sum+(e.exercises?.length||1),0)} Übungen</span></div>${catItems.map(renderEntry).join('')}</div>`).join('')}</section>`;
+     return `<section class="calendar-block-group compact-calendar-block-group ${safeCatClassName(block)}"><div class="calendar-block-head"><span class="calendar-block-swatch"></span><h3>${esc(block)}</h3><span class="calendar-block-total">${blockTotal} Übungen</span></div>${Object.entries(byCat).map(([cat,catItems])=>`<div class="calendar-category-group compact-calendar-category-group"><div class="calendar-category-title compact-calendar-category-title"><span class="cat-chip ${catClass(cat)}">${esc(cat)}</span><span class="small">${catItems.reduce((sum,e)=>sum+(e.exercises?.length||1),0)} Übungen</span></div>${catItems.map(renderEntry).join('')}</div>`).join('')}</section>`;
    }).join('')}</div></section>`;
  }).join('');
 }
@@ -1182,7 +1182,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V102_backup_training-tracker_${stamp}.json`;
+ a.download=`V103_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }

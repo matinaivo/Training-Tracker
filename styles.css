@@ -2024,3 +2024,158 @@ min-width:0!important;
 .compact-calendar-block-group{margin:.55rem 0;padding:.55rem;border:1px solid var(--line);border-radius:16px;background:#fbfdff}
 .compact-calendar-block-group h3{margin:.05rem 0 .4rem!important;display:flex;align-items:center;gap:.35rem}
 @media(max-width:650px){#calendar .card:first-child{padding:.8rem!important}#monthLabel{font-size:1.18rem!important}#calendarDog{max-width:150px;min-height:38px!important}.compact-calendar-day{min-height:74px!important;padding:.26rem!important}.calendar-block-count{font-size:.58rem;padding:.08rem .26rem}.calendar-block-count b{font-size:.62rem}.today-dot{display:none}}
+
+/* V103 Kalenderfarben: ausgewählte Farblogik Vorschlag 2 / 5 / 5 */
+:root{
+ --tt-hundesport:#C62828;
+ --tt-training:#1E88E5;
+ --tt-alltag:#2E7D32;
+ --tt-hundesport-soft:#FDE2E2;
+ --tt-training-soft:#E2EEFF;
+ --tt-alltag-soft:#E2F5E2;
+}
+.calendar-block-count{
+ width:auto!important;
+ min-width:28px!important;
+ height:24px!important;
+ padding:0 .42rem!important;
+ border-radius:8px!important;
+ display:inline-flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+ box-shadow:0 2px 6px rgba(0,0,0,.10)!important;
+ border:0!important;
+}
+.calendar-block-count b{
+ color:#fff!important;
+ font-size:.78rem!important;
+ line-height:1!important;
+ font-weight:900!important;
+}
+.calendar-block-count.cat-Hundesport{
+ background:var(--tt-hundesport)!important;
+}
+.calendar-block-count.cat-Training-Aufbau{
+ background:var(--tt-training)!important;
+}
+.calendar-block-count.cat-Alltag-Management{
+ background:var(--tt-alltag)!important;
+}
+.calendar-block-count.cat-user{
+ background:#8aa0ad!important;
+}
+.calendar-block-counts{
+ display:flex!important;
+ flex-direction:column!important;
+ align-items:flex-start!important;
+ gap:.22rem!important;
+ margin-top:.34rem!important;
+}
+
+/* V103 Tagesdetails: kompaktere, klarere Hierarchie */
+.calendar-detail-card{
+ border-radius:18px!important;
+ margin:.55rem 0!important;
+ box-shadow:0 8px 24px rgba(0,80,140,.06)!important;
+}
+.grouped-day-body{
+ padding:.55rem!important;
+}
+.compact-calendar-block-group{
+ margin:.5rem 0!important;
+ padding:.58rem!important;
+ border-radius:16px!important;
+ background:#fff!important;
+ border:1px solid var(--line)!important;
+}
+.calendar-block-head{
+ display:grid;
+ grid-template-columns:22px minmax(0,1fr) auto;
+ align-items:center;
+ gap:.45rem;
+ margin:0 0 .48rem;
+}
+.calendar-block-head h3{
+ margin:0!important;
+ font-size:1.02rem!important;
+ line-height:1.15!important;
+}
+.calendar-block-swatch{
+ width:20px;
+ height:20px;
+ border-radius:6px;
+ display:inline-block;
+ box-shadow:0 2px 6px rgba(0,0,0,.10);
+}
+.calendar-block-total{
+ font-size:.86rem;
+ font-weight:900;
+ color:var(--muted);
+ white-space:nowrap;
+}
+.compact-calendar-block-group.cat-Hundesport{
+ background:linear-gradient(90deg,rgba(198,40,40,.10),#fff 38%)!important;
+}
+.compact-calendar-block-group.cat-Training-Aufbau{
+ background:linear-gradient(90deg,rgba(30,136,229,.10),#fff 38%)!important;
+}
+.compact-calendar-block-group.cat-Alltag-Management{
+ background:linear-gradient(90deg,rgba(46,125,50,.10),#fff 38%)!important;
+}
+.compact-calendar-block-group.cat-Hundesport .calendar-block-swatch{
+ background:var(--tt-hundesport);
+}
+.compact-calendar-block-group.cat-Training-Aufbau .calendar-block-swatch{
+ background:var(--tt-training);
+}
+.compact-calendar-block-group.cat-Alltag-Management .calendar-block-swatch{
+ background:var(--tt-alltag);
+}
+.compact-calendar-category-group{
+ margin:.42rem 0!important;
+ padding:.45rem!important;
+ border:1px solid rgba(190,215,226,.75);
+ border-radius:14px;
+ background:rgba(255,255,255,.76);
+}
+.compact-calendar-category-title{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:.45rem;
+ margin:0 0 .35rem!important;
+}
+.compact-calendar-category-title .cat-chip{
+ max-width:72%;
+ overflow:hidden;
+ text-overflow:ellipsis;
+ white-space:nowrap;
+}
+.compact-calendar-category-group .entry-card,
+.compact-calendar-category-group .entry{
+ margin:.35rem 0!important;
+}
+@media(max-width:650px){
+ .calendar-block-count{
+   min-width:25px!important;
+   height:22px!important;
+   padding:0 .34rem!important;
+   border-radius:7px!important;
+ }
+ .calendar-block-count b{
+   font-size:.72rem!important;
+ }
+ .calendar-block-head{
+   grid-template-columns:20px minmax(0,1fr) auto;
+   gap:.38rem;
+ }
+ .calendar-block-head h3{
+   font-size:.96rem!important;
+ }
+ .calendar-block-total{
+   font-size:.78rem;
+ }
+ .compact-calendar-category-group{
+   padding:.4rem!important;
+ }
+}
