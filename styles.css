@@ -2000,3 +2000,27 @@ min-width:0!important;
    grid-template-columns:24px minmax(0,1fr) auto!important;
  }
 }
+
+/* V102 Kalender: kompakter Kopf und Oberbereich-Zaehler */
+#calendar .card:first-child{padding:1rem!important}
+#monthLabel{font-size:1.35rem!important;line-height:1.1!important;margin:0!important;white-space:nowrap}
+#prevMonth,#nextMonth{width:34px!important;height:34px!important;min-height:34px!important;padding:0!important;border-radius:12px!important;box-shadow:none!important;background:#eef7ff!important;color:var(--blue)!important}
+#calendar label:has(#calendarDog){margin:0!important;display:flex!important;align-items:center!important;gap:.5rem!important;font-weight:900!important}
+#calendarDog{min-height:40px!important;border-radius:16px!important;padding:.45rem 2.2rem .45rem .75rem!important;max-width:210px}
+.weekday{min-height:34px!important;display:flex;align-items:center;justify-content:center;border-radius:999px!important}
+.compact-calendar-day{min-height:86px!important;padding:.36rem!important;border-radius:14px!important}
+.day-num{display:flex;align-items:center;justify-content:space-between;gap:.2rem;font-size:1.05rem}
+.today-dot{font-size:.54rem;font-weight:900;border-radius:999px;padding:.08rem .24rem;background:#dff4ff;color:var(--blue)}
+.calendar-block-counts{display:grid;gap:.16rem;margin-top:.28rem}
+.calendar-block-count{display:flex;align-items:center;justify-content:space-between;gap:.25rem;border-radius:999px;padding:.1rem .34rem;font-size:.68rem;font-weight:900;min-width:0}
+.calendar-block-count b{font-size:.72rem}
+.calendar-block-count.cat-Hundesport{background:#ffd4ca!important;color:#8f241c!important}
+.calendar-block-count.cat-Training-Aufbau{background:#c7ddff!important;color:#164a96!important}
+.calendar-block-count.cat-Alltag-Management{background:#cdeec8!important;color:#276b25!important}
+.compact-day-detail-head{align-items:center!important;margin-bottom:.65rem}
+.day-detail-actions{display:flex;gap:.45rem;flex-wrap:wrap}
+.day-detail-actions .icon-action{min-height:34px!important;padding:.35rem .6rem!important;border-radius:999px!important;box-shadow:none!important;font-size:.86rem!important}
+.calendar-detail-card{border:1px solid var(--line);border-radius:18px;background:#fff;box-shadow:0 8px 24px rgba(0,80,140,.06);margin:.65rem 0;overflow:hidden}
+.compact-calendar-block-group{margin:.55rem 0;padding:.55rem;border:1px solid var(--line);border-radius:16px;background:#fbfdff}
+.compact-calendar-block-group h3{margin:.05rem 0 .4rem!important;display:flex;align-items:center;gap:.35rem}
+@media(max-width:650px){#calendar .card:first-child{padding:.8rem!important}#monthLabel{font-size:1.18rem!important}#calendarDog{max-width:150px;min-height:38px!important}.compact-calendar-day{min-height:74px!important;padding:.26rem!important}.calendar-block-count{font-size:.58rem;padding:.08rem .26rem}.calendar-block-count b{font-size:.62rem}.today-dot{display:none}}

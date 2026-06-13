@@ -841,33 +841,67 @@ function startNewEntryForExercise(dateIso,dogName,cat,sub){
  toggleTreadmill();
 }
 
-function renderCalendar(){let y=currentMonth.getFullYear(),m=currentMonth.getMonth();monthLabel.textContent=currentMonth.toLocaleDateString('de-DE',{month:'long',year:'numeric'});calendarGrid.innerHTML='';['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(w=>calendarGrid.insertAdjacentHTML('beforeend',`<div class="weekday">${w}</div>`));let first=new Date(y,m,1),off=(first.getDay()+6)%7,start=new Date(y,m,1-off);for(let i=0;i<42;i++){let d=new Date(start);d.setDate(start.getDate()+i);let iso=isoDate(d),es=calendarEntries().filter(e=>e.date===iso),cats=[...new Set(es.map(e=>e.category))];let div=document.createElement('div');div.className='day'+(d.getMonth()!==m?' other':'')+(iso===today()?' today':'')+(iso===selectedDay?' selected':'');div.innerHTML=`<div class="day-num">${d.getDate()}</div><div class="calendar-cats">${cats.slice(0,4).map(c=>`<span class="cat-chip ${catClass(c)}">${shortCat(c)}</span>`).join('')}</div>`;div.onclick=()=>{selectedDay=iso;renderCalendar();renderDayDetails()};calendarGrid.appendChild(div)} if(selectedDay)renderDayDetails()}
+function blockShortIcon(name){
+ if(name==='Hundesport')return '🟥';
+ if(name==='Training & Aufbau')return '🟦';
+ if(name==='Alltag & Management')return '🟩';
+ return '⬜';
+}
+function calendarDayBlockCounts(entries){
+ const counts={};
+ entries.forEach(e=>{
+   const block=blockForCategory(e.category);
+   counts[block]=(counts[block]||0)+(e.exercises?.length||1);
+ });
+ return counts;
+}
+function renderCalendar(){
+ fillSelects();
+ let y=currentMonth.getFullYear(),m=currentMonth.getMonth();
+ monthLabel.textContent=new Date(y,m,1).toLocaleDateString('de-DE',{month:'long',year:'numeric'});
+ calendarGrid.innerHTML='';
+ ['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(w=>calendarGrid.insertAdjacentHTML('beforeend',`<div class="weekday">${w}</div>`));
+ let first=new Date(y,m,1),off=(first.getDay()+6)%7,start=new Date(y,m,1-off);
+ for(let i=0;i<42;i++){
+   let d=new Date(start);
+   d.setDate(start.getDate()+i);
+   let iso=isoDate(d);
+   let es=calendarEntries().filter(e=>e.date===iso);
+   let counts=calendarDayBlockCounts(es);
+   let rows=categoryBlocks.map(b=>counts[b.name]?`<span class="calendar-block-count ${safeCatClassName(b.name)}"><span>${blockShortIcon(b.name)}</span><b>${counts[b.name]}</b></span>`:'').join('');
+   const extra=Object.keys(counts).filter(k=>!categoryBlocks.some(b=>b.name===k)).reduce((sum,k)=>sum+counts[k],0);
+   if(extra)rows+=`<span class="calendar-block-count cat-user"><span>⬜</span><b>${extra}</b></span>`;
+   let div=document.createElement('div');
+   div.className='day compact-calendar-day'+(d.getMonth()!==m?' other':'')+(iso===today()?' today':'')+(iso===selectedDay?' selected':'');
+   div.innerHTML=`<div class="day-num">${d.getDate()}${iso===today()?'<span class="today-dot">Heute</span>':''}</div><div class="calendar-block-counts">${rows}</div>`;
+   div.onclick=()=>{selectedDay=iso;renderCalendar();renderDayDetails();setTimeout(()=>dayDetails.scrollIntoView({behavior:'smooth',block:'start'}),0)};
+   calendarGrid.appendChild(div);
+ }
+ if(selectedDay)renderDayDetails();
+}
 function renderDayDetails(){
  if(!selectedDay){dayDetails.classList.add('hidden');return}
  let es=calendarEntries().filter(e=>e.date===selectedDay).sort((a,b)=>(a.dog||'').localeCompare(b.dog||'')||(blockForCategory(a.category)||'').localeCompare(blockForCategory(b.category)||'')||(a.category||'').localeCompare(b.category||''));
  dayDetails.classList.remove('hidden');
- let head=`<div class="detail-head"><h2>${new Date(selectedDay+'T12:00').toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'})}</h2><button class="secondary" onclick="closeDay()">Zur Monatsübersicht</button></div><div class="actions"><button type="button" onclick="startNewEntryForDate('${selectedDay}')">Training hinzufügen</button></div>`;
+ let dayTitle=new Date(selectedDay+'T12:00').toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
+ let head=`<div class="detail-head compact-day-detail-head"><h2>${dayTitle}</h2><div class="day-detail-actions"><button class="secondary icon-action" onclick="closeDay()">↩ Monatsübersicht</button><button type="button" class="icon-action soft-primary" onclick="startNewEntryForDate('${selectedDay}')">➕ Training</button></div></div>`;
  if(!es.length){dayDetails.innerHTML=head+'<p>Kein Training.</p>';return}
  const byDog={};
  es.forEach(e=>{(byDog[e.dog]||(byDog[e.dog]=[])).push(e)});
  const blockOrder=categoryBlocks.map(b=>b.name).concat(['Weitere']);
  dayDetails.innerHTML=head+Object.entries(byDog).map(([dog,items])=>{
-   const collapsed=(typeof isDogGroupCollapsed==='function')?isDogGroupCollapsed(selectedDay,dog):false;
-   let body='';
-   if(!collapsed){
-     const byBlock={};
-     items.forEach(e=>{
-       const block=blockForCategory(e.category);
-       (byBlock[block]||(byBlock[block]=[])).push(e);
-     });
-     body=`<div class="dog-group-body grouped-day-body">${blockOrder.filter(block=>byBlock[block]&&byBlock[block].length).map(block=>{
-       const blockItems=byBlock[block];
-       const byCat={};
-       blockItems.forEach(e=>{(byCat[e.category]||(byCat[e.category]=[])).push(e)});
-       return `<section class="calendar-block-group"><h3>${esc(block)}</h3>${Object.entries(byCat).map(([cat,catItems])=>`<div class="calendar-category-group"><div class="calendar-category-title"><span class="cat-chip ${catClass(cat)}">${esc(cat)}</span><span class="small">${catItems.length} ${catItems.length===1?'Eintrag':'Einträge'}</span></div>${catItems.map(renderEntry).join('')}</div>`).join('')}</section>`;
-     }).join('')}</div>`;
-   }
-   return `<section class="dog-day-group"><button type="button" class="dog-group-head" onclick="toggleDogGroup('${selectedDay}','${attr(dog)}')"><span>🐕 ${esc(dog)}</span><span class="dog-count">${items.length} Eintrag${items.length===1?'':'e'}</span><span>${collapsed?'⌄':'⌃'}</span></button>${body}</section>`;
+   const byBlock={};
+   items.forEach(e=>{
+     const block=blockForCategory(e.category);
+     (byBlock[block]||(byBlock[block]=[])).push(e);
+   });
+   return `<section class="dog-day-group calendar-detail-card"><button type="button" class="dog-group-head" onclick="toggleDogGroup('${selectedDay}','${attr(dog)}')"><span>🐕 ${esc(dog)}</span><span class="dog-count">${items.length} Eintrag${items.length===1?'':'e'}</span></button><div class="dog-group-body grouped-day-body">${blockOrder.filter(block=>byBlock[block]&&byBlock[block].length).map(block=>{
+     const blockItems=byBlock[block];
+     const byCat={};
+     blockItems.forEach(e=>{(byCat[e.category]||(byCat[e.category]=[])).push(e)});
+     const blockTotal=blockItems.reduce((sum,e)=>sum+(e.exercises?.length||1),0);
+     return `<section class="calendar-block-group compact-calendar-block-group"><h3>${blockShortIcon(block)} ${esc(block)} <span class="small">${blockTotal} Übungen</span></h3>${Object.entries(byCat).map(([cat,catItems])=>`<div class="calendar-category-group"><div class="calendar-category-title"><span class="cat-chip ${catClass(cat)}">${esc(cat)}</span><span class="small">${catItems.reduce((sum,e)=>sum+(e.exercises?.length||1),0)} Übungen</span></div>${catItems.map(renderEntry).join('')}</div>`).join('')}</section>`;
+   }).join('')}</div></section>`;
  }).join('');
 }
 window.closeDay=()=>{selectedDay=null;dayDetails.classList.add('hidden');renderCalendar()}
@@ -1148,7 +1182,7 @@ function backup(){
  let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');
  let stamp=new Date().toLocaleString('sv-SE').replace(' ','_').replaceAll(':','-');
  a.href=URL.createObjectURL(blob);
- a.download=`V101_backup_training-tracker_${stamp}.json`;
+ a.download=`V102_backup_training-tracker_${stamp}.json`;
  a.click();
  URL.revokeObjectURL(a.href);
 }
